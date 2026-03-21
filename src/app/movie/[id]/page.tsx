@@ -1,371 +1,46 @@
-"use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useSearchParams, useRouter } from "next/navigation";
-import { getDetails, getCredits, getVideos, getSimilar, getImageUrl, getWatchProviders, Movie, Cast } from "@/lib/tmdb";
-import Image from "next/image";
-import { Play, Star, Calendar, Clock, ArrowLeft, User, AlertCircle, Plus, Check, ExternalLink } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { MovieRow } from "@/components/movies/movie-row";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useAuth } from "@/components/auth/auth-provider";
-import { db } from "@/lib/firebase";
-import { doc, setDoc, deleteDoc, onSnapshot } from "firebase/firestore";
-import { useToast } from "@/hooks/use-toast";
+import { getDetails, getImageUrl } from "@/lib/tmdb";
+import { Metadata } from "next";
+import MovieDetailClient from "./movie-detail-client";
 
-export default function MovieDetailPage() {
-  const { id } = useParams();
-  const searchParams = useSearchParams();
-  const type = (searchParams.get("type") as "movie" | "tv") || "movie";
-  const router = useRouter();
-  const { user } = useAuth();
-  const { toast } = useToast();
+interface Props {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ type?: string }>;
+}
 
-  const [movie, setMovie] = useState<any>(null);
-  const [cast, setCast] = useState<Cast[]>([]);
-  const [videos, setVideos] = useState<any[]>([]);
-  const [similar, setSimilar] = useState<Movie[]>([]);
-  const [providers, setProviders] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isInWatchlist, setIsInWatchlist] = useState(false);
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const { type = "movie" } = await searchParams;
+  const movie = await getDetails(id, type as "movie" | "tv");
 
-  const fetchData = async () => {
-    setLoading(true);
-    setError(null);
-    const movieId = id as string;
-    
-    try {
-      const [details, credits, videoRes, similarRes, providerRes] = await Promise.all([
-        getDetails(movieId, type),
-        getCredits(movieId, type),
-        getVideos(movieId, type),
-        getSimilar(movieId, type),
-        getWatchProviders(movieId, type)
-      ]);
+  if (!movie) return { title: "Content Not Found | MovieLink Hub" };
 
-      if (!details) {
-        setError("Please disable ad blocker or check connection");
-      } else {
-        setMovie(details);
-        setCast(credits?.slice(0, 10) || []);
-        setVideos(videoRes || []);
-        setSimilar(similarRes || []);
-        setProviders(providerRes || {});
-        
-        if (user) {
-          const cwRef = doc(db, "users", user.uid, "continueWatching", movieId);
-          setDoc(cwRef, {
-            id: Number(movieId),
-            title: details.title || details.name,
-            poster: details.poster_path,
-            type: type,
-            lastWatched: Date.now()
-          }, { merge: true });
-        }
-      }
-    } catch (err) {
-      setError("Please disable ad blocker or check connection");
-    } finally {
-      setLoading(false);
-    }
+  const title = movie.title || movie.name;
+  const year = (movie.release_date || movie.first_air_date || "").split("-")[0];
+  const description = movie.overview?.slice(0, 160) || "Watch the latest blockbusters on MovieLink Hub.";
+  const image = getImageUrl(movie.backdrop_path, "w500") || "";
+
+  return {
+    title: `${title} (${year}) - MovieLink Hub`,
+    description,
+    openGraph: {
+      title: `${title} (${year})`,
+      description,
+      images: [image],
+      type: "video.movie",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} (${year})`,
+      description,
+      images: [image],
+    },
   };
+}
 
-  useEffect(() => {
-    if (id) fetchData();
-  }, [id, type]);
+export default async function MovieDetailPage({ params, searchParams }: Props) {
+  const { id } = await params;
+  const { type = "movie" } = await searchParams;
 
-  useEffect(() => {
-    if (!user || !id) return;
-    const docRef = doc(db, "users", user.uid, "watchlist", id as string);
-    const unsubscribe = onSnapshot(docRef, (doc) => {
-      setIsInWatchlist(doc.exists());
-    });
-    return () => unsubscribe();
-  }, [user, id]);
-
-  const toggleWatchlist = async () => {
-    if (!user) {
-      router.push("/auth");
-      return;
-    }
-
-    const docRef = doc(db, "users", user.uid, "watchlist", id as string);
-    try {
-      if (isInWatchlist) {
-        await deleteDoc(docRef);
-        toast({ title: "Removed from Watchlist" });
-      } else {
-        await setDoc(docRef, {
-          id: Number(id),
-          title: movie.title || movie.name,
-          poster: movie.poster_path,
-          type: type,
-          addedAt: Date.now()
-        });
-        toast({ title: "Added to Watchlist" });
-      }
-    } catch (err) {
-      toast({ variant: "destructive", title: "Action failed" });
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background space-y-8 pb-32">
-        {/* Hero Skeleton */}
-        <div className="relative h-[70vh] w-full">
-          <Skeleton className="h-full w-full rounded-none" />
-          <div className="absolute bottom-0 left-0 p-6 md:p-16 w-full z-20 space-y-6">
-            <Skeleton className="h-16 md:h-24 w-full max-w-3xl" />
-            <div className="flex gap-4">
-              <Skeleton className="h-6 w-20" />
-              <Skeleton className="h-6 w-20" />
-              <Skeleton className="h-6 w-20" />
-            </div>
-            <Skeleton className="h-20 w-full max-w-2xl" />
-            <div className="flex gap-4">
-              <Skeleton className="h-14 w-40 rounded-full" />
-              <Skeleton className="h-14 w-40 rounded-full" />
-            </div>
-          </div>
-        </div>
-
-        {/* Content Skeletons */}
-        <div className="px-6 md:px-16 space-y-16">
-          <section className="space-y-6">
-            <Skeleton className="h-8 w-48" />
-            <div className="flex gap-6 overflow-hidden">
-              {[...Array(5)].map((_, i) => (
-                <Skeleton key={i} className="flex-shrink-0 h-24 w-24 rounded-3xl" />
-              ))}
-            </div>
-          </section>
-          <section className="space-y-6">
-            <Skeleton className="h-8 w-48" />
-            <Skeleton className="aspect-video w-full max-w-5xl rounded-3xl mx-auto" />
-          </section>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !movie) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center space-y-6">
-        <div className="p-4 bg-muted rounded-full">
-          <AlertCircle className="h-12 w-12 text-muted-foreground" />
-        </div>
-        <div className="space-y-2">
-          <h2 className="text-2xl font-bold uppercase italic tracking-tighter">Content Unavailable</h2>
-          <p className="text-muted-foreground max-w-sm">
-            {error || "We couldn't retrieve the details for this title."}
-          </p>
-        </div>
-        <div className="flex gap-4">
-          <Button 
-            variant="outline" 
-            onClick={() => router.back()}
-            className="rounded-full px-8"
-          >
-            Go Back
-          </Button>
-          <Button 
-            onClick={fetchData} 
-            className="bg-primary text-primary-foreground font-bold rounded-full px-8"
-          >
-            Try Again
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  const trailer = videos.find((v) => v.type === "Trailer" && v.site === "YouTube");
-  const releaseYear = (movie.release_date || movie.first_air_date || "").split("-")[0];
-
-  const regionData = providers?.['IN'] || providers?.['US'] || null;
-  const watchLink = regionData?.link;
-  const flatrate = regionData?.flatrate || [];
-  const rent = regionData?.rent || [];
-  const buy = regionData?.buy || [];
-  
-  const allWatchProviders = [...flatrate, ...rent, ...buy];
-  const uniqueProviders = Array.from(new Map(allWatchProviders.map(p => [p.provider_id, p])).values());
-
-  return (
-    <div className="min-h-screen bg-background pb-32 animate-fade-in">
-      <div className="relative h-[70vh] w-full">
-        {movie.backdrop_path ? (
-          <Image
-            src={getImageUrl(movie.backdrop_path, "original") || ""}
-            alt={movie.title || movie.name || "Backdrop"}
-            fill
-            className="object-cover opacity-60"
-            priority
-          />
-        ) : (
-          <div className="h-full w-full bg-muted/20" />
-        )}
-        <div className="absolute inset-0 hero-gradient-overlay" />
-        
-        <button 
-          onClick={() => router.back()}
-          className="absolute top-6 left-6 p-3 bg-black/40 backdrop-blur-md rounded-full text-white hover:bg-black/60 transition-colors z-30 border border-white/10"
-        >
-          <ArrowLeft className="h-6 w-6" />
-        </button>
-
-        <div className="absolute bottom-0 left-0 p-6 md:p-16 w-full z-20 space-y-6">
-          <div className="flex flex-col gap-4">
-            <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-white uppercase italic leading-none">
-              {movie.title || movie.name}
-            </h1>
-            
-            <div className="flex flex-wrap items-center gap-4 text-sm font-bold text-white/80">
-              <div className="flex items-center text-primary bg-primary/10 px-2 py-1 rounded-md border border-primary/20">
-                <Star className="h-4 w-4 mr-1 fill-current" />
-                {movie.vote_average?.toFixed(1) || "N/A"}
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Calendar className="h-4 w-4 opacity-60" />
-                {releaseYear || "N/A"}
-              </div>
-              {movie.runtime && (
-                <div className="flex items-center gap-1.5">
-                  <Clock className="h-4 w-4 opacity-60" />
-                  {movie.runtime} min
-                </div>
-              )}
-            </div>
-          </div>
-
-          <p className="text-sm md:text-lg text-muted-foreground leading-relaxed max-w-3xl line-clamp-4 font-medium italic">
-            {movie.overview || "No overview available for this title."}
-          </p>
-
-          <div className="flex flex-wrap gap-4 pt-2">
-            <Button 
-              asChild
-              className="gold-gradient text-black font-black px-10 h-14 rounded-full hover:scale-105 transition-all border-none shadow-[0_0_30px_rgba(255,215,0,0.2)] active:scale-95"
-            >
-              {watchLink ? (
-                <a href={watchLink} target="_blank" rel="noopener noreferrer">
-                  <Play className="mr-2 h-6 w-6 fill-current" /> WATCH NOW
-                </a>
-              ) : (
-                <button>
-                  <Play className="mr-2 h-6 w-6 fill-current" /> WATCH NOW
-                </button>
-              )}
-            </Button>
-            <Button 
-              variant="outline"
-              onClick={toggleWatchlist}
-              className="rounded-full px-8 h-14 border-white/10 bg-white/5 backdrop-blur-xl hover:bg-white/10 font-black tracking-tight"
-            >
-              {isInWatchlist ? (
-                <><Check className="mr-2 h-5 w-5 text-primary" /> IN WATCHLIST</>
-              ) : (
-                <><Plus className="mr-2 h-5 w-5" /> ADD TO WATCHLIST</>
-              )}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <div className="px-6 md:px-16 mt-12 space-y-20">
-        <section className="space-y-8">
-          <div className="flex items-center justify-between border-l-4 border-primary pl-6">
-            <div className="space-y-0.5">
-              <h2 className="text-2xl font-black uppercase italic tracking-tight text-white flex items-center gap-3">
-                🎬 AVAILABLE ON
-              </h2>
-            </div>
-          </div>
-          
-          <div className="no-scrollbar flex gap-8 overflow-x-auto pb-6">
-            {uniqueProviders.length > 0 ? (
-              uniqueProviders.map((provider: any) => (
-                <div key={provider.provider_id} className="flex-shrink-0 flex flex-col items-center gap-4 group">
-                  <div className="relative h-20 w-20 md:h-24 md:w-24 rounded-3xl overflow-hidden border border-white/10 bg-card/50 group-hover:border-primary/50 group-hover:scale-110 transition-all duration-500 shadow-[0_10px_40px_rgba(0,0,0,0.4)]">
-                    <Image
-                      src={getImageUrl(provider.logo_path, "w185") || ""}
-                      alt={provider.provider_name}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </div>
-                  <span className="text-[12px] font-black text-white/60 group-hover:text-primary transition-colors text-center max-w-[110px] line-clamp-1 uppercase tracking-tighter italic">
-                    {provider.provider_name}
-                  </span>
-                </div>
-              ))
-            ) : (
-              <div className="flex items-center gap-6 p-8 bg-card/30 rounded-[2rem] border border-dashed border-white/5 w-full max-w-2xl backdrop-blur-sm">
-                <AlertCircle className="h-8 w-8 text-muted-foreground/30" />
-                <div className="space-y-1">
-                  <p className="text-lg font-bold text-white/50 uppercase italic tracking-tighter">Availability Pending</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {trailer && (
-          <section className="space-y-8">
-            <div className="flex items-center gap-4 border-l-4 border-primary pl-6">
-               <h2 className="text-xl font-black uppercase italic tracking-tight text-white">OFFICIAL TRAILER</h2>
-            </div>
-            <div className="aspect-video w-full max-w-5xl mx-auto rounded-3xl overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] bg-black">
-              <iframe
-                src={`https://www.youtube.com/embed/${trailer.key}?rel=0&modestbranding=1&autohide=1&showinfo=0`}
-                title="Trailer"
-                className="w-full h-full"
-                allowFullScreen
-              />
-            </div>
-          </section>
-        )}
-
-        {cast.length > 0 && (
-          <section className="space-y-8">
-            <div className="flex items-center gap-4 border-l-4 border-primary pl-6">
-               <h2 className="text-xl font-black uppercase italic tracking-tight text-white">TOP CAST</h2>
-            </div>
-            <div className="no-scrollbar flex gap-8 overflow-x-auto pb-4">
-              {cast.map((person) => (
-                <div key={person.id} className="flex-shrink-0 w-28 md:w-36 text-center space-y-4 group">
-                  <div className="relative aspect-square rounded-full overflow-hidden border-2 border-white/5 group-hover:border-primary transition-all duration-500 shadow-2xl">
-                    {person.profile_path ? (
-                      <Image
-                        src={getImageUrl(person.profile_path, "w185") || ""}
-                        alt={person.name}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-700"
-                      />
-                    ) : (
-                      <div className="h-full w-full bg-muted flex items-center justify-center">
-                        <User className="h-10 w-10 text-muted-foreground/30" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="space-y-1 px-1">
-                    <p className="text-sm font-black text-white line-clamp-1 group-hover:text-primary transition-colors tracking-tighter uppercase italic">{person.name}</p>
-                    <p className="text-[11px] font-mono text-muted-foreground line-clamp-1 uppercase tracking-tighter">{person.character}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {similar.length > 0 && (
-          <div className="pt-10">
-            <MovieRow title="YOU MAY ALSO LIKE" items={similar} type={type} />
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  return <MovieDetailClient id={id} initialType={type as "movie" | "tv"} />;
 }

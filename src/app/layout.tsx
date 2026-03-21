@@ -1,3 +1,4 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
 import { AuthProvider } from "@/components/auth/auth-provider";
@@ -5,8 +6,28 @@ import { BottomNav } from "@/components/layout/bottom-nav";
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'MOVIELINK HUB | Premium OTT',
-  description: 'Premium OTT platform for movies, TV shows, and anime. Watch the latest blockbusters in style.',
+  title: {
+    default: 'MOVIELINK HUB | Premium OTT Experience',
+    template: '%s | MovieLink Hub'
+  },
+  description: 'Experience the ultimate OTT platform for premium movies, TV shows, and anime. Stream high-quality content on MovieLink Hub.',
+  openGraph: {
+    title: 'MOVIELINK HUB | Premium OTT',
+    description: 'Premium OTT platform for blockbusters and trending shows.',
+    url: 'https://movielink-hub.firebaseapp.com',
+    siteName: 'MovieLink Hub',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'MOVIELINK HUB',
+    description: 'Premium OTT experience.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  }
 };
 
 export default function RootLayout({

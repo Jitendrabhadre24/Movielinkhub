@@ -32,7 +32,7 @@ export type DiscoverFilters = {
   sortBy?: string;
 };
 
-async function fetchFromTMDB(endpoint: string, params: Record<string, string> = {}) {
+async function fetchFromTMDB(endpoint: string, params: Record<string, string> = {}, cacheOptions: RequestInit = { next: { revalidate: 3600 } }) {
   if (!API_KEY || API_KEY === "mock-api-key") {
     console.warn("TMDB API Key is missing or invalid.");
     return null;
@@ -50,7 +50,7 @@ async function fetchFromTMDB(endpoint: string, params: Record<string, string> = 
     const response = await fetch(url, {
       method: 'GET',
       headers: { 'Accept': 'application/json' },
-      cache: 'no-store',
+      ...cacheOptions
     });
     
     if (!response.ok) {
@@ -76,7 +76,8 @@ export async function getTopRated(): Promise<Movie[]> {
 }
 
 export async function getDetails(id: string, type: "movie" | "tv"): Promise<any> {
-  return await fetchFromTMDB(`/${type}/${id}`);
+  // Use a shorter revalidate for details as they change rarely but might need updates
+  return await fetchFromTMDB(`/${type}/${id}`, {}, { next: { revalidate: 7200 } });
 }
 
 export async function getCredits(id: string, type: "movie" | "tv"): Promise<Cast[]> {
@@ -105,7 +106,8 @@ export async function getWatchProviders(id: string, type: "movie" | "tv"): Promi
 }
 
 export async function searchMovies(query: string): Promise<Movie[]> {
-  const data = await fetchFromTMDB("/search/multi", { query });
+  // No caching for search results to ensure accuracy
+  const data = await fetchFromTMDB("/search/multi", { query }, { cache: 'no-store' });
   return data?.results || [];
 }
 
