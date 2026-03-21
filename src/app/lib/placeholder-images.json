@@ -1,0 +1,16 @@
+{
+  "placeholderImages": [
+    {
+      "id": "hero-action",
+      "description": "Epic cinematic action scene",
+      "imageUrl": "https://picsum.photos/seed/ott1/1200/800",
+      "imageHint": "action cinematic"
+    },
+    {
+      "id": "poster-placeholder",
+      "description": "Clean movie poster placeholder",
+      "imageUrl": "https://picsum.photos/seed/poster/400/600",
+      "imageHint": "movie poster"
+    }
+  ]
+}
