@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { discoverContent, Movie, DiscoverFilters } from "@/lib/tmdb";
 import { MovieCard } from "@/components/movies/movie-card";
-import { ChevronLeft, ChevronRight, AlertCircle, ArrowLeft, Filter, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, AlertCircle, ArrowLeft, Filter, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -49,7 +49,6 @@ export default function GenreDetailPage() {
   const [page, setPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(1);
   
-  // Advanced Filters
   const [activeFilters, setActiveFilters] = useState<DiscoverFilters>({
     sortBy: "popularity.desc"
   });
@@ -59,7 +58,6 @@ export default function GenreDetailPage() {
     setError(null);
     try {
       const data = await discoverContent(type, id, page, activeFilters);
-      
       if (data) {
         setItems(data.results);
         setTotalPages(data.total_pages);
@@ -75,8 +73,6 @@ export default function GenreDetailPage() {
 
   useEffect(() => {
     loadItems();
-    
-    // Update URL without refreshing
     const url = new URL(window.location.href);
     url.searchParams.set("page", page.toString());
     window.history.pushState({}, "", url);
@@ -87,13 +83,15 @@ export default function GenreDetailPage() {
       ...prev,
       [key]: prev[key] === value ? undefined : value
     }));
-    setPage(1); // Reset to first page on filter change
+    setPage(1);
   };
 
   const clearFilters = () => {
     setActiveFilters({ sortBy: "popularity.desc" });
     setPage(1);
   };
+
+  const hasActiveFilters = activeFilters.rating || activeFilters.year || activeFilters.language || activeFilters.sortBy !== "popularity.desc";
 
   return (
     <div className="p-4 md:p-8 space-y-10 min-h-screen pb-32 max-w-7xl mx-auto">
@@ -114,80 +112,77 @@ export default function GenreDetailPage() {
         </div>
       </header>
 
-      {/* Advanced Filter Bar */}
-      <section className="space-y-6 bg-card/30 p-6 rounded-[2rem] border border-white/5 backdrop-blur-md">
-        <div className="flex items-center justify-between">
+      {/* Premium Sticky Filter Bar */}
+      <section className="sticky top-0 z-40 space-y-4 bg-background/80 backdrop-blur-2xl p-6 rounded-[2rem] border border-white/5 shadow-2xl transition-all">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2 text-white/80">
             <Filter className="h-4 w-4 text-primary" />
             <h2 className="text-xs font-black uppercase tracking-widest italic">REFINE SEARCH</h2>
           </div>
-          {(activeFilters.rating || activeFilters.year || activeFilters.language || activeFilters.sortBy !== "popularity.desc") && (
+          {hasActiveFilters && (
             <button 
               onClick={clearFilters}
-              className="text-[10px] font-black text-primary uppercase tracking-widest flex items-center gap-1.5 hover:underline"
+              className="text-[10px] font-black text-primary uppercase tracking-widest flex items-center gap-1.5 hover:scale-105 transition-transform"
             >
               <X className="h-3 w-3" /> CLEAR ALL
             </button>
           )}
         </div>
 
-        <div className="flex flex-col gap-6">
-          {/* Filter Rows */}
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="text-[10px] font-black text-white/40 uppercase tracking-widest w-16">RATING</span>
-              <div className="flex flex-wrap gap-2">
-                {RATINGS.map(f => (
-                  <FilterChip 
-                    key={f.value} 
-                    label={f.label} 
-                    active={activeFilters.rating === f.value} 
-                    onClick={() => handleFilterToggle('rating', f.value)} 
-                  />
-                ))}
-              </div>
+        <div className="no-scrollbar flex flex-wrap gap-6 overflow-x-auto">
+          <div className="flex items-center gap-3">
+            <span className="text-[9px] font-black text-white/30 uppercase tracking-widest">RATING</span>
+            <div className="flex gap-2">
+              {RATINGS.map(f => (
+                <FilterChip 
+                  key={f.value} 
+                  label={f.label} 
+                  active={activeFilters.rating === f.value} 
+                  onClick={() => handleFilterToggle('rating', f.value)} 
+                />
+              ))}
             </div>
+          </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="text-[10px] font-black text-white/40 uppercase tracking-widest w-16">YEAR</span>
-              <div className="flex flex-wrap gap-2">
-                {YEARS.map(f => (
-                  <FilterChip 
-                    key={f.value} 
-                    label={f.label} 
-                    active={activeFilters.year === f.value} 
-                    onClick={() => handleFilterToggle('year', f.value)} 
-                  />
-                ))}
-              </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[9px] font-black text-white/30 uppercase tracking-widest">YEAR</span>
+            <div className="flex gap-2">
+              {YEARS.map(f => (
+                <FilterChip 
+                  key={f.value} 
+                  label={f.label} 
+                  active={activeFilters.year === f.value} 
+                  onClick={() => handleFilterToggle('year', f.value)} 
+                />
+              ))}
             </div>
+          </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="text-[10px] font-black text-white/40 uppercase tracking-widest w-16">LANGUAGE</span>
-              <div className="flex flex-wrap gap-2">
-                {LANGUAGES.map(f => (
-                  <FilterChip 
-                    key={f.value} 
-                    label={f.label} 
-                    active={activeFilters.language === f.value} 
-                    onClick={() => handleFilterToggle('language', f.value)} 
-                  />
-                ))}
-              </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[9px] font-black text-white/30 uppercase tracking-widest">LANG</span>
+            <div className="flex gap-2">
+              {LANGUAGES.map(f => (
+                <FilterChip 
+                  key={f.value} 
+                  label={f.label} 
+                  active={activeFilters.language === f.value} 
+                  onClick={() => handleFilterToggle('language', f.value)} 
+                />
+              ))}
             </div>
+          </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="text-[10px] font-black text-white/40 uppercase tracking-widest w-16">SORT</span>
-              <div className="flex flex-wrap gap-2">
-                {SORT_OPTIONS.map(f => (
-                  <FilterChip 
-                    key={f.value} 
-                    label={f.label} 
-                    active={activeFilters.sortBy === f.value} 
-                    onClick={() => handleFilterToggle('sortBy', f.value)} 
-                  />
-                ))}
-              </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[9px] font-black text-white/30 uppercase tracking-widest">SORT</span>
+            <div className="flex gap-2">
+              {SORT_OPTIONS.map(f => (
+                <FilterChip 
+                  key={f.value} 
+                  label={f.label} 
+                  active={activeFilters.sortBy === f.value} 
+                  onClick={() => handleFilterToggle('sortBy', f.value)} 
+                />
+              ))}
             </div>
           </div>
         </div>
@@ -199,19 +194,18 @@ export default function GenreDetailPage() {
             <AlertCircle className="h-12 w-12 text-destructive" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-xl font-black uppercase italic tracking-tighter">CONNECTION ERROR</h2>
+            <h2 className="text-xl font-black uppercase italic tracking-tighter text-white">CONNECTION ERROR</h2>
             <p className="text-muted-foreground max-w-xs font-medium">{error}</p>
           </div>
         </div>
       ) : loading ? (
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-          {[...Array(10)].map((_, i) => (
-            <div key={i} className="aspect-[2/3] bg-card/50 rounded-2xl animate-pulse border border-white/5 shadow-2xl" />
-          ))}
+        <div className="flex flex-col items-center justify-center py-32 space-y-4">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <p className="text-xs font-black text-primary uppercase tracking-widest animate-pulse">Scanning Archive...</p>
         </div>
       ) : items.length > 0 ? (
-        <div className="space-y-16">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+        <div className="space-y-16 animate-in fade-in duration-700">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
             {items.map((item) => (
               <MovieCard key={item.id} item={item} type={type} className="w-full" />
             ))}
@@ -241,13 +235,13 @@ export default function GenreDetailPage() {
           </div>
         </div>
       ) : (
-        <div className="text-center py-32 border border-dashed border-white/10 rounded-[3rem] bg-card/10 space-y-4">
+        <div className="text-center py-32 border border-dashed border-white/10 rounded-[3rem] bg-card/10 space-y-4 animate-in zoom-in-95 duration-500">
           <Filter className="h-12 w-12 text-muted-foreground/20 mx-auto" />
           <div className="space-y-1">
             <h3 className="text-xl font-black text-white/50 uppercase italic tracking-tighter">NO TITLES FOUND</h3>
             <p className="text-sm text-muted-foreground font-medium">Try adjusting your filters to find more content.</p>
           </div>
-          <Button onClick={clearFilters} variant="link" className="text-primary font-black uppercase italic tracking-widest">Reset All Filters</Button>
+          <Button onClick={clearFilters} variant="link" className="text-primary font-black uppercase italic tracking-widest underline-offset-8">Reset All Filters</Button>
         </div>
       )}
     </div>
@@ -259,10 +253,10 @@ function FilterChip({ label, active, onClick }: { label: string; active: boolean
     <button
       onClick={onClick}
       className={cn(
-        "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all duration-300 italic",
+        "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all duration-500 italic",
         active 
-          ? "bg-primary text-black border-primary shadow-[0_0_15px_rgba(255,215,0,0.3)]" 
-          : "bg-white/5 text-white/60 border-white/10 hover:border-white/30 hover:bg-white/10"
+          ? "bg-primary text-black border-primary shadow-[0_0_20px_rgba(255,215,0,0.4)] scale-110 z-10" 
+          : "bg-white/5 text-white/40 border-white/10 hover:border-white/30 hover:bg-white/10 hover:text-white"
       )}
     >
       {label}
