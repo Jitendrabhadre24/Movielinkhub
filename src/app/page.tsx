@@ -5,13 +5,14 @@ import { useEffect, useState } from "react";
 import { getTrending, getTopRated, Movie, getImageUrl, getRecommendations } from "@/lib/tmdb";
 import { MovieRow } from "@/components/movies/movie-row";
 import Image from "next/image";
-import { Star, Play, Info, AlertCircle, RefreshCcw, LayoutGrid, Clock, Sparkles } from "lucide-react";
+import { Star, Play, Info, AlertCircle, RefreshCcw, LayoutGrid, Clock, Sparkles, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/components/auth/auth-provider";
 import { collection, query, orderBy, limit, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useRouter } from "next/navigation";
 
 const QUICK_GENRES = [
   { id: 28, name: "Action" },
@@ -23,6 +24,7 @@ const QUICK_GENRES = [
 
 export default function Home() {
   const { user } = useAuth();
+  const router = useRouter();
   const [trending, setTrending] = useState<Movie[]>([]);
   const [topRated, setTopRated] = useState<Movie[]>([]);
   const [continueWatching, setContinueWatching] = useState<any[]>([]);
@@ -115,9 +117,24 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#0B0B0B] pb-32">
+      {/* Top Navbar Brand Overlay */}
+      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-6 bg-gradient-to-b from-black/80 to-transparent">
+        <h1 className="text-xl md:text-2xl font-black text-primary font-headline tracking-tighter uppercase italic drop-shadow-lg">
+          MOVIELINK HUB
+        </h1>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="rounded-full bg-black/20 backdrop-blur-md text-white hover:text-primary border border-white/10"
+          onClick={() => router.push('/search')}
+        >
+          <Search className="h-5 w-5" />
+        </Button>
+      </header>
+
       {/* Hero Section */}
       {!error && heroMovie ? (
-        <section className="relative h-[80vh] w-full overflow-hidden">
+        <section className="relative h-[85vh] w-full overflow-hidden">
           <div className="absolute inset-0">
             {heroMovie.backdrop_path ? (
               <Image
@@ -133,32 +150,32 @@ export default function Home() {
           </div>
           <div className="absolute inset-0 hero-gradient-overlay" />
           
-          <div className="absolute bottom-0 left-0 p-6 md:p-16 space-y-6 max-w-3xl z-10">
+          <div className="absolute bottom-0 left-0 p-6 md:p-16 space-y-6 max-w-4xl z-10">
             <div className="flex items-center gap-3">
               <div className="bg-primary/20 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-2 border border-primary/30">
                 <Star className="h-4 w-4 text-primary fill-primary" />
                 <span className="text-sm font-black text-primary">{heroMovie.vote_average?.toFixed(1) || "N/A"}</span>
               </div>
-              <span className="text-white/60 text-sm font-bold tracking-widest uppercase">Featured Today</span>
+              <span className="text-white/60 text-xs font-black tracking-[0.3em] uppercase italic">FEATURED ARCHIVE</span>
             </div>
 
-            <h1 className="text-5xl md:text-8xl font-black tracking-tighter uppercase italic text-white leading-[0.85]">
+            <h1 className="text-6xl md:text-9xl font-black tracking-tighter uppercase italic text-white leading-[0.8]">
               {heroMovie.title || heroMovie.name}
             </h1>
             
-            <p className="text-muted-foreground text-base md:text-lg line-clamp-3 font-medium max-w-2xl leading-relaxed">
+            <p className="text-muted-foreground text-base md:text-xl line-clamp-3 font-medium max-w-2xl leading-relaxed italic opacity-80">
               {heroMovie.overview}
             </p>
 
             <div className="flex flex-wrap gap-4 pt-4">
-              <Button asChild className="rounded-full px-10 h-14 text-lg font-black bg-primary text-black hover:bg-primary/90 transition-transform active:scale-95 border-none shadow-[0_0_20px_rgba(255,215,0,0.3)]">
+              <Button asChild className="rounded-full px-12 h-14 text-lg font-black bg-primary text-black hover:bg-primary/90 transition-transform active:scale-95 border-none shadow-[0_0_40px_rgba(255,215,0,0.3)]">
                 <Link href={`/movie/${heroMovie.id}?type=${heroMovie.media_type || 'movie'}`}>
-                  <Play className="mr-2 h-6 w-6 fill-current" /> PLAY NOW
+                  <Play className="mr-2 h-7 w-7 fill-current" /> PLAY NOW
                 </Link>
               </Button>
-              <Button variant="outline" asChild className="rounded-full px-10 h-14 text-lg font-black border-white/10 bg-white/5 backdrop-blur-xl text-white hover:bg-white/10 transition-transform active:scale-95">
+              <Button variant="outline" asChild className="rounded-full px-12 h-14 text-lg font-black border-white/20 bg-white/5 backdrop-blur-xl text-white hover:bg-white/10 transition-transform active:scale-95">
                 <Link href={`/movie/${heroMovie.id}?type=${heroMovie.media_type || 'movie'}`}>
-                  <Info className="mr-2 h-6 w-6" /> INFO
+                  <Info className="mr-2 h-7 w-7" /> DETAILS
                 </Link>
               </Button>
             </div>
@@ -170,11 +187,11 @@ export default function Home() {
             <AlertCircle className="h-16 w-16 text-destructive" />
           </div>
           <div className="space-y-3">
-            <h2 className="text-3xl font-black uppercase italic tracking-tighter">Connection Error</h2>
+            <h2 className="text-3xl font-black uppercase italic tracking-tighter">CONNECTION ERROR</h2>
             <p className="text-muted-foreground max-w-sm mx-auto font-medium">
               {error}
               <br/><br/>
-              <span className="text-primary font-bold italic">PRO TIP:</span> If you are on desktop, AdBlockers often block movie databases.
+              <span className="text-primary font-bold italic">PRO TIP:</span> AdBlockers often block movie databases. Try disabling them for full access.
             </p>
           </div>
           <Button 
@@ -182,71 +199,86 @@ export default function Home() {
             onClick={loadData} 
             className="rounded-full px-12 h-14 text-lg font-black border-primary/50 text-primary hover:bg-primary/10"
           >
-            <RefreshCcw className="mr-2 h-5 w-5" /> RETRY CONNECTION
+            <RefreshCcw className="mr-2 h-5 w-5" /> RETRY HUB ACCESS
           </Button>
         </div>
       )}
 
       {/* Content Sections */}
       {!error && trending.length > 0 && (
-        <div className="relative z-20 mt-[-60px] md:mt-[-100px] space-y-12">
-          {/* Genre Quick Links */}
-          <section className="px-4 md:px-8 space-y-4">
-            <div className="flex items-center gap-2 text-white/60">
+        <div className="relative z-20 mt-[-80px] md:mt-[-120px] space-y-16 animate-in fade-in slide-in-from-bottom-10 duration-1000">
+          
+          {/* Genre Quick Discovery */}
+          <section className="px-6 md:px-16 space-y-6">
+            <div className="flex items-center gap-3 text-white/40 border-l-4 border-white/10 pl-4">
               <LayoutGrid className="h-4 w-4" />
-              <h2 className="text-sm font-black uppercase tracking-widest italic">Browse by Genre</h2>
+              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] italic">DISCOVER BY ARCHIVE TYPE</h2>
             </div>
-            <div className="no-scrollbar flex gap-3 overflow-x-auto pb-2">
+            <div className="no-scrollbar flex gap-4 overflow-x-auto pb-4">
               {QUICK_GENRES.map((genre) => (
                 <Link
                   key={genre.id}
                   href={`/genre/${genre.id}?name=${genre.name}&type=movie`}
-                  className="flex-shrink-0 px-6 py-2.5 bg-card/50 hover:bg-primary hover:text-black border border-white/5 rounded-full text-sm font-bold transition-all whitespace-nowrap backdrop-blur-md"
+                  className="flex-shrink-0 px-8 py-3 bg-card/40 hover:bg-primary hover:text-black border border-white/5 hover:border-primary/50 rounded-full text-xs font-black transition-all whitespace-nowrap backdrop-blur-xl shadow-xl uppercase italic tracking-tighter"
                 >
                   {genre.name}
                 </Link>
               ))}
               <Link
                 href="/genres"
-                className="flex-shrink-0 px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-sm font-bold transition-all whitespace-nowrap text-primary"
+                className="flex-shrink-0 px-8 py-3 bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-full text-xs font-black transition-all whitespace-nowrap text-primary uppercase italic tracking-tighter"
               >
-                View All
+                BROWSE ALL
               </Link>
             </div>
           </section>
 
-          {/* Continue Watching */}
+          {/* Continue Watching Row */}
           {continueWatching.length > 0 && (
             <div className="space-y-4">
-              <div className="px-4 md:px-8 flex items-center gap-2 text-primary">
-                <Clock className="h-5 w-5" />
-                <h2 className="text-lg font-black uppercase tracking-tighter italic">⏱ CONTINUE WATCHING</h2>
+              <div className="px-6 md:px-16 flex items-center gap-3 text-primary">
+                <div className="p-2 bg-primary/10 rounded-xl">
+                  <Clock className="h-5 w-5" />
+                </div>
+                <h2 className="text-xl font-black uppercase tracking-tighter italic">⏱ RESUME VIEWING</h2>
               </div>
               <MovieRow title="" items={continueWatching as Movie[]} />
             </div>
           )}
 
-          {/* AI Recommendations Section */}
+          {/* AI Recommendation Hub */}
           {recommendations.length > 0 && (
-            <div className="space-y-4">
-              <div className="px-4 md:px-8 flex flex-col gap-1">
-                <div className="flex items-center gap-2 text-accent">
-                  <Sparkles className="h-4 w-4 fill-accent" />
-                  <h2 className="text-xs font-black uppercase tracking-[0.2em] italic">AI RECOMMENDATION</h2>
+            <div className="space-y-6 py-4">
+              <div className="px-6 md:px-16 flex flex-col gap-2">
+                <div className="flex items-center gap-2 text-accent bg-accent/5 w-fit px-3 py-1 rounded-full border border-accent/20">
+                  <Sparkles className="h-3 w-3 fill-accent" />
+                  <h2 className="text-[9px] font-black uppercase tracking-[0.4em] italic">HUB AI INTELLIGENCE</h2>
                 </div>
-                <div className="border-l-4 border-primary pl-4">
-                  <h2 className="text-xl font-black text-white uppercase italic tracking-tighter">
-                    BECAUSE YOU WATCHED <span className="text-primary">{recSourceTitle}</span>
+                <div className="border-l-4 border-primary pl-6">
+                  <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter leading-tight">
+                    BECAUSE YOU WATCHED <span className="text-primary">"{recSourceTitle}"</span>
                   </h2>
+                  <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mt-1">Based on your recent cinematic profile</p>
                 </div>
               </div>
-              <MovieRow title="" items={recommendations} />
+              <div className="bg-gradient-to-r from-primary/5 via-transparent to-transparent">
+                <MovieRow title="" items={recommendations} />
+              </div>
             </div>
           )}
 
-          <MovieRow title="🔥 TRENDING NOW" items={trending} />
-          
-          <MovieRow title="⭐ TOP RATED" items={topRated} />
+          {/* Global Trends */}
+          <div className="space-y-4">
+            <MovieRow title="🔥 WORLDWIDE TRENDS" items={trending} />
+            <MovieRow title="⭐ CRITICALLY ACCLAIMED" items={topRated} />
+          </div>
+
+          {/* Footer Branding */}
+          <footer className="py-20 text-center space-y-4 opacity-30">
+            <div className="h-px w-32 bg-primary/50 mx-auto" />
+            <p className="text-[10px] font-black tracking-[0.5em] text-white uppercase italic">MOVIELINK HUB PREMIUM OTT</p>
+            <p className="text-[8px] font-mono text-muted-foreground uppercase">Authorized Archive Access v1.0.8</p>
+          </footer>
         </div>
       )}
     </div>
