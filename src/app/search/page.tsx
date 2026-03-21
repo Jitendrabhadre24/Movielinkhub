@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { searchMovies, Movie } from "@/lib/tmdb";
 import { MovieCard } from "@/components/movies/movie-card";
 import { Input } from "@/components/ui/input";
-import { Search as SearchIcon, X, Loader2, Film, TrendingUp } from "lucide-react";
+import { Search as SearchIcon, X, Loader2, Film, TrendingUp } from "lucide-center";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const POPULAR_SEARCHES = ["Avengers", "Batman", "Star Wars", "John Wick", "Spider-Man", "Matrix"];
@@ -14,6 +14,10 @@ export default function SearchPage() {
   const [results, setResults] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+
+  useEffect(() => {
+    document.title = query ? `Searching: ${query} | MovieLink Hub` : "Search Archives | MovieLink Hub";
+  }, [query]);
 
   const performSearch = useCallback(async (searchQuery: string) => {
     if (!searchQuery.trim()) {
@@ -69,8 +73,7 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-32">
-      {/* Sticky Premium Search Bar */}
+    <div className="min-h-screen bg-background pb-32 animate-fade-in">
       <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-2xl border-b border-white/5 px-4 py-6 md:px-8">
         <div className="relative max-w-4xl mx-auto group">
           <div className="absolute left-5 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
@@ -92,9 +95,9 @@ export default function SearchPage() {
           {query && (
             <button 
               onClick={handleClear}
-              className="absolute right-5 top-1/2 -translate-y-1/2 p-2 hover:bg-white/10 rounded-full transition-all text-muted-foreground hover:text-white group/clear"
+              className="absolute right-5 top-1/2 -translate-y-1/2 p-2 hover:bg-white/10 rounded-full transition-all text-muted-foreground hover:text-white"
             >
-              <X className="h-5 w-5 group-hover:scale-110" />
+              <X className="h-5 w-5" />
             </button>
           )}
         </div>
@@ -102,7 +105,7 @@ export default function SearchPage() {
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 mt-12">
         {!query && !loading && (
-          <div className="space-y-12 animate-fade-in">
+          <div className="space-y-12">
             <div className="space-y-6">
               <div className="flex items-center gap-3 border-l-4 border-primary pl-4">
                 <TrendingUp className="h-5 w-5 text-primary" />
@@ -125,10 +128,6 @@ export default function SearchPage() {
 
         {loading ? (
           <div className="space-y-12">
-            <div className="flex items-center gap-3 border-l-4 border-primary pl-4">
-              <div className="h-2 w-2 rounded-full bg-primary skeleton" />
-              <span className="text-sm font-black uppercase tracking-widest italic text-primary">SCANNING DATABASE...</span>
-            </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
               {[...Array(12)].map((_, i) => (
                 <div key={i} className="aspect-[2/3] skeleton rounded-2xl border border-white/5" />
@@ -136,7 +135,7 @@ export default function SearchPage() {
             </div>
           </div>
         ) : results.length > 0 ? (
-          <div className="space-y-10 animate-fade-in">
+          <div className="space-y-10">
             <div className="flex items-center justify-between border-l-4 border-primary pl-6">
               <div className="space-y-1">
                 <h2 className="text-2xl font-black uppercase tracking-tighter text-white italic">
@@ -161,7 +160,7 @@ export default function SearchPage() {
             </div>
           </div>
         ) : hasSearched && (
-          <div className="flex flex-col items-center justify-center py-40 text-center space-y-8 animate-fade-in">
+          <div className="flex flex-col items-center justify-center py-40 text-center space-y-8">
             <Film className="h-16 w-16 text-muted-foreground/30" />
             <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter">NO MATCHES FOUND</h3>
             <button onClick={handleClear} className="text-primary font-black uppercase text-sm tracking-widest hover:underline underline-offset-8 italic">

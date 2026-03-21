@@ -11,6 +11,7 @@ export default function GenresPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    document.title = "Explore Categories | MovieLink Hub";
     const fetchGenres = async () => {
       setLoading(true);
       const [mRes, tRes] = await Promise.all([
@@ -25,7 +26,7 @@ export default function GenresPage() {
   }, []);
 
   return (
-    <div className="p-4 md:p-8 space-y-12 min-h-screen pb-32">
+    <div className="p-4 md:p-8 space-y-12 min-h-screen pb-32 animate-fade-in">
       <header className="space-y-4">
         <div className="flex items-center gap-3 border-l-4 border-primary pl-4">
           <LayoutGrid className="h-6 w-6 text-primary" />
@@ -39,7 +40,6 @@ export default function GenresPage() {
       </header>
 
       <div className="grid md:grid-cols-2 gap-12">
-        {/* Movies Section */}
         <section className="space-y-8">
           <div className="flex items-center gap-3 pb-2 border-b border-white/5">
             <Film className="h-5 w-5 text-primary" />
@@ -50,26 +50,19 @@ export default function GenresPage() {
               [...Array(8)].map((_, i) => (
                 <div key={i} className="h-16 bg-card/50 animate-pulse rounded-2xl border border-white/5" />
               ))
-            ) : movieGenres.length > 0 ? (
-              movieGenres.map((genre) => (
-                <Link
-                  key={genre.id}
-                  href={`/genre/${genre.id}?name=${genre.name}&type=movie`}
-                  className="flex items-center justify-between p-6 bg-card/30 hover:bg-primary/10 border border-white/5 hover:border-primary/30 rounded-2xl transition-all group backdrop-blur-sm"
-                >
-                  <span className="font-black text-white/80 group-hover:text-primary transition-colors uppercase italic tracking-tighter">{genre.name}</span>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transform group-hover:translate-x-1 transition-all" />
-                </Link>
-              ))
-            ) : (
-              <div className="col-span-full py-8 text-center text-muted-foreground italic border border-dashed border-white/10 rounded-2xl">
-                Unable to load movie genres.
-              </div>
-            )}
+            ) : movieGenres.map((genre) => (
+              <Link
+                key={genre.id}
+                href={`/genre/${genre.id}?name=${genre.name}&type=movie`}
+                className="flex items-center justify-between p-6 bg-card/30 hover:bg-primary/10 border border-white/5 hover:border-primary/30 rounded-2xl transition-all group backdrop-blur-sm"
+              >
+                <span className="font-black text-white/80 group-hover:text-primary transition-colors uppercase italic tracking-tighter">{genre.name}</span>
+                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transform group-hover:translate-x-1 transition-all" />
+              </Link>
+            ))}
           </div>
         </section>
 
-        {/* Series Section */}
         <section className="space-y-8">
           <div className="flex items-center gap-3 pb-2 border-b border-white/5">
             <Tv className="h-5 w-5 text-primary" />
@@ -80,22 +73,16 @@ export default function GenresPage() {
               [...Array(8)].map((_, i) => (
                 <div key={i} className="h-16 bg-card/50 animate-pulse rounded-2xl border border-white/5" />
               ))
-            ) : tvGenres.length > 0 ? (
-              tvGenres.map((genre) => (
-                <Link
-                  key={genre.id}
-                  href={`/genre/${genre.id}?name=${genre.name}&type=tv`}
-                  className="flex items-center justify-between p-6 bg-card/30 hover:bg-primary/10 border border-white/5 hover:border-primary/30 rounded-2xl transition-all group backdrop-blur-sm"
-                >
-                  <span className="font-black text-white/80 group-hover:text-primary transition-colors uppercase italic tracking-tighter">{genre.name}</span>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transform group-hover:translate-x-1 transition-all" />
-                </Link>
-              ))
-            ) : (
-              <div className="col-span-full py-8 text-center text-muted-foreground italic border border-dashed border-white/10 rounded-2xl">
-                Unable to load series genres.
-              </div>
-            )}
+            ) : tvGenres.map((genre) => (
+              <Link
+                key={genre.id}
+                href={`/genre/${genre.id}?name=${genre.name}&type=tv`}
+                className="flex items-center justify-between p-6 bg-card/30 hover:bg-primary/10 border border-white/5 hover:border-primary/30 rounded-2xl transition-all group backdrop-blur-sm"
+              >
+                <span className="font-black text-white/80 group-hover:text-primary transition-colors uppercase italic tracking-tighter">{genre.name}</span>
+                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transform group-hover:translate-x-1 transition-all" />
+              </Link>
+            ))}
           </div>
         </section>
       </div>

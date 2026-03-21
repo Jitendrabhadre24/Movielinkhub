@@ -1,5 +1,4 @@
-
-import type {Metadata} from 'next';
+import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { BottomNav } from "@/components/layout/bottom-nav";
@@ -11,10 +10,11 @@ export const metadata: Metadata = {
     template: '%s | MovieLink Hub'
   },
   description: 'Experience the ultimate OTT platform for premium movies, TV shows, and anime. Stream high-quality content on MovieLink Hub.',
+  keywords: ['movies', 'streaming', 'OTT', 'TV shows', 'watchlist', 'premium content'],
   openGraph: {
     title: 'MOVIELINK HUB | Premium OTT',
     description: 'Premium OTT platform for blockbusters and trending shows.',
-    url: 'https://movielink-hub.firebaseapp.com',
+    url: 'https://movielink-hub.web.app',
     siteName: 'MovieLink Hub',
     locale: 'en_US',
     type: 'website',
