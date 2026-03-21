@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { getTrending, Movie, getImageUrl } from "@/lib/tmdb";
 import { MovieRow } from "@/components/movies/movie-row";
 import Image from "next/image";
-import { Star, Play, Info, AlertCircle } from "lucide-react";
+import { Star, Play, Info, AlertCircle, RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,13 +17,18 @@ export default function Home() {
   const loadData = async () => {
     setLoading(true);
     setError(false);
-    const results = await getTrending();
-    if (results && results.length > 0) {
-      setTrending(results);
-    } else {
+    try {
+      const results = await getTrending();
+      if (results && results.length > 0) {
+        setTrending(results);
+      } else {
+        setError(true);
+      }
+    } catch (err) {
       setError(true);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -51,7 +56,7 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-[#0B0B0B] pb-32">
       {/* Hero Section */}
-      {heroMovie ? (
+      {!error && heroMovie ? (
         <section className="relative h-[80vh] w-full overflow-hidden">
           <div className="absolute inset-0">
             {heroMovie.backdrop_path ? (
@@ -100,24 +105,30 @@ export default function Home() {
           </div>
         </section>
       ) : error && (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6 space-y-4">
-          <div className="p-4 bg-destructive/10 rounded-full">
-            <AlertCircle className="h-10 w-10 text-destructive" />
+        <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-6 space-y-6">
+          <div className="p-6 bg-destructive/10 rounded-full">
+            <AlertCircle className="h-16 w-16 text-destructive" />
           </div>
-          <div className="space-y-2">
-            <h2 className="text-xl font-bold">Connection Issue</h2>
-            <p className="text-muted-foreground max-w-xs mx-auto">
-              We couldn't reach the movie server. Please check your internet or disable AdBlockers for this site.
+          <div className="space-y-3">
+            <h2 className="text-3xl font-black uppercase italic tracking-tighter">Connection Error</h2>
+            <p className="text-muted-foreground max-w-sm mx-auto font-medium">
+              We're having trouble reaching the movie server on your desktop browser. 
+              <br/><br/>
+              <span className="text-primary font-bold italic">PRO TIP:</span> If you have an <span className="underline">AdBlocker</span> installed, try disabling it for this site.
             </p>
           </div>
-          <Button variant="outline" onClick={loadData} className="rounded-full px-8">
-            Try Again
+          <Button 
+            variant="outline" 
+            onClick={loadData} 
+            className="rounded-full px-12 h-14 text-lg font-black border-primary/50 text-primary hover:bg-primary/10"
+          >
+            <RefreshCcw className="mr-2 h-5 w-5" /> RETRY CONNECTION
           </Button>
         </div>
       )}
 
       {/* Content Sections */}
-      {trending.length > 0 && (
+      {!error && trending.length > 0 && (
         <div className="relative z-20 mt-[-60px] md:mt-[-100px] space-y-8">
           <MovieRow title="🔥 Trending Now" items={trending} />
         </div>

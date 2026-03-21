@@ -26,10 +26,11 @@ export type Cast = {
 
 /**
  * Internal helper to handle TMDB API requests with centralized error handling.
+ * Uses cache: 'no-store' to ensure desktop browsers don't serve broken cached responses.
  */
 async function fetchFromTMDB(endpoint: string, params: Record<string, string> = {}) {
-  if (!API_KEY) {
-    console.warn("TMDB API Key is missing. Please ensure NEXT_PUBLIC_TMDB_API_KEY is set in your environment variables.");
+  if (!API_KEY || API_KEY === "mock-api-key") {
+    console.warn("TMDB API Key is missing or invalid. Please check NEXT_PUBLIC_TMDB_API_KEY.");
     return null;
   }
 
@@ -39,19 +40,27 @@ async function fetchFromTMDB(endpoint: string, params: Record<string, string> = 
     ...params
   }).toString();
 
+  const url = `${BASE_URL}${endpoint}?${queryParams}`;
+
   try {
-    const response = await fetch(`${BASE_URL}${endpoint}?${queryParams}`);
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
+      // Prevent desktop browser caching issues
+      cache: 'no-store',
+    });
     
     if (!response.ok) {
-      // Log structured error for debugging
-      console.error(`TMDB API Error: ${response.status} ${response.statusText} at ${endpoint}`);
+      console.warn(`TMDB API Response Error: ${response.status} ${response.statusText} at ${endpoint}`);
       return null;
     }
     
     return await response.json();
   } catch (error) {
-    // This catches network errors (e.g. AdBlockers or connection issues)
-    console.error(`TMDB Fetch Exception (Check for AdBlockers or connection):`, error instanceof Error ? error.message : "Unknown error");
+    // Desktop browsers often trigger "Failed to fetch" due to AdBlockers (uBlock, AdBlock Plus, etc.)
+    console.error(`TMDB Network Error. If on Desktop, check if an AdBlocker is blocking api.themoviedb.org:`, error instanceof Error ? error.message : "Unknown error");
     return null;
   }
 }
