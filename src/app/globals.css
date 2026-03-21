@@ -47,6 +47,10 @@
 }
 
 .hero-gradient-overlay {
-  background: linear-gradient(to top, hsl(var(--background)) 0%, transparent 60%),
+  background: linear-gradient(to top, hsl(var(--background)) 0%, transparent 80%),
               linear-gradient(to right, hsl(var(--background)) 0%, transparent 80%);
+}
+
+.gold-gradient {
+  background: linear-gradient(135deg, #FFD700 0%, #B8860B 100%);
 }

@@ -2,38 +2,40 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
-import { tmdb, Movie } from "@/lib/tmdb";
-import { useAuth } from "@/components/auth/auth-provider";
-import { db } from "@/lib/firebase";
-import { doc, setDoc, deleteDoc, onSnapshot, serverTimestamp } from "firebase/firestore";
+import { tmdb, Movie, Cast } from "@/lib/tmdb";
 import Image from "next/image";
-import { Play, Plus, Check, Star, Calendar, Clock, ArrowLeft } from "lucide-react";
+import { Play, Star, Calendar, Clock, ArrowLeft, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MovieRow } from "@/components/movies/movie-row";
-import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export default function MovieDetail() {
+export default function MovieDetailPage() {
   const { id } = useParams();
   const searchParams = useSearchParams();
   const type = (searchParams.get("type") as "movie" | "tv") || "movie";
   const router = useRouter();
-  const { user } = useAuth();
-  const { toast } = useToast();
 
   const [movie, setMovie] = useState<any>(null);
-  const [recommendations, setRecommendations] = useState<Movie[]>([]);
-  const [inWatchlist, setInWatchlist] = useState(false);
+  const [cast, setCast] = useState<Cast[]>([]);
+  const [videos, setVideos] = useState<any[]>([]);
+  const [similar, setSimilar] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
-        const [details, recs] = await Promise.all([
+        const [details, credits, videoRes, similarRes] = await Promise.all([
           tmdb.getDetails(id as string, type),
-          tmdb.getRecommendations(id as string, type),
+          tmdb.getCredits(id as string, type),
+          tmdb.getVideos(id as string, type),
+          tmdb.getSimilar(id as string, type),
         ]);
-        setMovie(details);
-        setRecommendations(recs?.results || []);
+
+        if (details) setMovie(details);
+        if (credits) setCast(credits.cast?.slice(0, 10) || []);
+        if (videoRes) setVideos(videoRes.results || []);
+        if (similarRes) setSimilar(similarRes.results || []);
       } catch (error) {
         console.error("Error loading movie details:", error);
       } finally {
@@ -41,76 +43,24 @@ export default function MovieDetail() {
       }
     };
 
-    fetchData();
+    if (id) fetchData();
   }, [id, type]);
-
-  useEffect(() => {
-    if (!user || !id) return;
-
-    const watchlistRef = doc(db, "users", user.uid, "watchlist", id as string);
-    const unsubscribe = onSnapshot(watchlistRef, (doc) => {
-      setInWatchlist(doc.exists());
-    });
-
-    return () => unsubscribe();
-  }, [user, id]);
-
-  const toggleWatchlist = async () => {
-    if (!user) {
-      router.push("/auth");
-      return;
-    }
-
-    const ref = doc(db, "users", user.uid, "watchlist", id as string);
-    try {
-      if (inWatchlist) {
-        await deleteDoc(ref);
-        toast({ title: "Removed from Watchlist" });
-      } else {
-        await setDoc(ref, {
-          id: movie.id,
-          title: movie.title || movie.name,
-          poster_path: movie.poster_path,
-          type,
-          addedAt: serverTimestamp(),
-        });
-        toast({ title: "Added to Watchlist" });
-      }
-    } catch (error) {
-      toast({ variant: "destructive", title: "Action failed" });
-    }
-  };
-
-  const handlePlay = async () => {
-    if (!user) {
-      router.push("/auth");
-      return;
-    }
-
-    // Simulate starting to watch
-    const ref = doc(db, "users", user.uid, "continueWatching", id as string);
-    await setDoc(ref, {
-      id: movie.id,
-      title: movie.title || movie.name,
-      poster_path: movie.poster_path,
-      type,
-      updatedAt: serverTimestamp(),
-      progress: 0.1, // mock progress
-    });
-    
-    // In a real app, this would redirect to a player
-    toast({ title: "Resuming playback..." });
-  };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-background space-y-8 pb-20">
+        <Skeleton className="h-[60vh] w-full" />
+        <div className="px-6 md:px-16 space-y-6">
+          <Skeleton className="h-10 w-1/3" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-2/3" />
+        </div>
       </div>
     );
   }
 
-  if (!movie || (!movie.title && !movie.name)) {
+  if (!movie) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center space-y-4">
         <h2 className="text-2xl font-bold">Content Not Found</h2>
@@ -120,88 +70,135 @@ export default function MovieDetail() {
     );
   }
 
+  const trailer = videos.find((v) => v.type === "Trailer" && v.site === "YouTube");
+  const releaseYear = (movie.release_date || movie.first_air_date || "").split("-")[0];
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="relative h-[60vh] md:h-[70vh]">
-        <Image
-          src={tmdb.getImageUrl(movie.backdrop_path, "original") || ""}
-          alt={movie.title || movie.name || "Backdrop"}
-          fill
-          className="object-cover opacity-60"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
+    <div className="min-h-screen bg-background pb-32">
+      {/* Hero Section */}
+      <div className="relative h-[70vh] w-full">
+        {movie.backdrop_path ? (
+          <Image
+            src={tmdb.getImageUrl(movie.backdrop_path, "original") || ""}
+            alt={movie.title || movie.name || "Backdrop"}
+            fill
+            className="object-cover opacity-60"
+            priority
+          />
+        ) : (
+          <div className="h-full w-full bg-muted/20" />
+        )}
+        <div className="absolute inset-0 hero-gradient-overlay" />
         
         <button 
           onClick={() => router.back()}
-          className="absolute top-4 left-4 p-2 bg-black/40 rounded-full text-white hover:bg-black/60 transition-colors z-20"
+          className="absolute top-6 left-6 p-3 bg-black/40 backdrop-blur-md rounded-full text-white hover:bg-black/60 transition-colors z-30 border border-white/10"
         >
           <ArrowLeft className="h-6 w-6" />
         </button>
 
-        <div className="absolute bottom-0 left-0 p-6 md:p-16 w-full flex flex-col md:flex-row gap-8 items-end">
-          <div className="hidden md:block relative w-64 aspect-[2/3] rounded-lg overflow-hidden border-2 border-primary/20 shadow-2xl bg-card">
-            {movie.poster_path ? (
-              <Image
-                src={tmdb.getImageUrl(movie.poster_path) || ""}
-                alt={movie.title || movie.name || "Poster"}
-                fill
-                className="object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-muted-foreground text-center p-4">
-                No Poster Available
-              </div>
-            )}
-          </div>
-
-          <div className="flex-1 space-y-6">
-            <h1 className="text-4xl md:text-6xl font-black font-headline tracking-tighter text-white uppercase italic">
+        <div className="absolute bottom-0 left-0 p-6 md:p-16 w-full z-20 space-y-6">
+          <div className="flex flex-col gap-4">
+            <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-white uppercase italic leading-none">
               {movie.title || movie.name}
             </h1>
             
-            <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-4 text-sm font-bold text-white/80">
               <div className="flex items-center text-primary">
                 <Star className="h-4 w-4 mr-1 fill-current" />
-                {movie.vote_average?.toFixed(1) || "0.0"}
+                {movie.vote_average?.toFixed(1) || "N/A"}
               </div>
-              <div className="flex items-center">
-                <Calendar className="h-4 w-4 mr-1" />
-                {movie.release_date || movie.first_air_date || "N/A"}
+              <div className="flex items-center gap-1.5">
+                <Calendar className="h-4 w-4 opacity-60" />
+                {releaseYear || "N/A"}
               </div>
               {movie.runtime && (
-                <div className="flex items-center">
-                  <Clock className="h-4 w-4 mr-1" />
+                <div className="flex items-center gap-1.5">
+                  <Clock className="h-4 w-4 opacity-60" />
                   {movie.runtime} min
                 </div>
               )}
+              {movie.genres && (
+                <div className="flex gap-2">
+                  {movie.genres.slice(0, 2).map((g: any) => (
+                    <span key={g.id} className="bg-white/10 px-2 py-0.5 rounded text-[10px] uppercase tracking-wider">
+                      {g.name}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
+          </div>
 
-            <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-3xl line-clamp-4">
-              {movie.overview || "No overview available for this title."}
-            </p>
+          <p className="text-sm md:text-lg text-muted-foreground leading-relaxed max-w-3xl line-clamp-4 font-medium">
+            {movie.overview || "No overview available."}
+          </p>
 
-            <div className="flex flex-wrap gap-4 pt-4">
-              <Button onClick={handlePlay} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-10 h-12 text-lg">
-                <Play className="mr-2 h-6 w-6 fill-current" /> Watch Now
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={toggleWatchlist} 
-                className="border-primary/50 text-primary hover:bg-primary/10 h-12"
-              >
-                {inWatchlist ? (
-                  <><Check className="mr-2 h-5 w-5" /> In Watchlist</>
-                ) : (
-                  <><Plus className="mr-2 h-5 w-5" /> Watchlist</>
-                )}
-              </Button>
-            </div>
+          <div className="flex justify-start pt-2">
+            <Button className="gold-gradient text-black font-black px-8 h-12 rounded-full hover:scale-105 transition-transform active:scale-95 border-none shadow-[0_0_20px_rgba(255,215,0,0.3)]">
+              <Play className="mr-2 h-5 w-5 fill-current" /> WATCH NOW
+            </Button>
           </div>
         </div>
       </div>
 
-      <div className="px-4 py-8 md:px-16 space-y-12">
-        <MovieRow title="More Like This" items={recommendations} />
+      <div className="px-6 md:px-16 mt-12 space-y-16">
+        {/* Trailer Section */}
+        {trailer && (
+          <section className="space-y-6">
+            <h2 className="text-xl font-black uppercase italic tracking-tight text-white flex items-center gap-2">
+              <span className="h-6 w-1 bg-primary rounded-full" />
+              OFFICIAL TRAILER
+            </h2>
+            <div className="aspect-video w-full max-w-4xl mx-auto rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black">
+              <iframe
+                src={`https://www.youtube.com/embed/${trailer.key}?rel=0&modestbranding=1`}
+                title="Trailer"
+                className="w-full h-full"
+                allowFullScreen
+              />
+            </div>
+          </section>
+        )}
+
+        {/* Cast Section */}
+        {cast.length > 0 && (
+          <section className="space-y-6">
+            <h2 className="text-xl font-black uppercase italic tracking-tight text-white flex items-center gap-2">
+              <span className="h-6 w-1 bg-primary rounded-full" />
+              TOP CAST
+            </h2>
+            <div className="no-scrollbar flex gap-6 overflow-x-auto pb-4">
+              {cast.map((person) => (
+                <div key={person.id} className="flex-shrink-0 w-24 md:w-32 text-center space-y-3 group">
+                  <div className="relative aspect-square rounded-full overflow-hidden border-2 border-white/5 group-hover:border-primary transition-colors">
+                    {person.profile_path ? (
+                      <Image
+                        src={tmdb.getImageUrl(person.profile_path, "w185") || ""}
+                        alt={person.name}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="h-full w-full bg-muted flex items-center justify-center">
+                        <User className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-xs md:text-sm font-bold text-white line-clamp-1 group-hover:text-primary transition-colors">{person.name}</p>
+                    <p className="text-[10px] text-muted-foreground line-clamp-1">{person.character}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Similar Movies */}
+        {similar.length > 0 && (
+          <MovieRow title="YOU MAY ALSO LIKE" items={similar} type={type} />
+        )}
       </div>
     </div>
   );

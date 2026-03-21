@@ -16,6 +16,13 @@ export type Movie = {
   runtime?: number;
 };
 
+export type Cast = {
+  id: number;
+  name: string;
+  character: string;
+  profile_path: string | null;
+};
+
 async function fetchFromTMDB(endpoint: string, params: Record<string, string> = {}) {
   const queryParams = new URLSearchParams({
     api_key: TMDB_API_KEY || "",
@@ -27,12 +34,12 @@ async function fetchFromTMDB(endpoint: string, params: Record<string, string> = 
     const response = await fetch(`${BASE_URL}${endpoint}?${queryParams}`);
     if (!response.ok) {
       console.warn(`TMDB API Error: ${response.status} ${response.statusText}`);
-      return { results: [] };
+      return null;
     }
     return response.json();
   } catch (e) {
     console.error("Failed to fetch from TMDB:", e);
-    return { results: [] };
+    return null;
   }
 }
 
@@ -42,9 +49,11 @@ export const tmdb = {
   getPopularTV: () => fetchFromTMDB("/tv/popular"),
   getTopRatedMovies: () => fetchFromTMDB("/movie/top_rated"),
   getDetails: (id: string, type: "movie" | "tv") => fetchFromTMDB(`/${type}/${id}`),
-  getRecommendations: (id: string, type: "movie" | "tv") => fetchFromTMDB(`/${type}/${id}/recommendations`),
+  getCredits: (id: string, type: "movie" | "tv") => fetchFromTMDB(`/${type}/${id}/credits`),
+  getVideos: (id: string, type: "movie" | "tv") => fetchFromTMDB(`/${type}/${id}/videos`),
+  getSimilar: (id: string, type: "movie" | "tv") => fetchFromTMDB(`/${type}/${id}/similar`),
   search: (query: string) => fetchFromTMDB("/search/multi", { query }),
   getGenres: (type: "movie" | "tv") => fetchFromTMDB(`/genre/${type}/list`),
-  getImageUrl: (path: string | null, size: "w500" | "original" = "w500") => 
+  getImageUrl: (path: string | null, size: "w500" | "original" | "w185" = "w500") => 
     path ? `${IMAGE_BASE_URL}/${size}${path}` : null,
 };
