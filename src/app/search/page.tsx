@@ -17,22 +17,25 @@ export default function SearchPage() {
     if (!query.trim()) {
       setResults([]);
       setHasSearched(false);
+      setLoading(false);
       return;
     }
 
+    // Debounce logic: wait 300ms after last keystroke before fetching
     const timer = setTimeout(async () => {
       setLoading(true);
       try {
         const results = await searchMovies(query);
-        // Filter out items without posters for a cleaner UI
-        setResults(results.filter((item: any) => item.poster_path));
+        // Filter out items without posters for a cleaner, premium OTT UI
+        const filteredResults = results?.filter((item: any) => item.poster_path) || [];
+        setResults(filteredResults);
       } catch (error) {
         console.warn("Search failed:", error);
       } finally {
         setLoading(false);
         setHasSearched(true);
       }
-    }, 500);
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [query]);
@@ -71,7 +74,7 @@ export default function SearchPage() {
           <div className="space-y-8">
             <div className="flex items-center gap-3 text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin text-primary" />
-              <span className="text-sm font-bold uppercase tracking-widest italic">Searching database...</span>
+              <span className="text-sm font-black uppercase tracking-widest italic text-primary/80">Searching database...</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
               {[...Array(12)].map((_, i) => (
@@ -81,11 +84,10 @@ export default function SearchPage() {
           </div>
         ) : results.length > 0 ? (
           <div className="space-y-8 animate-in fade-in duration-500">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-black uppercase tracking-widest italic text-white/60">
-                Top Results for "{query}"
+            <div className="flex items-center justify-between border-l-2 border-primary pl-4">
+              <h2 className="text-sm font-black uppercase tracking-widest italic text-white/80">
+                Found {results.length} results for "{query}"
               </h2>
-              <span className="text-xs font-mono text-muted-foreground">{results.length} found</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
               {results.map((item) => (
@@ -99,16 +101,16 @@ export default function SearchPage() {
               <Film className="h-12 w-12 text-muted-foreground/30" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-xl font-bold text-white">No matches found</h3>
-              <p className="text-muted-foreground max-w-xs mx-auto">
-                We couldn't find anything for "{query}". Try a different title or keyword.
+              <h3 className="text-xl font-bold text-white uppercase italic tracking-tighter">No matches found</h3>
+              <p className="text-muted-foreground max-w-xs mx-auto text-sm">
+                We couldn't find anything for "{query}". Try a different title or genre.
               </p>
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-32 text-center space-y-4 text-muted-foreground/40">
-            <SearchIcon className="h-16 w-16 mb-2" />
-            <p className="text-lg font-medium italic">Discover your next favorite story...</p>
+          <div className="flex flex-col items-center justify-center py-32 text-center space-y-4 text-muted-foreground/20">
+            <SearchIcon className="h-24 w-24 mb-2 opacity-5" />
+            <p className="text-xl font-black italic uppercase tracking-widest">Type to discover...</p>
           </div>
         )}
       </div>
