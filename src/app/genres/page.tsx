@@ -20,7 +20,8 @@ export default function GenresPage() {
         setMovieGenres(mRes?.genres || []);
         setTvGenres(tRes?.genres || []);
       } catch (error) {
-        console.error("Error fetching genres:", error);
+        setMovieGenres([]);
+        setTvGenres([]);
       } finally {
         setLoading(false);
       }
