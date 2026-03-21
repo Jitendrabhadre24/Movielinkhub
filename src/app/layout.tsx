@@ -5,8 +5,8 @@ import { BottomNav } from "@/components/layout/bottom-nav";
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'MovieLink Hub',
-  description: 'Premium OTT platform for movies, TV shows, and anime.',
+  title: 'MOVIELINK HUB | Premium OTT',
+  description: 'Premium OTT platform for movies, TV shows, and anime. Watch the latest blockbusters in style.',
 };
 
 export default function RootLayout({

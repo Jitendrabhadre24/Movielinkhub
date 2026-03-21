@@ -5,7 +5,6 @@ import { searchMovies, Movie } from "@/lib/tmdb";
 import { MovieCard } from "@/components/movies/movie-card";
 import { Input } from "@/components/ui/input";
 import { Search as SearchIcon, X, Loader2, Film, TrendingUp } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 const POPULAR_SEARCHES = ["Avengers", "Batman", "Star Wars", "John Wick", "Spider-Man", "Matrix"];
 
@@ -26,7 +25,6 @@ export default function SearchPage() {
     setLoading(true);
     try {
       const data = await searchMovies(searchQuery);
-      // Filter for premium look: only items with posters
       const filtered = data?.filter((item: any) => item.poster_path) || [];
       setResults(filtered);
     } catch (error) {
@@ -85,7 +83,7 @@ export default function SearchPage() {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search for blockbusters, creators, or genres..."
+            placeholder="Search blockbusters or creators..."
             className="pl-14 pr-14 h-16 bg-card/40 border-white/10 focus:border-primary/40 focus:ring-primary/10 text-xl rounded-2xl transition-all shadow-2xl font-medium placeholder:text-muted-foreground/50"
             autoFocus
           />
@@ -103,11 +101,11 @@ export default function SearchPage() {
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 mt-12">
         {!query && !loading && (
-          <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-primary">
-                <TrendingUp className="h-5 w-5" />
-                <h2 className="text-sm font-black uppercase tracking-widest italic text-white/90">Popular Searches</h2>
+          <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 border-l-4 border-primary pl-4">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                <h2 className="text-sm font-black uppercase tracking-widest italic text-white/90">POPULAR SEARCHES</h2>
               </div>
               <div className="flex flex-wrap gap-3">
                 {POPULAR_SEARCHES.map((term) => (
@@ -122,18 +120,18 @@ export default function SearchPage() {
               </div>
             </div>
             
-            <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 opacity-20 pointer-events-none">
-              <SearchIcon className="h-32 w-32 mb-2" />
-              <p className="text-2xl font-black italic uppercase tracking-[0.2em]">Start Discovering</p>
+            <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 opacity-10 pointer-events-none">
+              <h3 className="text-6xl font-black italic uppercase tracking-tighter text-white">MOVIELINK HUB</h3>
+              <p className="text-xl font-bold italic tracking-widest text-primary">DISCOVER PREMIUM CONTENT</p>
             </div>
           </div>
         )}
 
         {loading ? (
           <div className="space-y-12">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 border-l-4 border-primary pl-4">
               <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-              <span className="text-sm font-black uppercase tracking-widest italic text-primary">Scanning Database...</span>
+              <span className="text-sm font-black uppercase tracking-widest italic text-primary">SCANNING DATABASE...</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
               {[...Array(12)].map((_, i) => (
@@ -145,10 +143,10 @@ export default function SearchPage() {
           <div className="space-y-10 animate-in fade-in duration-500">
             <div className="flex items-center justify-between border-l-4 border-primary pl-6">
               <div className="space-y-1">
-                <h2 className="text-xl font-black uppercase tracking-tight text-white italic">
-                  Search Results
+                <h2 className="text-2xl font-black uppercase tracking-tighter text-white italic">
+                  SEARCH RESULTS
                 </h2>
-                <p className="text-xs text-muted-foreground font-mono uppercase">
+                <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest">
                   Found {results.length} titles matching "{query}"
                 </p>
               </div>
@@ -158,7 +156,7 @@ export default function SearchPage() {
                 <div key={item.id} className="space-y-3 group">
                   <MovieCard item={item} className="w-full" />
                   <div className="px-1">
-                    <p className="text-xs font-bold text-white/80 line-clamp-1 group-hover:text-primary transition-colors">
+                    <p className="text-xs font-black text-white/80 line-clamp-1 group-hover:text-primary transition-colors tracking-tighter uppercase italic">
                       {highlightMatch(item.title || item.name || "", query)}
                     </p>
                   </div>
@@ -175,17 +173,16 @@ export default function SearchPage() {
               </div>
             </div>
             <div className="space-y-3">
-              <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter">No Matches Found</h3>
+              <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter">NO MATCHES FOUND</h3>
               <p className="text-muted-foreground max-w-sm mx-auto font-medium leading-relaxed">
                 We couldn't find anything matching <span className="text-primary italic">"{query}"</span>. 
-                Try checking the spelling or use a different keyword.
               </p>
             </div>
             <button 
               onClick={handleClear}
-              className="text-primary font-black uppercase text-sm tracking-widest hover:underline underline-offset-8"
+              className="text-primary font-black uppercase text-sm tracking-widest hover:underline underline-offset-8 italic"
             >
-              Clear Search & Try Again
+              CLEAR & TRY AGAIN
             </button>
           </div>
         )}
