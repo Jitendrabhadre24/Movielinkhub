@@ -94,6 +94,11 @@ export async function getSimilar(id: string, type: "movie" | "tv"): Promise<Movi
   return data?.results || [];
 }
 
+export async function getRecommendations(id: string, type: "movie" | "tv"): Promise<Movie[]> {
+  const data = await fetchFromTMDB(`/${type}/${id}/recommendations`);
+  return data?.results || [];
+}
+
 export async function getWatchProviders(id: string, type: "movie" | "tv"): Promise<any> {
   const data = await fetchFromTMDB(`/${type}/${id}/watch/providers`);
   return data?.results || {};
@@ -136,15 +141,6 @@ export async function discoverContent(
     results: data?.results || [],
     total_pages: data?.total_pages || 1
   };
-}
-
-// Deprecated in favor of discoverContent but kept for compatibility
-export async function getMoviesByGenre(genreId: string, page: number = 1) {
-  return discoverContent("movie", genreId, page);
-}
-
-export async function getTVByGenre(genreId: string, page: number = 1) {
-  return discoverContent("tv", genreId, page);
 }
 
 export function getImageUrl(path: string | null, size: "w500" | "original" | "w185" = "w500") {

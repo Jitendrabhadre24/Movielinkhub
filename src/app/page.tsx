@@ -2,10 +2,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getTrending, getTopRated, Movie, getImageUrl } from "@/lib/tmdb";
+import { getTrending, getTopRated, Movie, getImageUrl, getRecommendations } from "@/lib/tmdb";
 import { MovieRow } from "@/components/movies/movie-row";
 import Image from "next/image";
-import { Star, Play, Info, AlertCircle, RefreshCcw, LayoutGrid, Clock } from "lucide-react";
+import { Star, Play, Info, AlertCircle, RefreshCcw, LayoutGrid, Clock, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,6 +26,8 @@ export default function Home() {
   const [trending, setTrending] = useState<Movie[]>([]);
   const [topRated, setTopRated] = useState<Movie[]>([]);
   const [continueWatching, setContinueWatching] = useState<any[]>([]);
+  const [recommendations, setRecommendations] = useState<Movie[]>([]);
+  const [recSourceTitle, setRecSourceTitle] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,6 +61,8 @@ export default function Home() {
   useEffect(() => {
     if (!user) {
       setContinueWatching([]);
+      setRecommendations([]);
+      setRecSourceTitle(null);
       return;
     }
 
@@ -68,12 +72,24 @@ export default function Home() {
       limit(10)
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
       const items = snapshot.docs.map(doc => ({
         ...doc.data(),
-        poster_path: doc.data().poster // Map Firestore 'poster' to TMDB 'poster_path' for MovieCard
+        poster_path: doc.data().poster
       }));
       setContinueWatching(items);
+
+      // AI Recommendations Logic: Fetch based on the most recently watched item
+      if (items.length > 0) {
+        const lastWatched = items[0];
+        try {
+          const recs = await getRecommendations(lastWatched.id.toString(), lastWatched.type);
+          setRecommendations(recs || []);
+          setRecSourceTitle(lastWatched.title);
+        } catch (e) {
+          console.warn("Failed to fetch recommendations", e);
+        }
+      }
     });
 
     return () => unsubscribe();
@@ -207,6 +223,24 @@ export default function Home() {
                 <h2 className="text-lg font-black uppercase tracking-tighter italic">⏱ CONTINUE WATCHING</h2>
               </div>
               <MovieRow title="" items={continueWatching as Movie[]} />
+            </div>
+          )}
+
+          {/* AI Recommendations Section */}
+          {recommendations.length > 0 && (
+            <div className="space-y-4">
+              <div className="px-4 md:px-8 flex flex-col gap-1">
+                <div className="flex items-center gap-2 text-accent">
+                  <Sparkles className="h-4 w-4 fill-accent" />
+                  <h2 className="text-xs font-black uppercase tracking-[0.2em] italic">AI RECOMMENDATION</h2>
+                </div>
+                <div className="border-l-4 border-primary pl-4">
+                  <h2 className="text-xl font-black text-white uppercase italic tracking-tighter">
+                    BECAUSE YOU WATCHED <span className="text-primary">{recSourceTitle}</span>
+                  </h2>
+                </div>
+              </div>
+              <MovieRow title="" items={recommendations} />
             </div>
           )}
 
