@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { getTrending, Movie, getImageUrl } from "@/lib/tmdb";
 import { MovieRow } from "@/components/movies/movie-row";
 import Image from "next/image";
-import { Star, Play, Info } from "lucide-react";
+import { Star, Play, Info, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,14 +12,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function Home() {
   const [trending, setTrending] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const loadData = async () => {
+    setLoading(true);
+    setError(false);
+    const results = await getTrending();
+    if (results && results.length > 0) {
+      setTrending(results);
+    } else {
+      setError(true);
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      const results = await getTrending();
-      setTrending(results);
-      setLoading(false);
-    };
     loadData();
   }, []);
 
@@ -44,7 +51,7 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-[#0B0B0B] pb-32">
       {/* Hero Section */}
-      {heroMovie && (
+      {heroMovie ? (
         <section className="relative h-[80vh] w-full overflow-hidden">
           <div className="absolute inset-0">
             {heroMovie.backdrop_path ? (
@@ -92,17 +99,27 @@ export default function Home() {
             </div>
           </div>
         </section>
+      ) : error && (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6 space-y-4">
+          <div className="p-4 bg-destructive/10 rounded-full">
+            <AlertCircle className="h-10 w-10 text-destructive" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold">Connection Issue</h2>
+            <p className="text-muted-foreground max-w-xs mx-auto">
+              We couldn't reach the movie server. Please check your internet or disable AdBlockers for this site.
+            </p>
+          </div>
+          <Button variant="outline" onClick={loadData} className="rounded-full px-8">
+            Try Again
+          </Button>
+        </div>
       )}
 
       {/* Content Sections */}
-      <div className="relative z-20 mt-[-60px] md:mt-[-100px] space-y-8">
-        <MovieRow title="🔥 Trending Now" items={trending} />
-      </div>
-
-      {!loading && trending.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-32 text-center px-6">
-          <p className="text-muted-foreground mb-4">Could not load movies. Please check your connection or API key.</p>
-          <Button variant="outline" onClick={() => window.location.reload()}>Retry</Button>
+      {trending.length > 0 && (
+        <div className="relative z-20 mt-[-60px] md:mt-[-100px] space-y-8">
+          <MovieRow title="🔥 Trending Now" items={trending} />
         </div>
       )}
     </div>

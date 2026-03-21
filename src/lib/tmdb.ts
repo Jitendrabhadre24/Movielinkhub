@@ -24,129 +24,80 @@ export type Cast = {
   profile_path: string | null;
 };
 
-export async function getTrending(): Promise<Movie[]> {
-  try {
-    const res = await fetch(
-      `${BASE_URL}/trending/movie/week?api_key=${API_KEY}&language=en-US`
-    );
-    if (!res.ok) throw new Error("API failed");
-    const data = await res.json();
-    return data.results || [];
-  } catch (error) {
-    console.error("TMDB Error (Trending):", error);
-    return [];
+/**
+ * Internal helper to handle TMDB API requests with centralized error handling.
+ */
+async function fetchFromTMDB(endpoint: string, params: Record<string, string> = {}) {
+  if (!API_KEY) {
+    console.warn("TMDB API Key is missing. Please ensure NEXT_PUBLIC_TMDB_API_KEY is set in your environment variables.");
+    return null;
   }
-}
 
-export async function getDetails(id: string, type: "movie" | "tv"): Promise<any> {
+  const queryParams = new URLSearchParams({
+    api_key: API_KEY,
+    language: 'en-US',
+    ...params
+  }).toString();
+
   try {
-    const res = await fetch(
-      `${BASE_URL}/${type}/${id}?api_key=${API_KEY}&language=en-US`
-    );
-    if (!res.ok) throw new Error("API failed");
-    return await res.json();
+    const response = await fetch(`${BASE_URL}${endpoint}?${queryParams}`);
+    
+    if (!response.ok) {
+      // Log structured error for debugging
+      console.error(`TMDB API Error: ${response.status} ${response.statusText} at ${endpoint}`);
+      return null;
+    }
+    
+    return await response.json();
   } catch (error) {
-    console.error(`TMDB Error (Details ${id}):`, error);
+    // This catches network errors (e.g. AdBlockers or connection issues)
+    console.error(`TMDB Fetch Exception (Check for AdBlockers or connection):`, error instanceof Error ? error.message : "Unknown error");
     return null;
   }
 }
 
+export async function getTrending(): Promise<Movie[]> {
+  const data = await fetchFromTMDB("/trending/movie/week");
+  return data?.results || [];
+}
+
+export async function getDetails(id: string, type: "movie" | "tv"): Promise<any> {
+  return await fetchFromTMDB(`/${type}/${id}`);
+}
+
 export async function getCredits(id: string, type: "movie" | "tv"): Promise<Cast[]> {
-  try {
-    const res = await fetch(
-      `${BASE_URL}/${type}/${id}/credits?api_key=${API_KEY}&language=en-US`
-    );
-    if (!res.ok) throw new Error("API failed");
-    const data = await res.json();
-    return data.cast || [];
-  } catch (error) {
-    console.error(`TMDB Error (Credits ${id}):`, error);
-    return [];
-  }
+  const data = await fetchFromTMDB(`/${type}/${id}/credits`);
+  return data?.cast || [];
 }
 
 export async function getVideos(id: string, type: "movie" | "tv"): Promise<any[]> {
-  try {
-    const res = await fetch(
-      `${BASE_URL}/${type}/${id}/videos?api_key=${API_KEY}&language=en-US`
-    );
-    if (!res.ok) throw new Error("API failed");
-    const data = await res.json();
-    return data.results || [];
-  } catch (error) {
-    console.error(`TMDB Error (Videos ${id}):`, error);
-    return [];
-  }
+  const data = await fetchFromTMDB(`/${type}/${id}/videos`);
+  return data?.results || [];
 }
 
 export async function getSimilar(id: string, type: "movie" | "tv"): Promise<Movie[]> {
-  try {
-    const res = await fetch(
-      `${BASE_URL}/${type}/${id}/similar?api_key=${API_KEY}&language=en-US`
-    );
-    if (!res.ok) throw new Error("API failed");
-    const data = await res.json();
-    return data.results || [];
-  } catch (error) {
-    console.error(`TMDB Error (Similar ${id}):`, error);
-    return [];
-  }
+  const data = await fetchFromTMDB(`/${type}/${id}/similar`);
+  return data?.results || [];
 }
 
 export async function searchMovies(query: string): Promise<Movie[]> {
-  try {
-    const res = await fetch(
-      `${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&language=en-US`
-    );
-    if (!res.ok) throw new Error("API failed");
-    const data = await res.json();
-    return data.results || [];
-  } catch (error) {
-    console.error("TMDB Error (Search):", error);
-    return [];
-  }
+  const data = await fetchFromTMDB("/search/multi", { query });
+  return data?.results || [];
 }
 
 export async function getGenres(type: "movie" | "tv"): Promise<any[]> {
-  try {
-    const res = await fetch(
-      `${BASE_URL}/genre/${type}/list?api_key=${API_KEY}&language=en-US`
-    );
-    if (!res.ok) throw new Error("API failed");
-    const data = await res.json();
-    return data.genres || [];
-  } catch (error) {
-    console.error(`TMDB Error (Genres ${type}):`, error);
-    return [];
-  }
+  const data = await fetchFromTMDB(`/genre/${type}/list`);
+  return data?.genres || [];
 }
 
 export async function getMoviesByGenre(genreId: string): Promise<Movie[]> {
-  try {
-    const res = await fetch(
-      `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&language=en-US`
-    );
-    if (!res.ok) throw new Error("API failed");
-    const data = await res.json();
-    return data.results || [];
-  } catch (error) {
-    console.error("TMDB Error (Discover Movie):", error);
-    return [];
-  }
+  const data = await fetchFromTMDB("/discover/movie", { with_genres: genreId });
+  return data?.results || [];
 }
 
 export async function getTVByGenre(genreId: string): Promise<Movie[]> {
-  try {
-    const res = await fetch(
-      `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&language=en-US`
-    );
-    if (!res.ok) throw new Error("API failed");
-    const data = await res.json();
-    return data.results || [];
-  } catch (error) {
-    console.error("TMDB Error (Discover TV):", error);
-    return [];
-  }
+  const data = await fetchFromTMDB("/discover/tv", { with_genres: genreId });
+  return data?.results || [];
 }
 
 export function getImageUrl(path: string | null, size: "w500" | "original" | "w185" = "w500") {

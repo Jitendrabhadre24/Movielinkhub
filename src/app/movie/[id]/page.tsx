@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { getDetails, getCredits, getVideos, getSimilar, getImageUrl, Movie, Cast } from "@/lib/tmdb";
 import Image from "next/image";
-import { Play, Star, Calendar, Clock, ArrowLeft, User } from "lucide-react";
+import { Play, Star, Calendar, Clock, ArrowLeft, User, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MovieRow } from "@/components/movies/movie-row";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,11 +20,14 @@ export default function MovieDetailPage() {
   const [videos, setVideos] = useState<any[]>([]);
   const [similar, setSimilar] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      const movieId = id as string;
+  const fetchData = async () => {
+    setLoading(true);
+    setError(false);
+    const movieId = id as string;
+    
+    try {
       const [details, credits, videoRes, similarRes] = await Promise.all([
         getDetails(movieId, type),
         getCredits(movieId, type),
@@ -32,13 +35,22 @@ export default function MovieDetailPage() {
         getSimilar(movieId, type),
       ]);
 
-      setMovie(details);
-      setCast(credits?.slice(0, 10) || []);
-      setVideos(videoRes || []);
-      setSimilar(similarRes || []);
+      if (!details) {
+        setError(true);
+      } else {
+        setMovie(details);
+        setCast(credits?.slice(0, 10) || []);
+        setVideos(videoRes || []);
+        setSimilar(similarRes || []);
+      }
+    } catch (err) {
+      setError(true);
+    } finally {
       setLoading(false);
-    };
+    }
+  };
 
+  useEffect(() => {
     if (id) fetchData();
   }, [id, type]);
 
@@ -56,12 +68,22 @@ export default function MovieDetailPage() {
     );
   }
 
-  if (!movie) {
+  if (error || !movie) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center space-y-4">
-        <h2 className="text-2xl font-bold">Content Not Found</h2>
-        <p className="text-muted-foreground">We couldn't retrieve the details for this title.</p>
-        <Button onClick={() => router.back()}>Go Back</Button>
+      <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center space-y-6">
+        <div className="p-4 bg-muted rounded-full">
+          <AlertCircle className="h-12 w-12 text-muted-foreground" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-2xl font-bold">Content Unavailable</h2>
+          <p className="text-muted-foreground max-w-sm">
+            We couldn't retrieve the details for this title. This might be due to a connection error or an invalid ID.
+          </p>
+        </div>
+        <div className="flex gap-4">
+          <Button variant="outline" onClick={() => router.back()} className="rounded-full">Go Back</Button>
+          <Button onClick={fetchData} className="rounded-full bg-primary text-black">Try Again</Button>
+        </div>
       </div>
     );
   }
