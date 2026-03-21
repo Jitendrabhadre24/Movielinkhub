@@ -265,13 +265,13 @@ export default function MovieDetailPage() {
 
       <div className="px-6 md:px-16 mt-12 space-y-20">
         {/* Watch Providers Section */}
-        <section className="space-y-6">
+        <section className="space-y-8">
           <div className="flex items-center justify-between border-l-4 border-primary pl-6">
             <div className="space-y-0.5">
-              <h2 className="text-xl font-black uppercase italic tracking-tight text-white">
-                WHERE TO WATCH
+              <h2 className="text-2xl font-black uppercase italic tracking-tight text-white flex items-center gap-3">
+                🎬 AVAILABLE ON
               </h2>
-              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Premium Streaming Platforms</p>
+              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Global Streaming Platforms</p>
             </div>
             {watchLink && (
               <a 
@@ -285,29 +285,33 @@ export default function MovieDetailPage() {
             )}
           </div>
           
-          <div className="no-scrollbar flex gap-6 overflow-x-auto pb-4">
+          <div className="no-scrollbar flex gap-8 overflow-x-auto pb-6">
             {uniqueProviders.length > 0 ? (
               uniqueProviders.map((provider: any) => (
-                <div key={provider.provider_id} className="flex-shrink-0 flex flex-col items-center gap-3 group">
-                  <div className="relative h-16 w-16 md:h-20 md:w-20 rounded-2xl overflow-hidden border border-white/10 group-hover:border-primary/50 group-hover:scale-110 transition-all duration-300 shadow-xl">
+                <div key={provider.provider_id} className="flex-shrink-0 flex flex-col items-center gap-4 group">
+                  <div className="relative h-20 w-20 md:h-24 md:w-24 rounded-3xl overflow-hidden border border-white/10 bg-card/50 group-hover:border-primary/50 group-hover:scale-110 transition-all duration-500 shadow-[0_10px_40px_rgba(0,0,0,0.4)]">
                     <Image
                       src={getImageUrl(provider.logo_path, "w185") || ""}
                       alt={provider.provider_name}
                       fill
-                      className="object-cover"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                   </div>
-                  <span className="text-[11px] font-bold text-muted-foreground group-hover:text-white transition-colors text-center max-w-[100px] line-clamp-1">
+                  <span className="text-[12px] font-black text-white/60 group-hover:text-primary transition-colors text-center max-w-[110px] line-clamp-1 uppercase tracking-tighter italic">
                     {provider.provider_name}
                   </span>
                 </div>
               ))
             ) : (
-              <div className="flex items-center gap-4 p-6 bg-white/5 rounded-3xl border border-dashed border-white/10 w-full max-w-lg">
-                <AlertCircle className="h-6 w-6 text-muted-foreground/40" />
-                <p className="text-sm font-medium text-muted-foreground">
-                  Not currently listed on major streaming platforms in your region. Check back soon!
-                </p>
+              <div className="flex items-center gap-6 p-8 bg-card/30 rounded-[2rem] border border-dashed border-white/5 w-full max-w-2xl backdrop-blur-sm">
+                <AlertCircle className="h-8 w-8 text-muted-foreground/30" />
+                <div className="space-y-1">
+                  <p className="text-lg font-bold text-white/50 uppercase italic tracking-tighter">Availability Pending</p>
+                  <p className="text-sm font-medium text-muted-foreground/60">
+                    Not currently listed on major streaming platforms in your region (IN/US).
+                  </p>
+                </div>
               </div>
             )}
           </div>
