@@ -55,8 +55,13 @@
 @layer utilities {
   .logo-text {
     font-weight: 900;
-    letter-spacing: 0.15em;
-    @apply uppercase italic text-primary;
+    letter-spacing: 0.1em;
+    @apply uppercase text-white;
+  }
+
+  .logo-hub {
+    @apply bg-primary text-black px-2 py-0.5 rounded-sm;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
   }
 
   .gold-gradient-text {
@@ -68,7 +73,7 @@
   }
 
   .glow-primary {
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.35);
   }
 
   .glow-text-primary {
@@ -77,7 +82,7 @@
 
   .movie-title-text {
     font-weight: 800;
-    @apply uppercase italic tracking-tighter;
+    @apply uppercase tracking-tighter;
   }
 
   .no-scrollbar::-webkit-scrollbar {
@@ -102,12 +107,12 @@
   }
 
   .hero-gradient-overlay {
-    background: linear-gradient(to top, #0B0B0B 0%, transparent 80%),
-                linear-gradient(to right, #0B0B0B 0%, transparent 80%);
+    background: linear-gradient(to top, #0B0B0B 0%, rgba(11, 11, 11, 0.8) 20%, transparent 60%),
+                linear-gradient(to right, #0B0B0B 0%, rgba(11, 11, 11, 0.5) 30%, transparent 70%);
   }
 
-  .gold-gradient {
-    background: linear-gradient(135deg, #FFD700 0%, #B8860B 100%);
+  .glass-chip {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10;
   }
 }
 

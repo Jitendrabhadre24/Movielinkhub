@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { getTrending, getTopRated, Movie, getImageUrl, getRecommendations } from "@/lib/tmdb";
 import { MovieRow } from "@/components/movies/movie-row";
 import Image from "next/image";
-import { Star, Play, Info, AlertCircle, RefreshCcw, LayoutGrid, Clock, Sparkles, Search } from "lucide-react";
+import { Star, Play, AlertCircle, RefreshCcw, LayoutGrid, Clock, Sparkles, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -109,7 +109,6 @@ export default function Home() {
             <Skeleton className="h-12 w-full max-w-md" />
             <div className="flex gap-4">
               <Skeleton className="h-14 w-40 rounded-full" />
-              <Skeleton className="h-14 w-40 rounded-full" />
             </div>
           </div>
         </div>
@@ -134,9 +133,13 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-[#0B0B0B] pb-32 animate-fade-in">
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-6 bg-gradient-to-b from-black/80 to-transparent">
-        <h1 className="text-xl md:text-2xl font-black text-primary font-headline tracking-tighter uppercase italic drop-shadow-lg glow-text-primary">
-          MOVIELINK HUB
-        </h1>
+        <div 
+          className="flex items-center gap-1 cursor-pointer group" 
+          onClick={() => router.push('/')}
+        >
+          <span className="text-xl md:text-2xl font-black text-white tracking-tighter uppercase">MOVIELINK</span>
+          <span className="text-xl md:text-2xl font-black bg-primary text-black px-2 py-0.5 rounded-sm tracking-tighter uppercase shadow-[0_0_15px_rgba(255,215,0,0.5)]">HUB</span>
+        </div>
         <Button 
           variant="ghost" 
           size="icon" 
@@ -155,7 +158,7 @@ export default function Home() {
                 src={getImageUrl(heroMovie.backdrop_path, "original") || ""}
                 alt={heroMovie.title || heroMovie.name || "Hero"}
                 fill
-                className="object-cover opacity-70"
+                className="object-cover"
                 priority
               />
             ) : (
@@ -164,32 +167,29 @@ export default function Home() {
           </div>
           <div className="absolute inset-0 hero-gradient-overlay" />
           
-          <div className="absolute bottom-0 left-0 p-6 md:p-16 space-y-6 max-w-4xl z-10">
+          <div className="absolute bottom-0 left-0 p-6 md:p-16 space-y-6 max-w-4xl z-10 pb-20 md:pb-32">
             <div className="flex items-center gap-3">
               <div className="bg-primary/20 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-2 border border-primary/30">
-                <Star className="h-4 w-4 text-primary fill-primary" />
-                <span className="text-sm font-black text-primary">{heroMovie.vote_average?.toFixed(1) || "N/A"}</span>
+                <span className="text-[10px] font-black text-primary tracking-[0.2em] uppercase">🔥 TRENDING NOW</span>
               </div>
-              <span className="text-white/60 text-xs font-black tracking-[0.3em] uppercase italic">FEATURED ARCHIVE</span>
+              <div className="flex items-center gap-1 bg-black/40 backdrop-blur-md px-2 py-1 rounded-md border border-white/10">
+                <Star className="h-3 w-3 text-primary fill-primary" />
+                <span className="text-xs font-black text-white">{heroMovie.vote_average?.toFixed(1) || "N/A"}</span>
+              </div>
             </div>
 
-            <h1 className="text-6xl md:text-9xl font-black tracking-tighter uppercase italic text-white leading-[0.8] gold-gradient-text">
+            <h1 className="text-5xl md:text-8xl font-black tracking-tight uppercase text-white leading-[0.9] drop-shadow-2xl">
               {heroMovie.title || heroMovie.name}
             </h1>
             
-            <p className="text-muted-foreground text-base md:text-xl line-clamp-3 font-medium max-w-2xl leading-relaxed italic opacity-80">
+            <p className="text-white/70 text-base md:text-xl line-clamp-3 font-medium max-w-2xl leading-relaxed">
               {heroMovie.overview}
             </p>
 
             <div className="flex flex-wrap gap-4 pt-4">
-              <Button asChild className="rounded-full px-12 h-14 text-lg font-black bg-primary text-primary-foreground hover:bg-primary/90 transition-transform active:scale-95 border-none glow-primary">
+              <Button asChild className="rounded-full px-12 h-14 text-lg font-black bg-primary text-black hover:bg-primary/90 transition-all hover:scale-105 active:scale-95 border-none shadow-[0_0_20px_rgba(255,215,0,0.4)] group">
                 <Link href={`/movie/${heroMovie.id}?type=${heroMovie.media_type || 'movie'}`}>
-                  <Play className="mr-2 h-7 w-7 fill-current" /> PLAY NOW
-                </Link>
-              </Button>
-              <Button variant="outline" asChild className="rounded-full px-12 h-14 text-lg font-black border-white/20 bg-white/5 backdrop-blur-xl text-white hover:bg-white/10 transition-transform active:scale-95">
-                <Link href={`/movie/${heroMovie.id}?type=${heroMovie.media_type || 'movie'}`}>
-                  <Info className="mr-2 h-7 w-7" /> DETAILS
+                  <Play className="mr-2 h-7 w-7 fill-current transition-transform group-hover:translate-x-1" /> PLAY NOW
                 </Link>
               </Button>
             </div>
@@ -201,7 +201,7 @@ export default function Home() {
             <AlertCircle className="h-16 w-16 text-destructive" />
           </div>
           <div className="space-y-3">
-            <h2 className="text-3xl font-black uppercase italic tracking-tighter">CONNECTION ERROR</h2>
+            <h2 className="text-3xl font-black uppercase italic tracking-tighter text-white">CONNECTION ERROR</h2>
             <p className="text-muted-foreground max-w-sm mx-auto font-medium">
               {error}
             </p>
@@ -221,21 +221,21 @@ export default function Home() {
           <section className="px-6 md:px-16 space-y-6">
             <div className="flex items-center gap-3 text-white/40 border-l-4 border-white/10 pl-4">
               <LayoutGrid className="h-4 w-4" />
-              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] italic">DISCOVER BY ARCHIVE TYPE</h2>
+              <h2 className="text-[10px] font-black uppercase tracking-[0.3em]">DISCOVER BY CATEGORY</h2>
             </div>
             <div className="no-scrollbar flex gap-4 overflow-x-auto pb-4">
               {QUICK_GENRES.map((genre) => (
                 <Link
                   key={genre.id}
                   href={`/genre/${genre.id}?name=${genre.name}&type=movie`}
-                  className="flex-shrink-0 px-8 py-3 bg-card/40 hover:bg-primary hover:text-black border border-white/5 hover:border-primary/50 rounded-full text-xs font-black transition-all whitespace-nowrap backdrop-blur-xl shadow-xl uppercase italic tracking-tighter"
+                  className="flex-shrink-0 px-8 py-3 bg-white/5 backdrop-blur-xl border border-white/10 hover:border-primary/50 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] rounded-full text-xs font-black transition-all whitespace-nowrap uppercase tracking-wider text-white/80 hover:text-white"
                 >
                   {genre.name}
                 </Link>
               ))}
               <Link
                 href="/genres"
-                className="flex-shrink-0 px-8 py-3 bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-full text-xs font-black transition-all whitespace-nowrap text-primary uppercase italic tracking-tighter"
+                className="flex-shrink-0 px-8 py-3 bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-full text-xs font-black transition-all whitespace-nowrap text-primary uppercase tracking-wider"
               >
                 BROWSE ALL
               </Link>
@@ -259,7 +259,7 @@ export default function Home() {
               <div className="px-6 md:px-16 flex flex-col gap-2">
                 <div className="flex items-center gap-2 text-accent bg-accent/5 w-fit px-3 py-1 rounded-full border border-accent/20">
                   <Sparkles className="h-3 w-3 fill-accent" />
-                  <h2 className="text-[9px] font-black uppercase tracking-[0.4em] italic">HUB AI INTELLIGENCE</h2>
+                  <h2 className="text-[9px] font-black uppercase tracking-[0.4em]">HUB AI INTELLIGENCE</h2>
                 </div>
                 <div className="border-l-4 border-primary pl-6">
                   <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter leading-tight">
@@ -281,7 +281,7 @@ export default function Home() {
 
           <footer className="py-20 text-center space-y-4 opacity-30">
             <div className="h-px w-32 bg-primary/50 mx-auto" />
-            <p className="text-[10px] font-black tracking-[0.5em] text-white uppercase italic">MOVIELINK HUB PREMIUM OTT</p>
+            <p className="text-[10px] font-black tracking-[0.5em] text-white uppercase">MOVIELINK HUB PREMIUM OTT</p>
             <p className="text-[8px] font-mono text-muted-foreground uppercase">Authorized Archive Access v1.0.8</p>
           </footer>
         </div>
