@@ -1,3 +1,4 @@
+
 const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 const BASE_URL = "https://api.themoviedb.org/3";
 const IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
@@ -24,10 +25,6 @@ export type Cast = {
   profile_path: string | null;
 };
 
-/**
- * Internal helper to handle TMDB API requests with centralized error handling.
- * Specifically handles "Failed to fetch" errors often caused by desktop AdBlockers.
- */
 async function fetchFromTMDB(endpoint: string, params: Record<string, string> = {}) {
   if (!API_KEY || API_KEY === "mock-api-key") {
     console.warn("TMDB API Key is missing or invalid.");
@@ -63,6 +60,11 @@ async function fetchFromTMDB(endpoint: string, params: Record<string, string> = 
 
 export async function getTrending(): Promise<Movie[]> {
   const data = await fetchFromTMDB("/trending/movie/week");
+  return data?.results || [];
+}
+
+export async function getTopRated(): Promise<Movie[]> {
+  const data = await fetchFromTMDB("/movie/top_rated");
   return data?.results || [];
 }
 

@@ -1,13 +1,17 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
-import { getTrending, Movie, getImageUrl } from "@/lib/tmdb";
+import { getTrending, getTopRated, Movie, getImageUrl } from "@/lib/tmdb";
 import { MovieRow } from "@/components/movies/movie-row";
 import Image from "next/image";
-import { Star, Play, Info, AlertCircle, RefreshCcw, LayoutGrid } from "lucide-react";
+import { Star, Play, Info, AlertCircle, RefreshCcw, LayoutGrid, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/components/auth/auth-provider";
+import { collection, query, orderBy, limit, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 const QUICK_GENRES = [
   { id: 28, name: "Action" },
@@ -18,7 +22,10 @@ const QUICK_GENRES = [
 ];
 
 export default function Home() {
+  const { user } = useAuth();
   const [trending, setTrending] = useState<Movie[]>([]);
+  const [topRated, setTopRated] = useState<Movie[]>([]);
+  const [continueWatching, setContinueWatching] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,9 +33,14 @@ export default function Home() {
     setLoading(true);
     setError(null);
     try {
-      const results = await getTrending();
-      if (results && results.length > 0) {
-        setTrending(results);
+      const [trendingRes, topRatedRes] = await Promise.all([
+        getTrending(),
+        getTopRated()
+      ]);
+
+      if (trendingRes && trendingRes.length > 0) {
+        setTrending(trendingRes);
+        setTopRated(topRatedRes || []);
       } else {
         setError("Please disable ad blocker or check connection");
       }
@@ -43,6 +55,29 @@ export default function Home() {
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setContinueWatching([]);
+      return;
+    }
+
+    const q = query(
+      collection(db, "users", user.uid, "continueWatching"),
+      orderBy("lastWatched", "desc"),
+      limit(10)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const items = snapshot.docs.map(doc => ({
+        ...doc.data(),
+        poster_path: doc.data().poster // Map Firestore 'poster' to TMDB 'poster_path' for MovieCard
+      }));
+      setContinueWatching(items);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
 
   if (loading) {
     return (
@@ -164,7 +199,20 @@ export default function Home() {
             </div>
           </section>
 
-          <MovieRow title="🔥 Trending Now" items={trending} />
+          {/* Continue Watching */}
+          {continueWatching.length > 0 && (
+            <div className="space-y-4">
+              <div className="px-4 md:px-8 flex items-center gap-2 text-primary">
+                <Clock className="h-5 w-5" />
+                <h2 className="text-lg font-black uppercase tracking-tighter italic">⏱ CONTINUE WATCHING</h2>
+              </div>
+              <MovieRow title="" items={continueWatching as Movie[]} />
+            </div>
+          )}
+
+          <MovieRow title="🔥 TRENDING NOW" items={trending} />
+          
+          <MovieRow title="⭐ TOP RATED" items={topRated} />
         </div>
       )}
     </div>

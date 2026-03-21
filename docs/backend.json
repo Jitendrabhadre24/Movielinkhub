@@ -1,0 +1,44 @@
+
+{
+  "entities": {
+    "WatchlistMovie": {
+      "title": "WatchlistMovie",
+      "description": "A movie or TV show added to the user's watchlist.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "number", "description": "TMDB ID of the title" },
+        "title": { "type": "string", "description": "Title or Name of the movie/show" },
+        "poster": { "type": "string", "description": "Poster path from TMDB" },
+        "type": { "type": "string", "enum": ["movie", "tv"], "description": "Content type" },
+        "addedAt": { "type": "number", "description": "Timestamp when added" }
+      },
+      "required": ["id", "title", "poster", "type", "addedAt"]
+    },
+    "ContinueWatchingMovie": {
+      "title": "ContinueWatchingMovie",
+      "description": "A movie or TV show the user has started watching.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "number", "description": "TMDB ID of the title" },
+        "title": { "type": "string", "description": "Title or Name of the movie/show" },
+        "poster": { "type": "string", "description": "Poster path from TMDB" },
+        "type": { "type": "string", "enum": ["movie", "tv"], "description": "Content type" },
+        "lastWatched": { "type": "number", "description": "Timestamp of last view" }
+      },
+      "required": ["id", "title", "poster", "type", "lastWatched"]
+    }
+  },
+  "auth": {
+    "providers": ["email"]
+  },
+  "firestore": {
+    "/users/{userId}/watchlist/{movieId}": {
+      "schema": "#/backend/entities/WatchlistMovie",
+      "description": "User's personalized watchlist."
+    },
+    "/users/{userId}/continueWatching/{movieId}": {
+      "schema": "#/backend/entities/ContinueWatchingMovie",
+      "description": "Movies/shows the user has recently viewed."
+    }
+  }
+}

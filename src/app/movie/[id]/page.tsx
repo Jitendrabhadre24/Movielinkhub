@@ -1,19 +1,26 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { getDetails, getCredits, getVideos, getSimilar, getImageUrl, Movie, Cast } from "@/lib/tmdb";
 import Image from "next/image";
-import { Play, Star, Calendar, Clock, ArrowLeft, User, AlertCircle } from "lucide-react";
+import { Play, Star, Calendar, Clock, ArrowLeft, User, AlertCircle, Plus, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MovieRow } from "@/components/movies/movie-row";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/components/auth/auth-provider";
+import { db } from "@/lib/firebase";
+import { doc, setDoc, deleteDoc, onSnapshot } from "firebase/firestore";
+import { useToast } from "@/hooks/use-toast";
 
 export default function MovieDetailPage() {
   const { id } = useParams();
   const searchParams = useSearchParams();
   const type = (searchParams.get("type") as "movie" | "tv") || "movie";
   const router = useRouter();
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   const [movie, setMovie] = useState<any>(null);
   const [cast, setCast] = useState<Cast[]>([]);
@@ -21,6 +28,7 @@ export default function MovieDetailPage() {
   const [similar, setSimilar] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isInWatchlist, setIsInWatchlist] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -42,6 +50,18 @@ export default function MovieDetailPage() {
         setCast(credits?.slice(0, 10) || []);
         setVideos(videoRes || []);
         setSimilar(similarRes || []);
+        
+        // Add to Continue Watching
+        if (user) {
+          const cwRef = doc(db, "users", user.uid, "continueWatching", movieId);
+          setDoc(cwRef, {
+            id: Number(movieId),
+            title: details.title || details.name,
+            poster: details.poster_path,
+            type: type,
+            lastWatched: Date.now()
+          }, { merge: true });
+        }
       }
     } catch (err) {
       console.error("Blocked or failed:", err);
@@ -54,6 +74,41 @@ export default function MovieDetailPage() {
   useEffect(() => {
     if (id) fetchData();
   }, [id, type]);
+
+  useEffect(() => {
+    if (!user || !id) return;
+    const docRef = doc(db, "users", user.uid, "watchlist", id as string);
+    const unsubscribe = onSnapshot(docRef, (doc) => {
+      setIsInWatchlist(doc.exists());
+    });
+    return () => unsubscribe();
+  }, [user, id]);
+
+  const toggleWatchlist = async () => {
+    if (!user) {
+      router.push("/auth");
+      return;
+    }
+
+    const docRef = doc(db, "users", user.uid, "watchlist", id as string);
+    try {
+      if (isInWatchlist) {
+        await deleteDoc(docRef);
+        toast({ title: "Removed from Watchlist" });
+      } else {
+        await setDoc(docRef, {
+          id: Number(id),
+          title: movie.title || movie.name,
+          poster: movie.poster_path,
+          type: type,
+          addedAt: Date.now()
+        });
+        toast({ title: "Added to Watchlist" });
+      }
+    } catch (err) {
+      toast({ variant: "destructive", title: "Action failed" });
+    }
+  };
 
   if (loading) {
     return (
@@ -163,9 +218,17 @@ export default function MovieDetailPage() {
             {movie.overview || "No overview available."}
           </p>
 
-          <div className="flex justify-start pt-2">
+          <div className="flex flex-wrap gap-4 pt-2">
             <Button className="gold-gradient text-black font-black px-8 h-12 rounded-full hover:scale-105 transition-transform active:scale-95 border-none shadow-[0_0_20px_rgba(255,215,0,0.3)]">
               <Play className="mr-2 h-5 w-5 fill-current" /> WATCH NOW
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={toggleWatchlist}
+              className="rounded-full px-6 h-12 border-white/20 hover:bg-white/10 font-bold"
+            >
+              {isInWatchlist ? <Check className="mr-2 h-5 w-5 text-primary" /> : <Plus className="mr-2 h-5 w-5" />}
+              {isInWatchlist ? "IN WATCHLIST" : "ADD TO WATCHLIST"}
             </Button>
           </div>
         </div>
