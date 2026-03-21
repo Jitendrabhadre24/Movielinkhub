@@ -25,6 +25,13 @@ export type Cast = {
   profile_path: string | null;
 };
 
+export type DiscoverFilters = {
+  rating?: string;
+  year?: string;
+  language?: string;
+  sortBy?: string;
+};
+
 async function fetchFromTMDB(endpoint: string, params: Record<string, string> = {}) {
   if (!API_KEY || API_KEY === "mock-api-key") {
     console.warn("TMDB API Key is missing or invalid.");
@@ -102,26 +109,42 @@ export async function getGenres(type: "movie" | "tv"): Promise<any[]> {
   return data?.genres || [];
 }
 
-export async function getMoviesByGenre(genreId: string, page: number = 1): Promise<{results: Movie[], total_pages: number}> {
-  const data = await fetchFromTMDB("/discover/movie", { 
+export async function discoverContent(
+  type: "movie" | "tv",
+  genreId: string,
+  page: number = 1,
+  filters: DiscoverFilters = {}
+): Promise<{results: Movie[], total_pages: number}> {
+  const params: Record<string, string> = {
     with_genres: genreId,
-    page: page.toString()
-  });
+    page: page.toString(),
+  };
+
+  if (filters.rating) params["vote_average.gte"] = filters.rating;
+  if (filters.year) {
+    if (filters.year === "2020+") {
+      params["primary_release_date.gte"] = "2020-01-01";
+    } else {
+      params["primary_release_year"] = filters.year;
+    }
+  }
+  if (filters.language) params["with_original_language"] = filters.language;
+  if (filters.sortBy) params["sort_by"] = filters.sortBy;
+
+  const data = await fetchFromTMDB(`/discover/${type}`, params);
   return {
     results: data?.results || [],
     total_pages: data?.total_pages || 1
   };
 }
 
-export async function getTVByGenre(genreId: string, page: number = 1): Promise<{results: Movie[], total_pages: number}> {
-  const data = await fetchFromTMDB("/discover/tv", { 
-    with_genres: genreId,
-    page: page.toString()
-  });
-  return {
-    results: data?.results || [],
-    total_pages: data?.total_pages || 1
-  };
+// Deprecated in favor of discoverContent but kept for compatibility
+export async function getMoviesByGenre(genreId: string, page: number = 1) {
+  return discoverContent("movie", genreId, page);
+}
+
+export async function getTVByGenre(genreId: string, page: number = 1) {
+  return discoverContent("tv", genreId, page);
 }
 
 export function getImageUrl(path: string | null, size: "w500" | "original" | "w185" = "w500") {
