@@ -46,7 +46,7 @@ async function fetchFromTMDB(endpoint: string, params: Record<string, string> = 
     const response = await fetch(url, {
       method: 'GET',
       headers: { 'Accept': 'application/json' },
-      cache: 'no-store', // Prevent desktop browsers from caching broken responses
+      cache: 'no-store',
     });
     
     if (!response.ok) {
@@ -56,7 +56,6 @@ async function fetchFromTMDB(endpoint: string, params: Record<string, string> = 
     
     return await response.json();
   } catch (error) {
-    // This is the "Fallback Handling" for blocked or failed requests
     console.error("Blocked or failed:", error);
     return null;
   }
@@ -96,14 +95,26 @@ export async function getGenres(type: "movie" | "tv"): Promise<any[]> {
   return data?.genres || [];
 }
 
-export async function getMoviesByGenre(genreId: string): Promise<Movie[]> {
-  const data = await fetchFromTMDB("/discover/movie", { with_genres: genreId });
-  return data?.results || [];
+export async function getMoviesByGenre(genreId: string, page: number = 1): Promise<{results: Movie[], total_pages: number}> {
+  const data = await fetchFromTMDB("/discover/movie", { 
+    with_genres: genreId,
+    page: page.toString()
+  });
+  return {
+    results: data?.results || [],
+    total_pages: data?.total_pages || 1
+  };
 }
 
-export async function getTVByGenre(genreId: string): Promise<Movie[]> {
-  const data = await fetchFromTMDB("/discover/tv", { with_genres: genreId });
-  return data?.results || [];
+export async function getTVByGenre(genreId: string, page: number = 1): Promise<{results: Movie[], total_pages: number}> {
+  const data = await fetchFromTMDB("/discover/tv", { 
+    with_genres: genreId,
+    page: page.toString()
+  });
+  return {
+    results: data?.results || [],
+    total_pages: data?.total_pages || 1
+  };
 }
 
 export function getImageUrl(path: string | null, size: "w500" | "original" | "w185" = "w500") {

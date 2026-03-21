@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { getGenres } from "@/lib/tmdb";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Film, Tv, LayoutGrid } from "lucide-react";
 
 export default function GenresPage() {
   const [movieGenres, setMovieGenres] = useState<any[]>([]);
@@ -25,65 +25,72 @@ export default function GenresPage() {
   }, []);
 
   return (
-    <div className="p-4 md:p-8 space-y-10 min-h-screen">
+    <div className="p-4 md:p-8 space-y-10 min-h-screen pb-32">
       <header className="space-y-2">
-        <h1 className="text-3xl font-black font-headline tracking-tighter text-white uppercase italic">GENRES</h1>
-        <p className="text-muted-foreground">Filter content by your favorite categories</p>
+        <div className="flex items-center gap-3 text-primary">
+          <LayoutGrid className="h-6 w-6" />
+          <h1 className="text-3xl font-black font-headline tracking-tighter text-white uppercase italic">EXPLORE GENRES</h1>
+        </div>
+        <p className="text-muted-foreground font-medium max-w-md">Find exactly what you're looking for across movies and series categories.</p>
       </header>
 
       <div className="grid md:grid-cols-2 gap-12">
+        {/* Movies Section */}
         <section className="space-y-6">
-          <h2 className="text-xl font-bold text-primary flex items-center gap-2">
-            MOVIES <span className="h-1 w-12 bg-primary rounded-full" />
-          </h2>
-          <div className="grid grid-cols-2 gap-3">
-            {movieGenres && movieGenres.length > 0 ? (
+          <div className="flex items-center gap-3 pb-2 border-b border-white/5">
+            <Film className="h-5 w-5 text-primary" />
+            <h2 className="text-xl font-black text-white italic tracking-tight">MOVIES</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {loading ? (
+              [...Array(8)].map((_, i) => (
+                <div key={i} className="h-16 bg-card/50 animate-pulse rounded-2xl border border-white/5" />
+              ))
+            ) : movieGenres.length > 0 ? (
               movieGenres.map((genre) => (
                 <Link
                   key={genre.id}
                   href={`/genre/${genre.id}?name=${genre.name}&type=movie`}
-                  className="flex items-center justify-between p-4 bg-card hover:bg-primary/10 border border-primary/10 rounded-lg transition-colors group"
+                  className="flex items-center justify-between p-5 bg-card/30 hover:bg-primary/10 border border-white/5 hover:border-primary/30 rounded-2xl transition-all group backdrop-blur-sm"
                 >
-                  <span className="font-medium">{genre.name}</span>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+                  <span className="font-bold text-white/80 group-hover:text-primary transition-colors">{genre.name}</span>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transform group-hover:translate-x-1 transition-all" />
                 </Link>
               ))
-            ) : !loading ? (
-              <div className="col-span-2 py-8 text-center text-muted-foreground italic border border-dashed border-primary/20 rounded-lg">
-                No movie genres found.
-              </div>
             ) : (
-              [...Array(6)].map((_, i) => (
-                <div key={i} className="h-14 bg-card animate-pulse rounded-lg" />
-              ))
+              <div className="col-span-full py-8 text-center text-muted-foreground italic border border-dashed border-white/10 rounded-2xl">
+                Unable to load movie genres.
+              </div>
             )}
           </div>
         </section>
 
+        {/* Series Section */}
         <section className="space-y-6">
-          <h2 className="text-xl font-bold text-primary flex items-center gap-2">
-            SERIES <span className="h-1 w-12 bg-primary rounded-full" />
-          </h2>
-          <div className="grid grid-cols-2 gap-3">
-            {tvGenres && tvGenres.length > 0 ? (
+          <div className="flex items-center gap-3 pb-2 border-b border-white/5">
+            <Tv className="h-5 w-5 text-primary" />
+            <h2 className="text-xl font-black text-white italic tracking-tight">SERIES</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {loading ? (
+              [...Array(8)].map((_, i) => (
+                <div key={i} className="h-16 bg-card/50 animate-pulse rounded-2xl border border-white/5" />
+              ))
+            ) : tvGenres.length > 0 ? (
               tvGenres.map((genre) => (
                 <Link
                   key={genre.id}
                   href={`/genre/${genre.id}?name=${genre.name}&type=tv`}
-                  className="flex items-center justify-between p-4 bg-card hover:bg-primary/10 border border-primary/10 rounded-lg transition-colors group"
+                  className="flex items-center justify-between p-5 bg-card/30 hover:bg-primary/10 border border-white/5 hover:border-primary/30 rounded-2xl transition-all group backdrop-blur-sm"
                 >
-                  <span className="font-medium">{genre.name}</span>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+                  <span className="font-bold text-white/80 group-hover:text-primary transition-colors">{genre.name}</span>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transform group-hover:translate-x-1 transition-all" />
                 </Link>
               ))
-            ) : !loading ? (
-              <div className="col-span-2 py-8 text-center text-muted-foreground italic border border-dashed border-primary/20 rounded-lg">
-                No series genres found.
-              </div>
             ) : (
-              [...Array(6)].map((_, i) => (
-                <div key={i} className="h-14 bg-card animate-pulse rounded-lg" />
-              ))
+              <div className="col-span-full py-8 text-center text-muted-foreground italic border border-dashed border-white/10 rounded-2xl">
+                Unable to load series genres.
+              </div>
             )}
           </div>
         </section>
