@@ -1,44 +1,145 @@
-
 {
   "entities": {
-    "WatchlistMovie": {
-      "title": "WatchlistMovie",
-      "description": "A movie or TV show added to the user's watchlist.",
+    "WatchlistItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "WatchlistItem",
       "type": "object",
+      "description": "Represents a single content item (movie, TV show, or anime) that a user has added to their personal watchlist. This data is stored in Firebase Firestore.",
       "properties": {
-        "id": { "type": "number", "description": "TMDB ID of the title" },
-        "title": { "type": "string", "description": "Title or Name of the movie/show" },
-        "poster": { "type": "string", "description": "Poster path from TMDB" },
-        "type": { "type": "string", "enum": ["movie", "tv"], "description": "Content type" },
-        "addedAt": { "type": "number", "description": "Timestamp when added" }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the WatchlistItem entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the authenticated user's ID from Firebase Authentication. (Relationship: User 1:N WatchlistItem)"
+        },
+        "contentId": {
+          "type": "string",
+          "description": "The unique identifier of the content (movie, TV show, or anime) as provided by the TMDB API."
+        },
+        "contentType": {
+          "type": "string",
+          "description": "The type of content, e.g., 'movie', 'tv', 'anime'."
+        },
+        "addedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the content item was added to the watchlist.",
+          "format": "date-time"
+        }
       },
-      "required": ["id", "title", "poster", "type", "addedAt"]
+      "required": [
+        "id",
+        "userId",
+        "contentId",
+        "contentType",
+        "addedAt"
+      ]
     },
-    "ContinueWatchingMovie": {
-      "title": "ContinueWatchingMovie",
-      "description": "A movie or TV show the user has started watching.",
+    "ContinueWatchingItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ContinueWatchingItem",
       "type": "object",
+      "description": "Represents a content item that a user is currently watching, tracking their progress. This data is stored in Firebase Firestore.",
       "properties": {
-        "id": { "type": "number", "description": "TMDB ID of the title" },
-        "title": { "type": "string", "description": "Title or Name of the movie/show" },
-        "poster": { "type": "string", "description": "Poster path from TMDB" },
-        "type": { "type": "string", "enum": ["movie", "tv"], "description": "Content type" },
-        "lastWatched": { "type": "number", "description": "Timestamp of last view" }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ContinueWatchingItem entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the authenticated user's ID from Firebase Authentication. (Relationship: User 1:N ContinueWatchingItem)"
+        },
+        "contentId": {
+          "type": "string",
+          "description": "The unique identifier of the content (movie, TV show, or anime) as provided by the TMDB API."
+        },
+        "contentType": {
+          "type": "string",
+          "description": "The type of content, e.g., 'movie', 'tv', 'anime'."
+        },
+        "lastWatchedAt": {
+          "type": "string",
+          "description": "Timestamp indicating the last time the user watched this content.",
+          "format": "date-time"
+        },
+        "progressSeconds": {
+          "type": "number",
+          "description": "The current watch progress in seconds for the content."
+        },
+        "totalSeconds": {
+          "type": "number",
+          "description": "The total duration of the content in seconds. For TV shows/anime, this refers to the duration of the specific episode being watched."
+        },
+        "seasonNumber": {
+          "type": "number",
+          "description": "The season number for TV shows or anime. This property should be present if 'contentType' is 'tv' or 'anime', and absent or null for movies."
+        },
+        "episodeNumber": {
+          "type": "number",
+          "description": "The episode number for TV shows or anime. This property should be present if 'contentType' is 'tv' or 'anime', and absent or null for movies."
+        }
       },
-      "required": ["id", "title", "poster", "type", "lastWatched"]
+      "required": [
+        "id",
+        "userId",
+        "contentId",
+        "contentType",
+        "lastWatchedAt",
+        "progressSeconds",
+        "totalSeconds"
+      ]
     }
   },
   "auth": {
-    "providers": ["email"]
+    "providers": [
+      "password",
+      "anonymous"
+    ]
   },
   "firestore": {
-    "/users/{userId}/watchlist/{movieId}": {
-      "schema": "#/backend/entities/WatchlistMovie",
-      "description": "User's personalized watchlist."
-    },
-    "/users/{userId}/continueWatching/{movieId}": {
-      "schema": "#/backend/entities/ContinueWatchingMovie",
-      "description": "Movies/shows the user has recently viewed."
-    }
+    "structure": [
+      {
+        "path": "/users/{userId}/watchlist/{watchlistItemId}",
+        "definition": {
+          "entityName": "WatchlistItem",
+          "schema": {
+            "$ref": "#/backend/entities/WatchlistItem"
+          },
+          "description": "Stores individual watchlist items for a specific user. Access is strictly controlled by the `userId` in the path matching `request.auth.uid`. Includes denormalized 'userId' within the document for invariant validation.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns this watchlist item, matching Firebase Authentication's UID."
+            },
+            {
+              "name": "watchlistItemId",
+              "description": "The unique identifier for a specific item within the user's watchlist."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/continueWatching/{continueWatchingItemId}",
+        "definition": {
+          "entityName": "ContinueWatchingItem",
+          "schema": {
+            "$ref": "#/backend/entities/ContinueWatchingItem"
+          },
+          "description": "Stores individual 'continue watching' items and their progress for a specific user. Access is strictly controlled by the `userId` in the path matching `request.auth.uid`. Includes denormalized 'userId' within the document for invariant validation.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns this continue watching item, matching Firebase Authentication's UID."
+            },
+            {
+              "name": "continueWatchingItemId",
+              "description": "The unique identifier for a specific item within the user's continue watching list."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The recommended Firestore structure utilizes a user-centric, path-based ownership model to ensure maximum security, scalability, and debuggability. All user-specific data, such as `WatchlistItem` and `ContinueWatchingItem`, is nested directly under a user's unique ID. This design directly addresses the CRITICAL mandate of Authorization Independence.\n\nSpecifically, for `WatchlistItem` and `ContinueWatchingItem`, the paths are `/users/{userId}/watchlist/{watchlistItemId}` and `/users/{userId}/continueWatching/{continueWatchingItemId}` respectively. This structure ensures that the `userId` in the path (e.g., `request.path[1]`) directly corresponds to the authenticated user's ID (`request.auth.uid`). This eliminates the need for any `get()` calls in security rules to check ownership or membership, as the authorization context is self-contained within the request path itself. Consequently, atomic operations for creating or updating these documents are fully supported without security rule complexities.\n\nThis structure also inherently supports the QAPs (Queries as Permissions) principle. For `list` operations, a security rule like `allow list: if request.auth.uid == userId;` will naturally restrict a user to only query their own subcollections. Firestore's query engine will filter results based on the `userId` embedded in the path, meaning the rules are not attempting to filter arbitrary collections, but rather validating access to a pre-filtered scope. This ensures that `list` queries are secure and efficient, returning only data the user is authorized to see.\n\nThe `userId` field within each `WatchlistItem` and `ContinueWatchingItem` document serves as a strong invariant, providing an additional layer of data integrity and an explicit record of ownership within the document itself, even though the primary authorization is derived from the document's path. This adheres to structural segregation, where each subcollection (`watchlist`, `continueWatching`) holds documents of a homogeneous security posture, owned solely by the parent `userId`.\n\nNo errors were found in the provided entities' schema definitions for the given application requirements."
   }
 }
