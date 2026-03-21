@@ -21,30 +21,36 @@ export function MovieCard({ item, className, type }: MovieCardProps) {
     <Link
       href={`/movie/${item.id}?type=${itemType}`}
       className={cn(
-        "group relative flex-shrink-0 w-32 sm:w-40 md:w-48 aspect-[2/3] overflow-hidden rounded-xl bg-card transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg",
+        "group relative flex-shrink-0 w-36 sm:w-44 md:w-52 aspect-[2/3] overflow-hidden rounded-[14px] bg-[#111] transition-all duration-500 hover:scale-105 active:scale-95 shadow-2xl",
         className
       )}
     >
+      {/* Rating Badge */}
+      <div className="absolute top-3 right-3 z-10 bg-black/70 backdrop-blur-xl px-2 py-1 rounded-lg flex items-center gap-1.5 border border-white/10 shadow-lg group-hover:bg-primary transition-colors group-hover:border-primary">
+        <Star className="h-3 w-3 text-primary fill-primary group-hover:text-black group-hover:fill-black" />
+        <span className="text-[11px] font-black text-white group-hover:text-black">
+          {item.vote_average ? item.vote_average.toFixed(1) : "N/A"}
+        </span>
+      </div>
+
       {posterUrl ? (
         <Image
           src={posterUrl}
           alt={title || "Poster"}
           fill
-          className="object-cover transition-transform duration-500 group-hover:scale-110"
-          sizes="(max-width: 768px) 160px, 200px"
+          className="object-cover transition-transform duration-700 group-hover:scale-110"
+          sizes="(max-width: 768px) 180px, 220px"
+          loading="lazy"
         />
       ) : (
-        <div className="flex h-full w-full flex-col items-center justify-center bg-muted/20 p-4 text-center">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{title}</span>
+        <div className="flex h-full w-full flex-col items-center justify-center bg-muted/10 p-4 text-center">
+          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.1em]">{title}</span>
         </div>
       )}
       
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 flex flex-col justify-end p-3 space-y-1">
-        <div className="flex items-center text-primary text-[10px] font-black">
-          <Star className="h-3 w-3 mr-1 fill-current" />
-          {item.vote_average?.toFixed(1) || "N/A"}
-        </div>
-        <span className="text-xs font-bold text-white truncate w-full">
+      {/* Subtle Overlay with Title */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 flex flex-col justify-end p-4">
+        <span className="text-sm font-black text-white line-clamp-2 leading-tight uppercase italic tracking-tighter">
           {title}
         </span>
       </div>

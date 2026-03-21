@@ -4,11 +4,11 @@
 
 @layer base {
   :root {
-    --background: 0 0% 0%;
+    --background: 0 0% 4.3%; /* #0B0B0B */
     --foreground: 0 0% 98%;
-    --card: 0 0% 4%;
+    --card: 0 0% 6%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 2%;
+    --popover: 0 0% 4%;
     --popover-foreground: 0 0% 98%;
     --primary: 44 91% 55%;
     --primary-foreground: 0 0% 0%;
@@ -23,7 +23,7 @@
     --border: 0 0% 15%;
     --input: 0 0% 15%;
     --ring: 44 91% 55%;
-    --radius: 0.75rem;
+    --radius: 0.875rem; /* 14px */
   }
 }
 
@@ -46,7 +46,7 @@
   scrollbar-width: none;
 }
 
-.hero-gradient {
-  background: linear-gradient(to top, hsl(var(--background)) 0%, transparent 50%, transparent 100%),
-              linear-gradient(to right, hsl(var(--background)) 0%, transparent 70%);
+.hero-gradient-overlay {
+  background: linear-gradient(to top, hsl(var(--background)) 0%, transparent 60%),
+              linear-gradient(to right, hsl(var(--background)) 0%, transparent 80%);
 }

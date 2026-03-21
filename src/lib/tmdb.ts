@@ -25,21 +25,22 @@ async function fetchFromTMDB(endpoint: string, params: Record<string, string> = 
 
   try {
     const response = await fetch(`${BASE_URL}${endpoint}?${queryParams}`);
-    if (!response.ok) return { results: [], genres: [] };
+    if (!response.ok) {
+      console.warn(`TMDB API Error: ${response.status} ${response.statusText}`);
+      return { results: [] };
+    }
     return response.json();
   } catch (e) {
-    return { results: [], genres: [] };
+    console.error("Failed to fetch from TMDB:", e);
+    return { results: [] };
   }
 }
 
 export const tmdb = {
-  getTrending: (type: "movie" | "tv" | "all" = "all") => fetchFromTMDB(`/trending/${type}/week`),
+  getTrending: () => fetchFromTMDB("/trending/movie/week"),
   getPopularMovies: () => fetchFromTMDB("/movie/popular"),
   getPopularTV: () => fetchFromTMDB("/tv/popular"),
   getTopRatedMovies: () => fetchFromTMDB("/movie/top_rated"),
-  getAnime: () => fetchFromTMDB("/discover/tv", { with_genres: "16", with_keywords: "210024" }),
-  getMoviesByGenre: (genreId: string) => fetchFromTMDB("/discover/movie", { with_genres: genreId }),
-  getTVByGenre: (genreId: string) => fetchFromTMDB("/discover/tv", { with_genres: genreId }),
   getDetails: (id: string, type: "movie" | "tv") => fetchFromTMDB(`/${type}/${id}`),
   getRecommendations: (id: string, type: "movie" | "tv") => fetchFromTMDB(`/${type}/${id}/recommendations`),
   search: (query: string) => fetchFromTMDB("/search/multi", { query }),
