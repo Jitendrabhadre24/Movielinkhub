@@ -37,16 +37,17 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-weight: 500;
+    background-color: #0B0B0B;
   }
   
   h1, h2, h3, h4, h5, h6 {
     font-weight: 900;
-    letter-spacing: -0.05em; /* Tight Gameflashx tracking */
+    letter-spacing: -0.05em;
   }
 
   button {
     font-weight: 700;
-    letter-spacing: 0.05em; /* Strong CTA feel */
+    letter-spacing: 0.05em;
     text-transform: uppercase;
   }
 }
@@ -54,8 +55,24 @@
 @layer utilities {
   .logo-text {
     font-weight: 900;
-    letter-spacing: 0.15em; /* 1.5px - 2px range */
+    letter-spacing: 0.15em;
     @apply uppercase italic text-primary;
+  }
+
+  .gold-gradient-text {
+    background: linear-gradient(135deg, #FFD700 0%, #B8860B 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: inline-block;
+  }
+
+  .glow-primary {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+  }
+
+  .glow-text-primary {
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
   }
 
   .movie-title-text {
@@ -85,8 +102,8 @@
   }
 
   .hero-gradient-overlay {
-    background: linear-gradient(to top, hsl(var(--background)) 0%, transparent 80%),
-                linear-gradient(to right, hsl(var(--background)) 0%, transparent 80%);
+    background: linear-gradient(to top, #0B0B0B 0%, transparent 80%),
+                linear-gradient(to right, #0B0B0B 0%, transparent 80%);
   }
 
   .gold-gradient {

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -169,11 +168,11 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
 
         <div className="absolute bottom-0 left-0 p-6 md:p-16 w-full z-20 space-y-6">
           <div className="flex flex-col gap-4">
-            <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-white uppercase italic leading-none">
+            <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-white uppercase italic leading-none gold-gradient-text">
               {movie.title || movie.name}
             </h1>
             <div className="flex flex-wrap items-center gap-4 text-sm font-bold text-white/80">
-              <div className="flex items-center text-primary bg-primary/10 px-2 py-1 rounded-md border border-primary/20">
+              <div className="flex items-center text-primary bg-primary/10 px-2 py-1 rounded-md border border-primary/20 glow-text-primary">
                 <Star className="h-4 w-4 mr-1 fill-current" />
                 {movie.vote_average?.toFixed(1) || "N/A"}
               </div>
@@ -187,7 +186,7 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
           </p>
 
           <div className="flex flex-wrap gap-4 pt-2">
-            <Button asChild className="gold-gradient text-black font-black px-10 h-14 rounded-full hover:scale-105 transition-all shadow-[0_0_30px_rgba(255,215,0,0.2)]">
+            <Button asChild className="gold-gradient text-black font-black px-10 h-14 rounded-full hover:scale-105 transition-all glow-primary">
               <a href={watchLink || "#"} target={watchLink ? "_blank" : "_self"} rel="noopener noreferrer">
                 <Play className="mr-2 h-6 w-6 fill-current" /> WATCH NOW
               </a>
@@ -202,7 +201,7 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
       <div className="px-6 md:px-16 mt-12 space-y-20">
         <section className="space-y-8">
           <div className="border-l-4 border-primary pl-6">
-            <h2 className="text-2xl font-black uppercase italic tracking-tight text-white">🎬 AVAILABLE ON</h2>
+            <h2 className="text-2xl font-black uppercase italic tracking-tight text-white glow-text-primary">🎬 AVAILABLE ON</h2>
           </div>
           <div className="no-scrollbar flex gap-8 overflow-x-auto pb-6">
             {uniqueProviders.length > 0 ? uniqueProviders.map((provider: any) => (
@@ -220,7 +219,7 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
 
         {trailer && (
           <section className="space-y-8">
-            <h2 className="text-xl font-black uppercase italic tracking-tight text-white border-l-4 border-primary pl-6">OFFICIAL TRAILER</h2>
+            <h2 className="text-xl font-black uppercase italic tracking-tight text-white border-l-4 border-primary pl-6 glow-text-primary">OFFICIAL TRAILER</h2>
             <div className="aspect-video w-full max-w-5xl mx-auto rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-black">
               <iframe src={`https://www.youtube.com/embed/${trailer.key}?rel=0&modestbranding=1`} title="Trailer" className="w-full h-full" allowFullScreen loading="lazy" />
             </div>
@@ -229,7 +228,7 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
 
         {cast.length > 0 && (
           <section className="space-y-8">
-            <h2 className="text-xl font-black uppercase italic tracking-tight text-white border-l-4 border-primary pl-6">TOP CAST</h2>
+            <h2 className="text-xl font-black uppercase italic tracking-tight text-white border-l-4 border-primary pl-6 glow-text-primary">TOP CAST</h2>
             <div className="no-scrollbar flex gap-8 overflow-x-auto pb-4">
               {cast.map((person) => (
                 <div key={person.id} className="flex-shrink-0 w-28 md:w-36 text-center space-y-4 group">

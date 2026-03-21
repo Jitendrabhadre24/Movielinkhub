@@ -12,6 +12,7 @@ import { useAuth } from "@/components/auth/auth-provider";
 import { collection, query, orderBy, limit, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 const QUICK_GENRES = [
   { id: 28, name: "Action" },
@@ -97,7 +98,6 @@ export default function Home() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0B0B0B] pb-32">
-        {/* Hero Skeleton */}
         <div className="relative h-[85vh] w-full">
           <Skeleton className="h-full w-full rounded-none" />
           <div className="absolute bottom-0 left-0 p-6 md:p-16 space-y-6 w-full max-w-4xl">
@@ -113,8 +113,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-        
-        {/* Row Skeletons */}
         <div className="mt-12 space-y-16">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="px-6 md:px-16 space-y-6">
@@ -136,7 +134,7 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-[#0B0B0B] pb-32 animate-fade-in">
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-6 bg-gradient-to-b from-black/80 to-transparent">
-        <h1 className="text-xl md:text-2xl font-black text-primary font-headline tracking-tighter uppercase italic drop-shadow-lg">
+        <h1 className="text-xl md:text-2xl font-black text-primary font-headline tracking-tighter uppercase italic drop-shadow-lg glow-text-primary">
           MOVIELINK HUB
         </h1>
         <Button 
@@ -175,7 +173,7 @@ export default function Home() {
               <span className="text-white/60 text-xs font-black tracking-[0.3em] uppercase italic">FEATURED ARCHIVE</span>
             </div>
 
-            <h1 className="text-6xl md:text-9xl font-black tracking-tighter uppercase italic text-white leading-[0.8]">
+            <h1 className="text-6xl md:text-9xl font-black tracking-tighter uppercase italic text-white leading-[0.8] gold-gradient-text">
               {heroMovie.title || heroMovie.name}
             </h1>
             
@@ -184,7 +182,7 @@ export default function Home() {
             </p>
 
             <div className="flex flex-wrap gap-4 pt-4">
-              <Button asChild className="rounded-full px-12 h-14 text-lg font-black bg-primary text-primary-foreground hover:bg-primary/90 transition-transform active:scale-95 border-none shadow-[0_0_40px_rgba(255,215,0,0.3)]">
+              <Button asChild className="rounded-full px-12 h-14 text-lg font-black bg-primary text-primary-foreground hover:bg-primary/90 transition-transform active:scale-95 border-none glow-primary">
                 <Link href={`/movie/${heroMovie.id}?type=${heroMovie.media_type || 'movie'}`}>
                   <Play className="mr-2 h-7 w-7 fill-current" /> PLAY NOW
                 </Link>
@@ -250,7 +248,7 @@ export default function Home() {
                 <div className="p-2 bg-primary/10 rounded-xl">
                   <Clock className="h-5 w-5" />
                 </div>
-                <h2 className="text-xl font-black uppercase tracking-tighter italic">⏱ RESUME VIEWING</h2>
+                <h2 className="text-xl font-black uppercase tracking-tighter italic glow-text-primary">⏱ RESUME VIEWING</h2>
               </div>
               <MovieRow title="" items={continueWatching as Movie[]} />
             </div>
@@ -265,7 +263,7 @@ export default function Home() {
                 </div>
                 <div className="border-l-4 border-primary pl-6">
                   <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter leading-tight">
-                    BECAUSE YOU WATCHED <span className="text-primary">"{recSourceTitle}"</span>
+                    BECAUSE YOU WATCHED <span className="gold-gradient-text">"{recSourceTitle}"</span>
                   </h2>
                   <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mt-1">Based on your recent cinematic profile</p>
                 </div>
