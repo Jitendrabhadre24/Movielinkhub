@@ -1,3 +1,4 @@
+
 import { Metadata } from "next";
 import GenreClient from "./genre-client";
 
@@ -10,10 +11,10 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const { name = "Genre" } = await searchParams;
   return {
     title: `${name.toUpperCase()} ARCHIVE - MovieLink Hub`,
-    description: `Explore the best ${name} movies and TV shows on MovieLink Hub. Filter by rating, year, and language.`,
+    description: `Explore the ultimate collection of ${name} movies and TV shows on MovieLink Hub. Filter by rating, release year, and language for a personalized discovery experience.`,
     openGraph: {
       title: `${name} Archive | MovieLink Hub`,
-      description: `The ultimate collection of ${name} blockbusters.`,
+      description: `The best ${name} blockbusters and TV series available for streaming.`,
     }
   };
 }

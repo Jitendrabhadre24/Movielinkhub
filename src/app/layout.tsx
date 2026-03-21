@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from "@/components/auth/auth-provider";
@@ -9,8 +10,8 @@ export const metadata: Metadata = {
     default: 'MOVIELINK HUB | Premium OTT Experience',
     template: '%s | MovieLink Hub'
   },
-  description: 'Experience the ultimate OTT platform for premium movies, TV shows, and anime. Stream high-quality content on MovieLink Hub.',
-  keywords: ['movies', 'streaming', 'OTT', 'TV shows', 'watchlist', 'premium content'],
+  description: 'Experience MovieLink Hub, the ultimate premium OTT platform for the latest movies, TV shows, and anime. Discover details, cast, and legal streaming options on Netflix, Prime Video, and more.',
+  keywords: ['movies', 'streaming', 'OTT', 'TV shows', 'watchlist', 'premium content', 'legal streaming', 'watch online'],
   openGraph: {
     title: 'MOVIELINK HUB | Premium OTT',
     description: 'Premium OTT platform for blockbusters and trending shows.',
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'MOVIELINK HUB',
-    description: 'Premium OTT experience.',
+    description: 'Premium OTT experience with high-quality content discovery.',
   },
   robots: {
     index: true,

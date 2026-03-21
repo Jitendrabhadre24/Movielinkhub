@@ -17,7 +17,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 
   const title = movie.title || movie.name;
   const year = (movie.release_date || movie.first_air_date || "").split("-")[0];
-  const description = movie.overview?.slice(0, 160) || "Watch the latest blockbusters on MovieLink Hub.";
+  const description = `Watch details of ${title} (${year}), including ratings, cast, overview, and OTT availability on MovieLink Hub. ${movie.overview?.slice(0, 100)}...`;
   const image = getImageUrl(movie.backdrop_path, "w500") || "";
 
   return {
