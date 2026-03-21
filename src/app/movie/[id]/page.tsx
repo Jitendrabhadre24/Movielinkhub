@@ -3,9 +3,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
-import { getDetails, getCredits, getVideos, getSimilar, getImageUrl, Movie, Cast } from "@/lib/tmdb";
+import { getDetails, getCredits, getVideos, getSimilar, getImageUrl, getWatchProviders, Movie, Cast } from "@/lib/tmdb";
 import Image from "next/image";
-import { Play, Star, Calendar, Clock, ArrowLeft, User, AlertCircle, Plus, Check } from "lucide-react";
+import { Play, Star, Calendar, Clock, ArrowLeft, User, AlertCircle, Plus, Check, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MovieRow } from "@/components/movies/movie-row";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,6 +26,7 @@ export default function MovieDetailPage() {
   const [cast, setCast] = useState<Cast[]>([]);
   const [videos, setVideos] = useState<any[]>([]);
   const [similar, setSimilar] = useState<Movie[]>([]);
+  const [providers, setProviders] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isInWatchlist, setIsInWatchlist] = useState(false);
@@ -36,11 +37,12 @@ export default function MovieDetailPage() {
     const movieId = id as string;
     
     try {
-      const [details, credits, videoRes, similarRes] = await Promise.all([
+      const [details, credits, videoRes, similarRes, providerRes] = await Promise.all([
         getDetails(movieId, type),
         getCredits(movieId, type),
         getVideos(movieId, type),
         getSimilar(movieId, type),
+        getWatchProviders(movieId, type)
       ]);
 
       if (!details) {
@@ -50,6 +52,7 @@ export default function MovieDetailPage() {
         setCast(credits?.slice(0, 10) || []);
         setVideos(videoRes || []);
         setSimilar(similarRes || []);
+        setProviders(providerRes || {});
         
         // Add to Continue Watching
         if (user) {
@@ -132,7 +135,7 @@ export default function MovieDetailPage() {
         </div>
         <div className="space-y-2">
           <h2 className="text-2xl font-bold">Content Unavailable</h2>
-          <p className="text-muted-foreground max-w-sm">
+          <p className="text-muted-foreground max-sm">
             {error || "We couldn't retrieve the details for this title."}
           </p>
         </div>
@@ -156,6 +159,17 @@ export default function MovieDetailPage() {
 
   const trailer = videos.find((v) => v.type === "Trailer" && v.site === "YouTube");
   const releaseYear = (movie.release_date || movie.first_air_date || "").split("-")[0];
+
+  // Watch Provider Logic
+  const regionData = providers?.['IN'] || providers?.['US'] || null;
+  const watchLink = regionData?.link;
+  const flatrate = regionData?.flatrate || [];
+  const rent = regionData?.rent || [];
+  const buy = regionData?.buy || [];
+  
+  const allWatchProviders = [...flatrate, ...rent, ...buy];
+  // Deduplicate providers by ID
+  const uniqueProviders = Array.from(new Map(allWatchProviders.map(p => [p.provider_id, p])).values());
 
   return (
     <div className="min-h-screen bg-background pb-32">
@@ -235,6 +249,51 @@ export default function MovieDetailPage() {
       </div>
 
       <div className="px-6 md:px-16 mt-12 space-y-16">
+        {/* Watch Providers Section */}
+        <section className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-black uppercase italic tracking-tight text-white flex items-center gap-2">
+              <span className="h-6 w-1 bg-primary rounded-full" />
+              WHERE TO WATCH
+            </h2>
+            {watchLink && (
+              <a 
+                href={watchLink} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-[10px] font-bold text-primary flex items-center gap-1 hover:underline"
+              >
+                CHECK ALL PROVIDERS <ExternalLink className="h-3 w-3" />
+              </a>
+            )}
+          </div>
+          
+          <div className="no-scrollbar flex gap-4 overflow-x-auto pb-4">
+            {uniqueProviders.length > 0 ? (
+              uniqueProviders.map((provider: any) => (
+                <div key={provider.provider_id} className="flex-shrink-0 flex flex-col items-center gap-2 group">
+                  <div className="relative h-14 w-14 md:h-16 md:w-16 rounded-2xl overflow-hidden border border-white/5 group-hover:border-primary transition-all">
+                    <Image
+                      src={getImageUrl(provider.logo_path, "w185") || ""}
+                      alt={provider.provider_name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <span className="text-[10px] font-bold text-muted-foreground group-hover:text-white transition-colors text-center max-w-[80px] line-clamp-1">
+                    {provider.provider_name}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="flex items-center gap-3 p-4 bg-white/5 rounded-2xl border border-white/5 w-full">
+                <AlertCircle className="h-5 w-5 text-muted-foreground/50" />
+                <p className="text-sm font-medium text-muted-foreground">Not currently available on major OTT platforms in your region.</p>
+              </div>
+            )}
+          </div>
+        </section>
+
         {/* Trailer Section */}
         {trailer && (
           <section className="space-y-6">

@@ -87,6 +87,11 @@ export async function getSimilar(id: string, type: "movie" | "tv"): Promise<Movi
   return data?.results || [];
 }
 
+export async function getWatchProviders(id: string, type: "movie" | "tv"): Promise<any> {
+  const data = await fetchFromTMDB(`/${type}/${id}/watch/providers`);
+  return data?.results || {};
+}
+
 export async function searchMovies(query: string): Promise<Movie[]> {
   const data = await fetchFromTMDB("/search/multi", { query });
   return data?.results || [];
