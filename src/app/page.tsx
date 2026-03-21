@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -49,7 +48,6 @@ export default function Home() {
         setError("Please disable ad blocker or check connection");
       }
     } catch (err) {
-      console.warn("Blocked or failed:", err);
       setError("Please disable ad blocker or check connection");
     } finally {
       setLoading(false);
@@ -101,17 +99,17 @@ export default function Home() {
       <div className="min-h-screen bg-[#0B0B0B] pb-32">
         {/* Hero Skeleton */}
         <div className="relative h-[85vh] w-full">
-          <Skeleton className="h-full w-full bg-white/5" />
+          <Skeleton className="h-full w-full rounded-none" />
           <div className="absolute bottom-0 left-0 p-6 md:p-16 space-y-6 w-full max-w-4xl">
             <div className="flex gap-4">
-              <Skeleton className="h-6 w-20 bg-white/10" />
-              <Skeleton className="h-6 w-40 bg-white/10" />
+              <Skeleton className="h-6 w-20" />
+              <Skeleton className="h-6 w-40" />
             </div>
-            <Skeleton className="h-20 md:h-32 w-full max-w-2xl bg-white/10" />
-            <Skeleton className="h-12 w-full max-w-md bg-white/10" />
+            <Skeleton className="h-20 md:h-32 w-full max-w-2xl" />
+            <Skeleton className="h-12 w-full max-w-md" />
             <div className="flex gap-4">
-              <Skeleton className="h-14 w-40 rounded-full bg-white/10" />
-              <Skeleton className="h-14 w-40 rounded-full bg-white/10" />
+              <Skeleton className="h-14 w-40 rounded-full" />
+              <Skeleton className="h-14 w-40 rounded-full" />
             </div>
           </div>
         </div>
@@ -120,10 +118,10 @@ export default function Home() {
         <div className="mt-12 space-y-16">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="px-6 md:px-16 space-y-6">
-              <Skeleton className="h-8 w-64 bg-white/5" />
+              <Skeleton className="h-8 w-64" />
               <div className="flex gap-4 overflow-hidden">
                 {[...Array(6)].map((_, j) => (
-                  <Skeleton key={j} className="flex-shrink-0 w-36 sm:w-44 md:w-52 aspect-[2/3] bg-white/5 rounded-2xl" />
+                  <Skeleton key={j} className="flex-shrink-0 w-36 sm:w-44 md:w-52 aspect-[2/3] rounded-[14px]" />
                 ))}
               </div>
             </div>
@@ -136,7 +134,7 @@ export default function Home() {
   const heroMovie = trending[0];
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0B0B0B] pb-32">
+    <div className="flex flex-col min-h-screen bg-[#0B0B0B] pb-32 animate-fade-in">
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-6 bg-gradient-to-b from-black/80 to-transparent">
         <h1 className="text-xl md:text-2xl font-black text-primary font-headline tracking-tighter uppercase italic drop-shadow-lg">
           MOVIELINK HUB
@@ -152,7 +150,7 @@ export default function Home() {
       </header>
 
       {!error && heroMovie ? (
-        <section className="relative h-[85vh] w-full overflow-hidden animate-in fade-in duration-1000">
+        <section className="relative h-[85vh] w-full overflow-hidden">
           <div className="absolute inset-0">
             {heroMovie.backdrop_path ? (
               <Image
@@ -186,7 +184,7 @@ export default function Home() {
             </p>
 
             <div className="flex flex-wrap gap-4 pt-4">
-              <Button asChild className="rounded-full px-12 h-14 text-lg font-black bg-primary text-black hover:bg-primary/90 transition-transform active:scale-95 border-none shadow-[0_0_40px_rgba(255,215,0,0.3)]">
+              <Button asChild className="rounded-full px-12 h-14 text-lg font-black bg-primary text-primary-foreground hover:bg-primary/90 transition-transform active:scale-95 border-none shadow-[0_0_40px_rgba(255,215,0,0.3)]">
                 <Link href={`/movie/${heroMovie.id}?type=${heroMovie.media_type || 'movie'}`}>
                   <Play className="mr-2 h-7 w-7 fill-current" /> PLAY NOW
                 </Link>
@@ -208,8 +206,6 @@ export default function Home() {
             <h2 className="text-3xl font-black uppercase italic tracking-tighter">CONNECTION ERROR</h2>
             <p className="text-muted-foreground max-w-sm mx-auto font-medium">
               {error}
-              <br/><br/>
-              <span className="text-primary font-bold italic">PRO TIP:</span> AdBlockers often block movie databases. Try disabling them for full access.
             </p>
           </div>
           <Button 
@@ -223,7 +219,7 @@ export default function Home() {
       )}
 
       {!error && trending.length > 0 && (
-        <div className="relative z-20 mt-[-80px] md:mt-[-120px] space-y-16 animate-in fade-in slide-in-from-bottom-10 duration-1000">
+        <div className="relative z-20 mt-[-80px] md:mt-[-120px] space-y-16">
           <section className="px-6 md:px-16 space-y-6">
             <div className="flex items-center gap-3 text-white/40 border-l-4 border-white/10 pl-4">
               <LayoutGrid className="h-4 w-4" />

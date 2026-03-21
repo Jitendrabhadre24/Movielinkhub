@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -66,7 +65,6 @@ export default function MovieDetailPage() {
         }
       }
     } catch (err) {
-      console.error("Blocked or failed:", err);
       setError("Please disable ad blocker or check connection");
     } finally {
       setLoading(false);
@@ -117,18 +115,18 @@ export default function MovieDetailPage() {
       <div className="min-h-screen bg-background space-y-8 pb-32">
         {/* Hero Skeleton */}
         <div className="relative h-[70vh] w-full">
-          <Skeleton className="h-full w-full bg-white/5" />
+          <Skeleton className="h-full w-full rounded-none" />
           <div className="absolute bottom-0 left-0 p-6 md:p-16 w-full z-20 space-y-6">
-            <Skeleton className="h-16 md:h-24 w-full max-w-3xl bg-white/10" />
+            <Skeleton className="h-16 md:h-24 w-full max-w-3xl" />
             <div className="flex gap-4">
-              <Skeleton className="h-6 w-20 bg-white/10" />
-              <Skeleton className="h-6 w-20 bg-white/10" />
-              <Skeleton className="h-6 w-20 bg-white/10" />
+              <Skeleton className="h-6 w-20" />
+              <Skeleton className="h-6 w-20" />
+              <Skeleton className="h-6 w-20" />
             </div>
-            <Skeleton className="h-20 w-full max-w-2xl bg-white/10" />
+            <Skeleton className="h-20 w-full max-w-2xl" />
             <div className="flex gap-4">
-              <Skeleton className="h-14 w-40 rounded-full bg-white/10" />
-              <Skeleton className="h-14 w-40 rounded-full bg-white/10" />
+              <Skeleton className="h-14 w-40 rounded-full" />
+              <Skeleton className="h-14 w-40 rounded-full" />
             </div>
           </div>
         </div>
@@ -136,16 +134,16 @@ export default function MovieDetailPage() {
         {/* Content Skeletons */}
         <div className="px-6 md:px-16 space-y-16">
           <section className="space-y-6">
-            <Skeleton className="h-8 w-48 bg-white/5" />
+            <Skeleton className="h-8 w-48" />
             <div className="flex gap-6 overflow-hidden">
               {[...Array(5)].map((_, i) => (
-                <Skeleton key={i} className="flex-shrink-0 h-24 w-24 rounded-3xl bg-white/5" />
+                <Skeleton key={i} className="flex-shrink-0 h-24 w-24 rounded-3xl" />
               ))}
             </div>
           </section>
           <section className="space-y-6">
-            <Skeleton className="h-8 w-48 bg-white/5" />
-            <Skeleton className="aspect-video w-full max-w-5xl bg-white/5 rounded-3xl mx-auto" />
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="aspect-video w-full max-w-5xl rounded-3xl mx-auto" />
           </section>
         </div>
       </div>
@@ -174,7 +172,7 @@ export default function MovieDetailPage() {
           </Button>
           <Button 
             onClick={fetchData} 
-            className="bg-primary text-black font-bold rounded-full px-8"
+            className="bg-primary text-primary-foreground font-bold rounded-full px-8"
           >
             Try Again
           </Button>
@@ -196,7 +194,7 @@ export default function MovieDetailPage() {
   const uniqueProviders = Array.from(new Map(allWatchProviders.map(p => [p.provider_id, p])).values());
 
   return (
-    <div className="min-h-screen bg-background pb-32 animate-in fade-in duration-1000">
+    <div className="min-h-screen bg-background pb-32 animate-fade-in">
       <div className="relative h-[70vh] w-full">
         {movie.backdrop_path ? (
           <Image
@@ -237,15 +235,6 @@ export default function MovieDetailPage() {
                 <div className="flex items-center gap-1.5">
                   <Clock className="h-4 w-4 opacity-60" />
                   {movie.runtime} min
-                </div>
-              )}
-              {movie.genres && (
-                <div className="flex gap-2">
-                  {movie.genres.slice(0, 3).map((g: any) => (
-                    <span key={g.id} className="bg-white/5 border border-white/10 px-2 py-0.5 rounded text-[10px] uppercase tracking-wider">
-                      {g.name}
-                    </span>
-                  ))}
                 </div>
               )}
             </div>
@@ -292,18 +281,7 @@ export default function MovieDetailPage() {
               <h2 className="text-2xl font-black uppercase italic tracking-tight text-white flex items-center gap-3">
                 🎬 AVAILABLE ON
               </h2>
-              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Global Streaming Platforms</p>
             </div>
-            {watchLink && (
-              <a 
-                href={watchLink} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-[10px] font-black text-primary flex items-center gap-1.5 hover:underline decoration-primary/30 underline-offset-4"
-              >
-                BROWSE ALL OPTIONS <ExternalLink className="h-3 w-3" />
-              </a>
-            )}
           </div>
           
           <div className="no-scrollbar flex gap-8 overflow-x-auto pb-6">
@@ -317,7 +295,6 @@ export default function MovieDetailPage() {
                       fill
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                   </div>
                   <span className="text-[12px] font-black text-white/60 group-hover:text-primary transition-colors text-center max-w-[110px] line-clamp-1 uppercase tracking-tighter italic">
                     {provider.provider_name}
@@ -329,9 +306,6 @@ export default function MovieDetailPage() {
                 <AlertCircle className="h-8 w-8 text-muted-foreground/30" />
                 <div className="space-y-1">
                   <p className="text-lg font-bold text-white/50 uppercase italic tracking-tighter">Availability Pending</p>
-                  <p className="text-sm font-medium text-muted-foreground/60">
-                    Not currently listed on major streaming platforms in your region (IN/US).
-                  </p>
                 </div>
               </div>
             )}

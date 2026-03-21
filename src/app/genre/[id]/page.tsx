@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -66,7 +65,7 @@ export default function GenreDetailPage() {
         setError("Please disable ad blocker or check connection");
       }
     } catch (err) {
-      setError("Failed to fetch content. Check your connection.");
+      setError("Failed to fetch content.");
     } finally {
       setLoading(false);
     }
@@ -107,9 +106,6 @@ export default function GenreDetailPage() {
           <h1 className="text-4xl md:text-6xl font-black font-headline tracking-tighter text-white uppercase italic leading-none">
             {name || "Category"}
           </h1>
-          <p className="text-primary font-mono text-[10px] uppercase tracking-widest font-black">
-            PREMIUM {type === "movie" ? "FEATURE FILMS" : "TV SERIES"} • {items.length} TITLES FOUND
-          </p>
         </div>
       </header>
 
@@ -193,22 +189,19 @@ export default function GenreDetailPage() {
           <div className="p-4 bg-destructive/10 rounded-full">
             <AlertCircle className="h-12 w-12 text-destructive" />
           </div>
-          <div className="space-y-2">
-            <h2 className="text-xl font-black uppercase italic tracking-tighter text-white">CONNECTION ERROR</h2>
-            <p className="text-muted-foreground max-w-xs font-medium">{error}</p>
-          </div>
+          <p className="text-muted-foreground max-w-xs font-medium">{error}</p>
         </div>
       ) : loading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
           {[...Array(10)].map((_, i) => (
             <div key={i} className="space-y-3">
-              <Skeleton className="aspect-[2/3] w-full bg-white/5 rounded-2xl" />
-              <Skeleton className="h-4 w-3/4 bg-white/5" />
+              <Skeleton className="aspect-[2/3] w-full rounded-2xl" />
+              <Skeleton className="h-4 w-3/4" />
             </div>
           ))}
         </div>
       ) : items.length > 0 ? (
-        <div className="space-y-16 animate-in fade-in duration-700">
+        <div className="space-y-16 animate-fade-in">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
             {items.map((item) => (
               <MovieCard key={item.id} item={item} type={type} className="w-full" />
@@ -238,12 +231,9 @@ export default function GenreDetailPage() {
           </div>
         </div>
       ) : (
-        <div className="text-center py-32 border border-dashed border-white/10 rounded-[3rem] bg-card/10 space-y-4 animate-in zoom-in-95 duration-500">
+        <div className="text-center py-32 border border-dashed border-white/10 rounded-[3rem] bg-card/10 space-y-4">
           <Filter className="h-12 w-12 text-muted-foreground/20 mx-auto" />
-          <div className="space-y-1">
-            <h3 className="text-xl font-black text-white/50 uppercase italic tracking-tighter">NO TITLES FOUND</h3>
-            <p className="text-sm text-muted-foreground font-medium">Try adjusting your filters to find more content.</p>
-          </div>
+          <h3 className="text-xl font-black text-white/50 uppercase italic tracking-tighter">NO TITLES FOUND</h3>
           <Button onClick={clearFilters} variant="link" className="text-primary font-black uppercase italic tracking-widest underline-offset-8">Reset All Filters</Button>
         </div>
       )}

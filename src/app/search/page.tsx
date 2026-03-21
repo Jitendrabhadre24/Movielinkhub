@@ -5,6 +5,7 @@ import { searchMovies, Movie } from "@/lib/tmdb";
 import { MovieCard } from "@/components/movies/movie-card";
 import { Input } from "@/components/ui/input";
 import { Search as SearchIcon, X, Loader2, Film, TrendingUp } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const POPULAR_SEARCHES = ["Avengers", "Batman", "Star Wars", "John Wick", "Spider-Man", "Matrix"];
 
@@ -101,7 +102,7 @@ export default function SearchPage() {
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 mt-12">
         {!query && !loading && (
-          <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="space-y-12 animate-fade-in">
             <div className="space-y-6">
               <div className="flex items-center gap-3 border-l-4 border-primary pl-4">
                 <TrendingUp className="h-5 w-5 text-primary" />
@@ -119,28 +120,23 @@ export default function SearchPage() {
                 ))}
               </div>
             </div>
-            
-            <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 opacity-10 pointer-events-none">
-              <h3 className="text-6xl font-black italic uppercase tracking-tighter text-white">MOVIELINK HUB</h3>
-              <p className="text-xl font-bold italic tracking-widest text-primary">DISCOVER PREMIUM CONTENT</p>
-            </div>
           </div>
         )}
 
         {loading ? (
           <div className="space-y-12">
             <div className="flex items-center gap-3 border-l-4 border-primary pl-4">
-              <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+              <div className="h-2 w-2 rounded-full bg-primary skeleton" />
               <span className="text-sm font-black uppercase tracking-widest italic text-primary">SCANNING DATABASE...</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
               {[...Array(12)].map((_, i) => (
-                <div key={i} className="aspect-[2/3] bg-card rounded-2xl animate-pulse border border-white/5 shadow-inner" />
+                <div key={i} className="aspect-[2/3] skeleton rounded-2xl border border-white/5" />
               ))}
             </div>
           </div>
         ) : results.length > 0 ? (
-          <div className="space-y-10 animate-in fade-in duration-500">
+          <div className="space-y-10 animate-fade-in">
             <div className="flex items-center justify-between border-l-4 border-primary pl-6">
               <div className="space-y-1">
                 <h2 className="text-2xl font-black uppercase tracking-tighter text-white italic">
@@ -165,23 +161,10 @@ export default function SearchPage() {
             </div>
           </div>
         ) : hasSearched && (
-          <div className="flex flex-col items-center justify-center py-40 text-center space-y-8 animate-in zoom-in-95 duration-500">
-            <div className="relative">
-              <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
-              <div className="relative p-8 bg-card border border-white/5 rounded-full shadow-2xl">
-                <Film className="h-16 w-16 text-muted-foreground/30" />
-              </div>
-            </div>
-            <div className="space-y-3">
-              <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter">NO MATCHES FOUND</h3>
-              <p className="text-muted-foreground max-w-sm mx-auto font-medium leading-relaxed">
-                We couldn't find anything matching <span className="text-primary italic">"{query}"</span>. 
-              </p>
-            </div>
-            <button 
-              onClick={handleClear}
-              className="text-primary font-black uppercase text-sm tracking-widest hover:underline underline-offset-8 italic"
-            >
+          <div className="flex flex-col items-center justify-center py-40 text-center space-y-8 animate-fade-in">
+            <Film className="h-16 w-16 text-muted-foreground/30" />
+            <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter">NO MATCHES FOUND</h3>
+            <button onClick={handleClear} className="text-primary font-black uppercase text-sm tracking-widest hover:underline underline-offset-8 italic">
               CLEAR & TRY AGAIN
             </button>
           </div>
