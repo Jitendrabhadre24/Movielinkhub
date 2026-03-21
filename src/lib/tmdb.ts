@@ -14,6 +14,7 @@ export type Movie = {
   vote_average: number;
   media_type?: "movie" | "tv";
   runtime?: number;
+  genres?: { id: number; name: string }[];
 };
 
 export type Cast = {
@@ -24,21 +25,33 @@ export type Cast = {
 };
 
 async function fetchFromTMDB(endpoint: string, params: Record<string, string> = {}) {
+  // Gracefully handle missing API key
+  if (!TMDB_API_KEY || TMDB_API_KEY === "undefined") {
+    console.warn("TMDB API Key is missing. Please check your .env.local file.");
+    return null;
+  }
+
   const queryParams = new URLSearchParams({
-    api_key: TMDB_API_KEY || "",
+    api_key: TMDB_API_KEY,
     language: "en-US",
     ...params,
   });
 
+  const url = `${BASE_URL}${endpoint}?${queryParams}`;
+
   try {
-    const response = await fetch(`${BASE_URL}${endpoint}?${queryParams}`);
+    const response = await fetch(url);
+    
     if (!response.ok) {
-      console.warn(`TMDB API Error: ${response.status} ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      console.warn(`TMDB API Error (${response.status}):`, errorData.status_message || response.statusText);
       return null;
     }
-    return response.json();
-  } catch (e) {
-    console.error("Failed to fetch from TMDB:", e);
+    
+    return await response.json();
+  } catch (error) {
+    // This catches network errors (e.g. AdBlockers or connection issues)
+    console.error("TMDB Fetch Exception (Check for AdBlockers or connection):", error instanceof Error ? error.message : "Unknown error");
     return null;
   }
 }
