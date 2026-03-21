@@ -56,9 +56,9 @@ export default {
       },
       fontWeight: {
         logo: '900',
-        heading: '800',
-        title: '700',
-        button: '600',
+        heading: '900',
+        title: '800',
+        button: '700',
       }
     },
   },

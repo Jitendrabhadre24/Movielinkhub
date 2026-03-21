@@ -36,28 +36,30 @@
     font-family: 'Inter', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-weight: 500;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    font-weight: 800;
-    letter-spacing: -0.025em; /* -0.5px equivalent for tight headlines */
+    font-weight: 900;
+    letter-spacing: -0.05em; /* Tight Gameflashx tracking */
   }
 
   button {
-    font-weight: 600;
-    letter-spacing: 0.025em; /* 0.5px equivalent */
+    font-weight: 700;
+    letter-spacing: 0.05em; /* Strong CTA feel */
+    text-transform: uppercase;
   }
 }
 
 @layer utilities {
   .logo-text {
     font-weight: 900;
-    letter-spacing: 0.05em; /* 1px equivalent */
+    letter-spacing: 0.15em; /* 1.5px - 2px range */
     @apply uppercase italic text-primary;
   }
 
   .movie-title-text {
-    font-weight: 700;
+    font-weight: 800;
     @apply uppercase italic tracking-tighter;
   }
 
