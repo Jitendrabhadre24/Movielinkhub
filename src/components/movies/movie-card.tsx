@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { tmdb, Movie } from "@/lib/tmdb";
+import { getImageUrl, Movie } from "@/lib/tmdb";
 import { cn } from "@/lib/utils";
 import { Star } from "lucide-react";
 
@@ -14,7 +14,7 @@ interface MovieCardProps {
 
 export function MovieCard({ item, className, type }: MovieCardProps) {
   const itemType = type || item.media_type || "movie";
-  const posterUrl = tmdb.getImageUrl(item.poster_path);
+  const posterUrl = getImageUrl(item.poster_path);
   const title = item.title || item.name;
 
   return (

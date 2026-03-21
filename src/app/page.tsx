@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { tmdb, Movie } from "@/lib/tmdb";
+import { getTrending, Movie, getImageUrl } from "@/lib/tmdb";
 import { MovieRow } from "@/components/movies/movie-row";
 import Image from "next/image";
 import { Star, Play, Info } from "lucide-react";
@@ -15,15 +15,10 @@ export default function Home() {
 
   useEffect(() => {
     const loadData = async () => {
-      try {
-        const res = await tmdb.getTrending();
-        setTrending(res?.results || []);
-      } catch (error) {
-        console.warn("Error loading home data:", error);
-        setTrending([]);
-      } finally {
-        setLoading(false);
-      }
+      setLoading(true);
+      const results = await getTrending();
+      setTrending(results);
+      setLoading(false);
     };
     loadData();
   }, []);
@@ -54,7 +49,7 @@ export default function Home() {
           <div className="absolute inset-0">
             {heroMovie.backdrop_path ? (
               <Image
-                src={tmdb.getImageUrl(heroMovie.backdrop_path, "original") || ""}
+                src={getImageUrl(heroMovie.backdrop_path, "original") || ""}
                 alt={heroMovie.title || heroMovie.name || "Hero"}
                 fill
                 className="object-cover opacity-70"

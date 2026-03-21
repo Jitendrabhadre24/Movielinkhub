@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { tmdb } from "@/lib/tmdb";
+import { getGenres } from "@/lib/tmdb";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
@@ -12,19 +12,14 @@ export default function GenresPage() {
 
   useEffect(() => {
     const fetchGenres = async () => {
-      try {
-        const [mRes, tRes] = await Promise.all([
-          tmdb.getGenres("movie"),
-          tmdb.getGenres("tv"),
-        ]);
-        setMovieGenres(mRes?.genres || []);
-        setTvGenres(tRes?.genres || []);
-      } catch (error) {
-        setMovieGenres([]);
-        setTvGenres([]);
-      } finally {
-        setLoading(false);
-      }
+      setLoading(true);
+      const [mRes, tRes] = await Promise.all([
+        getGenres("movie"),
+        getGenres("tv"),
+      ]);
+      setMovieGenres(mRes || []);
+      setTvGenres(tRes || []);
+      setLoading(false);
     };
     fetchGenres();
   }, []);

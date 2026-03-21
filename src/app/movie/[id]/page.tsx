@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
-import { tmdb, Movie, Cast } from "@/lib/tmdb";
+import { getDetails, getCredits, getVideos, getSimilar, getImageUrl, Movie, Cast } from "@/lib/tmdb";
 import Image from "next/image";
 import { Play, Star, Calendar, Clock, ArrowLeft, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,23 +24,19 @@ export default function MovieDetailPage() {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      try {
-        const [details, credits, videoRes, similarRes] = await Promise.all([
-          tmdb.getDetails(id as string, type),
-          tmdb.getCredits(id as string, type),
-          tmdb.getVideos(id as string, type),
-          tmdb.getSimilar(id as string, type),
-        ]);
+      const movieId = id as string;
+      const [details, credits, videoRes, similarRes] = await Promise.all([
+        getDetails(movieId, type),
+        getCredits(movieId, type),
+        getVideos(movieId, type),
+        getSimilar(movieId, type),
+      ]);
 
-        if (details) setMovie(details);
-        if (credits) setCast(credits.cast?.slice(0, 10) || []);
-        if (videoRes) setVideos(videoRes.results || []);
-        if (similarRes) setSimilar(similarRes.results || []);
-      } catch (error) {
-        console.error("Error loading movie details:", error);
-      } finally {
-        setLoading(false);
-      }
+      setMovie(details);
+      setCast(credits?.slice(0, 10) || []);
+      setVideos(videoRes || []);
+      setSimilar(similarRes || []);
+      setLoading(false);
     };
 
     if (id) fetchData();
@@ -79,7 +75,7 @@ export default function MovieDetailPage() {
       <div className="relative h-[70vh] w-full">
         {movie.backdrop_path ? (
           <Image
-            src={tmdb.getImageUrl(movie.backdrop_path, "original") || ""}
+            src={getImageUrl(movie.backdrop_path, "original") || ""}
             alt={movie.title || movie.name || "Backdrop"}
             fill
             className="object-cover opacity-60"
@@ -174,7 +170,7 @@ export default function MovieDetailPage() {
                   <div className="relative aspect-square rounded-full overflow-hidden border-2 border-white/5 group-hover:border-primary transition-colors">
                     {person.profile_path ? (
                       <Image
-                        src={tmdb.getImageUrl(person.profile_path, "w185") || ""}
+                        src={getImageUrl(person.profile_path, "w185") || ""}
                         alt={person.name}
                         fill
                         className="object-cover group-hover:scale-110 transition-transform duration-500"

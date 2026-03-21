@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
-import { tmdb, Movie } from "@/lib/tmdb";
+import { getMoviesByGenre, getTVByGenre, Movie } from "@/lib/tmdb";
 import { MovieCard } from "@/components/movies/movie-card";
 
 export default function GenreDetailPage() {
@@ -16,16 +16,13 @@ export default function GenreDetailPage() {
 
   useEffect(() => {
     const loadItems = async () => {
-      try {
-        const res = type === "movie" 
-          ? await tmdb.getMoviesByGenre(id as string)
-          : await tmdb.getTVByGenre(id as string);
-        setItems(res.results);
-      } catch (error) {
-        console.error("Error loading genre items:", error);
-      } finally {
-        setLoading(false);
-      }
+      setLoading(true);
+      const genreId = id as string;
+      const results = type === "movie" 
+        ? await getMoviesByGenre(genreId)
+        : await getTVByGenre(genreId);
+      setItems(results);
+      setLoading(false);
     };
     loadItems();
   }, [id, type]);

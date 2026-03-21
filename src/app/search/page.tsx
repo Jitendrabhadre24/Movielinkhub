@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { tmdb, Movie } from "@/lib/tmdb";
+import { searchMovies, Movie } from "@/lib/tmdb";
 import { MovieCard } from "@/components/movies/movie-card";
 import { Input } from "@/components/ui/input";
 import { Search as SearchIcon, X } from "lucide-react";
@@ -19,14 +19,9 @@ export default function SearchPage() {
 
     const timer = setTimeout(async () => {
       setLoading(true);
-      try {
-        const res = await tmdb.search(query);
-        setResults(res.results.filter((item: any) => item.poster_path));
-      } catch (error) {
-        console.error("Search error:", error);
-      } finally {
-        setLoading(false);
-      }
+      const results = await searchMovies(query);
+      setResults(results.filter((item: any) => item.poster_path));
+      setLoading(false);
     }, 500);
 
     return () => clearTimeout(timer);
