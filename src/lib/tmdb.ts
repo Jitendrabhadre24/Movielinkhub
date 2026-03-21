@@ -50,8 +50,8 @@ async function fetchFromTMDB(endpoint: string, params: Record<string, string> = 
     
     return await response.json();
   } catch (error) {
-    // This catches network errors (e.g. AdBlockers or connection issues)
-    console.error("TMDB Fetch Exception (Check for AdBlockers or connection):", error instanceof Error ? error.message : "Unknown error");
+    // Use console.warn to avoid Next.js error overlay for non-critical network issues
+    console.warn("TMDB Fetch Exception (Check for AdBlockers or connection):", error instanceof Error ? error.message : "Unknown error");
     return null;
   }
 }

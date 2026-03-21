@@ -19,7 +19,7 @@ export default function Home() {
         const res = await tmdb.getTrending();
         setTrending(res?.results || []);
       } catch (error) {
-        console.error("Error loading home data:", error);
+        console.warn("Error loading home data:", error);
         setTrending([]);
       } finally {
         setLoading(false);
