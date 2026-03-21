@@ -20,11 +20,11 @@ export default function MovieDetailPage() {
   const [videos, setVideos] = useState<any[]>([]);
   const [similar, setSimilar] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
-    setError(false);
+    setError(null);
     const movieId = id as string;
     
     try {
@@ -36,7 +36,7 @@ export default function MovieDetailPage() {
       ]);
 
       if (!details) {
-        setError(true);
+        setError("Please disable ad blocker or check connection");
       } else {
         setMovie(details);
         setCast(credits?.slice(0, 10) || []);
@@ -44,7 +44,8 @@ export default function MovieDetailPage() {
         setSimilar(similarRes || []);
       }
     } catch (err) {
-      setError(true);
+      console.error("Blocked or failed:", err);
+      setError("Please disable ad blocker or check connection");
     } finally {
       setLoading(false);
     }
@@ -77,12 +78,22 @@ export default function MovieDetailPage() {
         <div className="space-y-2">
           <h2 className="text-2xl font-bold">Content Unavailable</h2>
           <p className="text-muted-foreground max-w-sm">
-            We couldn't retrieve the details for this title. This might be due to a connection error or an invalid ID.
+            {error || "We couldn't retrieve the details for this title."}
           </p>
         </div>
         <div className="flex gap-4">
-          <Button variant="outline" onClick={() => router.back()} className="rounded-full">Go Back</Button>
-          <Button onClick={fetchData} className="rounded-full bg-primary text-black">Try Again</Button>
+          <button 
+            onClick={() => router.back()}
+            className="px-6 py-2 border rounded-full hover:bg-white/5 transition-colors"
+          >
+            Go Back
+          </button>
+          <button 
+            onClick={fetchData} 
+            className="px-6 py-2 bg-primary text-black font-bold rounded-full hover:bg-primary/90 transition-colors"
+          >
+            Try Again
+          </button>
         </div>
       </div>
     );

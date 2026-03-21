@@ -12,20 +12,22 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function Home() {
   const [trending, setTrending] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const loadData = async () => {
     setLoading(true);
-    setError(false);
+    setError(null);
     try {
       const results = await getTrending();
       if (results && results.length > 0) {
         setTrending(results);
       } else {
-        setError(true);
+        // If results are null/empty, it might be a silent block
+        setError("Please disable ad blocker or check connection");
       }
     } catch (err) {
-      setError(true);
+      console.error("Blocked or failed:", err);
+      setError("Please disable ad blocker or check connection");
     } finally {
       setLoading(false);
     }
@@ -112,9 +114,9 @@ export default function Home() {
           <div className="space-y-3">
             <h2 className="text-3xl font-black uppercase italic tracking-tighter">Connection Error</h2>
             <p className="text-muted-foreground max-w-sm mx-auto font-medium">
-              We're having trouble reaching the movie server on your desktop browser. 
+              {error}
               <br/><br/>
-              <span className="text-primary font-bold italic">PRO TIP:</span> If you have an <span className="underline">AdBlocker</span> installed, try disabling it for this site.
+              <span className="text-primary font-bold italic">PRO TIP:</span> If you are on desktop, AdBlockers often block movie databases.
             </p>
           </div>
           <Button 

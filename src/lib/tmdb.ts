@@ -26,11 +26,11 @@ export type Cast = {
 
 /**
  * Internal helper to handle TMDB API requests with centralized error handling.
- * Uses cache: 'no-store' to ensure desktop browsers don't serve broken cached responses.
+ * Specifically handles "Failed to fetch" errors often caused by desktop AdBlockers.
  */
 async function fetchFromTMDB(endpoint: string, params: Record<string, string> = {}) {
   if (!API_KEY || API_KEY === "mock-api-key") {
-    console.warn("TMDB API Key is missing or invalid. Please check NEXT_PUBLIC_TMDB_API_KEY.");
+    console.warn("TMDB API Key is missing or invalid.");
     return null;
   }
 
@@ -45,22 +45,19 @@ async function fetchFromTMDB(endpoint: string, params: Record<string, string> = 
   try {
     const response = await fetch(url, {
       method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-      // Prevent desktop browser caching issues
-      cache: 'no-store',
+      headers: { 'Accept': 'application/json' },
+      cache: 'no-store', // Prevent desktop browsers from caching broken responses
     });
     
     if (!response.ok) {
-      console.warn(`TMDB API Response Error: ${response.status} ${response.statusText} at ${endpoint}`);
+      console.warn(`TMDB API Error: ${response.status} at ${endpoint}`);
       return null;
     }
     
     return await response.json();
   } catch (error) {
-    // Desktop browsers often trigger "Failed to fetch" due to AdBlockers (uBlock, AdBlock Plus, etc.)
-    console.error(`TMDB Network Error. If on Desktop, check if an AdBlocker is blocking api.themoviedb.org:`, error instanceof Error ? error.message : "Unknown error");
+    // This is the "Fallback Handling" for blocked or failed requests
+    console.error("Blocked or failed:", error);
     return null;
   }
 }
