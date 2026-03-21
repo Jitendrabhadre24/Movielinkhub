@@ -32,13 +32,35 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground selection:bg-primary selection:text-primary-foreground;
+    @apply bg-background text-foreground;
     font-family: 'Inter', sans-serif;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 800;
+    letter-spacing: -0.025em; /* -0.5px equivalent for tight headlines */
+  }
+
+  button {
+    font-weight: 600;
+    letter-spacing: 0.025em; /* 0.5px equivalent */
   }
 }
 
 @layer utilities {
+  .logo-text {
+    font-weight: 900;
+    letter-spacing: 0.05em; /* 1px equivalent */
+    @apply uppercase italic text-primary;
+  }
+
+  .movie-title-text {
+    font-weight: 700;
+    @apply uppercase italic tracking-tighter;
+  }
+
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
@@ -51,12 +73,13 @@
   .skeleton {
     background: linear-gradient(
       90deg,
-      #111111 25%,
-      #1a1a1a 50%,
-      #111111 75%
+      #1a1a1a 25%,
+      #2a2a2a 50%,
+      #1a1a1a 75%
     );
     background-size: 200% 100%;
-    animation: shimmer 1.5s infinite linear;
+    animation: shimmer 1.2s infinite linear;
+    border-radius: 10px;
   }
 
   .hero-gradient-overlay {
@@ -75,10 +98,10 @@
 }
 
 .animate-fade-in {
-  animation: fade-in 0.5s ease-out forwards;
+  animation: fade 0.3s ease-out forwards;
 }
 
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

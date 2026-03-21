@@ -50,7 +50,7 @@ export function MovieCard({ item, className, type }: MovieCardProps) {
       
       {/* Subtle Overlay with Title */}
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 flex flex-col justify-end p-4">
-        <span className="text-sm font-black text-white line-clamp-2 leading-tight uppercase italic tracking-tighter">
+        <span className="movie-title-text text-sm text-white line-clamp-2 leading-tight">
           {title}
         </span>
       </div>
