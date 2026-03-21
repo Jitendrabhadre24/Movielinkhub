@@ -7,6 +7,7 @@ import { discoverContent, Movie, DiscoverFilters } from "@/lib/tmdb";
 import { MovieCard } from "@/components/movies/movie-card";
 import { ChevronLeft, ChevronRight, AlertCircle, ArrowLeft, Filter, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 const RATINGS = [
@@ -112,7 +113,6 @@ export default function GenreDetailPage() {
         </div>
       </header>
 
-      {/* Premium Sticky Filter Bar */}
       <section className="sticky top-0 z-40 space-y-4 bg-background/80 backdrop-blur-2xl p-6 rounded-[2rem] border border-white/5 shadow-2xl transition-all">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2 text-white/80">
@@ -199,9 +199,13 @@ export default function GenreDetailPage() {
           </div>
         </div>
       ) : loading ? (
-        <div className="flex flex-col items-center justify-center py-32 space-y-4">
-          <Loader2 className="h-10 w-10 animate-spin text-primary" />
-          <p className="text-xs font-black text-primary uppercase tracking-widest animate-pulse">Scanning Archive...</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
+          {[...Array(10)].map((_, i) => (
+            <div key={i} className="space-y-3">
+              <Skeleton className="aspect-[2/3] w-full bg-white/5 rounded-2xl" />
+              <Skeleton className="h-4 w-3/4 bg-white/5" />
+            </div>
+          ))}
         </div>
       ) : items.length > 0 ? (
         <div className="space-y-16 animate-in fade-in duration-700">
@@ -211,7 +215,6 @@ export default function GenreDetailPage() {
             ))}
           </div>
 
-          {/* Pagination */}
           <div className="flex items-center justify-center gap-8 pt-8">
             <Button
               variant="outline"

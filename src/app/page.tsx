@@ -81,7 +81,6 @@ export default function Home() {
       }));
       setContinueWatching(items);
 
-      // AI Recommendations Logic: Fetch based on the most recently watched item
       if (items.length > 0) {
         const lastWatched = items[0];
         try {
@@ -99,15 +98,36 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0B0B0B] pb-20">
-        <Skeleton className="h-[80vh] w-full bg-white/5" />
-        <div className="p-8 space-y-4">
-          <Skeleton className="h-8 w-48 bg-white/5" />
-          <div className="flex gap-4 overflow-hidden">
-            {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="flex-shrink-0 w-40 aspect-[2/3] bg-white/5" />
-            ))}
+      <div className="min-h-screen bg-[#0B0B0B] pb-32">
+        {/* Hero Skeleton */}
+        <div className="relative h-[85vh] w-full">
+          <Skeleton className="h-full w-full bg-white/5" />
+          <div className="absolute bottom-0 left-0 p-6 md:p-16 space-y-6 w-full max-w-4xl">
+            <div className="flex gap-4">
+              <Skeleton className="h-6 w-20 bg-white/10" />
+              <Skeleton className="h-6 w-40 bg-white/10" />
+            </div>
+            <Skeleton className="h-20 md:h-32 w-full max-w-2xl bg-white/10" />
+            <Skeleton className="h-12 w-full max-w-md bg-white/10" />
+            <div className="flex gap-4">
+              <Skeleton className="h-14 w-40 rounded-full bg-white/10" />
+              <Skeleton className="h-14 w-40 rounded-full bg-white/10" />
+            </div>
           </div>
+        </div>
+        
+        {/* Row Skeletons */}
+        <div className="mt-12 space-y-16">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="px-6 md:px-16 space-y-6">
+              <Skeleton className="h-8 w-64 bg-white/5" />
+              <div className="flex gap-4 overflow-hidden">
+                {[...Array(6)].map((_, j) => (
+                  <Skeleton key={j} className="flex-shrink-0 w-36 sm:w-44 md:w-52 aspect-[2/3] bg-white/5 rounded-2xl" />
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -117,7 +137,6 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#0B0B0B] pb-32">
-      {/* Top Navbar Brand Overlay */}
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-6 bg-gradient-to-b from-black/80 to-transparent">
         <h1 className="text-xl md:text-2xl font-black text-primary font-headline tracking-tighter uppercase italic drop-shadow-lg">
           MOVIELINK HUB
@@ -132,9 +151,8 @@ export default function Home() {
         </Button>
       </header>
 
-      {/* Hero Section */}
       {!error && heroMovie ? (
-        <section className="relative h-[85vh] w-full overflow-hidden">
+        <section className="relative h-[85vh] w-full overflow-hidden animate-in fade-in duration-1000">
           <div className="absolute inset-0">
             {heroMovie.backdrop_path ? (
               <Image
@@ -204,11 +222,8 @@ export default function Home() {
         </div>
       )}
 
-      {/* Content Sections */}
       {!error && trending.length > 0 && (
         <div className="relative z-20 mt-[-80px] md:mt-[-120px] space-y-16 animate-in fade-in slide-in-from-bottom-10 duration-1000">
-          
-          {/* Genre Quick Discovery */}
           <section className="px-6 md:px-16 space-y-6">
             <div className="flex items-center gap-3 text-white/40 border-l-4 border-white/10 pl-4">
               <LayoutGrid className="h-4 w-4" />
@@ -233,7 +248,6 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Continue Watching Row */}
           {continueWatching.length > 0 && (
             <div className="space-y-4">
               <div className="px-6 md:px-16 flex items-center gap-3 text-primary">
@@ -246,7 +260,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* AI Recommendation Hub */}
           {recommendations.length > 0 && (
             <div className="space-y-6 py-4">
               <div className="px-6 md:px-16 flex flex-col gap-2">
@@ -267,13 +280,11 @@ export default function Home() {
             </div>
           )}
 
-          {/* Global Trends */}
           <div className="space-y-4">
             <MovieRow title="🔥 WORLDWIDE TRENDS" items={trending} />
             <MovieRow title="⭐ CRITICALLY ACCLAIMED" items={topRated} />
           </div>
 
-          {/* Footer Branding */}
           <footer className="py-20 text-center space-y-4 opacity-30">
             <div className="h-px w-32 bg-primary/50 mx-auto" />
             <p className="text-[10px] font-black tracking-[0.5em] text-white uppercase italic">MOVIELINK HUB PREMIUM OTT</p>

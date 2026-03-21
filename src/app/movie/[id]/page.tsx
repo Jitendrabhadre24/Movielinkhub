@@ -54,7 +54,6 @@ export default function MovieDetailPage() {
         setSimilar(similarRes || []);
         setProviders(providerRes || {});
         
-        // Auto-save to Continue Watching (Personalization)
         if (user) {
           const cwRef = doc(db, "users", user.uid, "continueWatching", movieId);
           setDoc(cwRef, {
@@ -115,13 +114,39 @@ export default function MovieDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background space-y-8 pb-20">
-        <Skeleton className="h-[60vh] w-full" />
-        <div className="px-6 md:px-16 space-y-6">
-          <Skeleton className="h-10 w-1/3" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-2/3" />
+      <div className="min-h-screen bg-background space-y-8 pb-32">
+        {/* Hero Skeleton */}
+        <div className="relative h-[70vh] w-full">
+          <Skeleton className="h-full w-full bg-white/5" />
+          <div className="absolute bottom-0 left-0 p-6 md:p-16 w-full z-20 space-y-6">
+            <Skeleton className="h-16 md:h-24 w-full max-w-3xl bg-white/10" />
+            <div className="flex gap-4">
+              <Skeleton className="h-6 w-20 bg-white/10" />
+              <Skeleton className="h-6 w-20 bg-white/10" />
+              <Skeleton className="h-6 w-20 bg-white/10" />
+            </div>
+            <Skeleton className="h-20 w-full max-w-2xl bg-white/10" />
+            <div className="flex gap-4">
+              <Skeleton className="h-14 w-40 rounded-full bg-white/10" />
+              <Skeleton className="h-14 w-40 rounded-full bg-white/10" />
+            </div>
+          </div>
+        </div>
+
+        {/* Content Skeletons */}
+        <div className="px-6 md:px-16 space-y-16">
+          <section className="space-y-6">
+            <Skeleton className="h-8 w-48 bg-white/5" />
+            <div className="flex gap-6 overflow-hidden">
+              {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} className="flex-shrink-0 h-24 w-24 rounded-3xl bg-white/5" />
+              ))}
+            </div>
+          </section>
+          <section className="space-y-6">
+            <Skeleton className="h-8 w-48 bg-white/5" />
+            <Skeleton className="aspect-video w-full max-w-5xl bg-white/5 rounded-3xl mx-auto" />
+          </section>
         </div>
       </div>
     );
@@ -161,7 +186,6 @@ export default function MovieDetailPage() {
   const trailer = videos.find((v) => v.type === "Trailer" && v.site === "YouTube");
   const releaseYear = (movie.release_date || movie.first_air_date || "").split("-")[0];
 
-  // Watch Provider Logic: Priority India (IN) -> Fallback USA (US)
   const regionData = providers?.['IN'] || providers?.['US'] || null;
   const watchLink = regionData?.link;
   const flatrate = regionData?.flatrate || [];
@@ -169,12 +193,10 @@ export default function MovieDetailPage() {
   const buy = regionData?.buy || [];
   
   const allWatchProviders = [...flatrate, ...rent, ...buy];
-  // Deduplicate providers by ID to avoid showing the same platform twice
   const uniqueProviders = Array.from(new Map(allWatchProviders.map(p => [p.provider_id, p])).values());
 
   return (
-    <div className="min-h-screen bg-background pb-32">
-      {/* Hero Section */}
+    <div className="min-h-screen bg-background pb-32 animate-in fade-in duration-1000">
       <div className="relative h-[70vh] w-full">
         {movie.backdrop_path ? (
           <Image
@@ -264,7 +286,6 @@ export default function MovieDetailPage() {
       </div>
 
       <div className="px-6 md:px-16 mt-12 space-y-20">
-        {/* Watch Providers Section */}
         <section className="space-y-8">
           <div className="flex items-center justify-between border-l-4 border-primary pl-6">
             <div className="space-y-0.5">
@@ -317,7 +338,6 @@ export default function MovieDetailPage() {
           </div>
         </section>
 
-        {/* Trailer Section */}
         {trailer && (
           <section className="space-y-8">
             <div className="flex items-center gap-4 border-l-4 border-primary pl-6">
@@ -334,7 +354,6 @@ export default function MovieDetailPage() {
           </section>
         )}
 
-        {/* Cast Section */}
         {cast.length > 0 && (
           <section className="space-y-8">
             <div className="flex items-center gap-4 border-l-4 border-primary pl-6">
@@ -367,7 +386,6 @@ export default function MovieDetailPage() {
           </section>
         )}
 
-        {/* Similar Movies */}
         {similar.length > 0 && (
           <div className="pt-10">
             <MovieRow title="YOU MAY ALSO LIKE" items={similar} type={type} />
