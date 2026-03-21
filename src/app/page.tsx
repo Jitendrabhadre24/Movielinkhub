@@ -4,10 +4,18 @@ import { useEffect, useState } from "react";
 import { getTrending, Movie, getImageUrl } from "@/lib/tmdb";
 import { MovieRow } from "@/components/movies/movie-row";
 import Image from "next/image";
-import { Star, Play, Info, AlertCircle, RefreshCcw } from "lucide-react";
+import { Star, Play, Info, AlertCircle, RefreshCcw, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
+
+const QUICK_GENRES = [
+  { id: 28, name: "Action" },
+  { id: 35, name: "Comedy" },
+  { id: 27, name: "Horror" },
+  { id: 878, name: "Sci-Fi" },
+  { id: 16, name: "Animation" },
+];
 
 export default function Home() {
   const [trending, setTrending] = useState<Movie[]>([]);
@@ -22,11 +30,10 @@ export default function Home() {
       if (results && results.length > 0) {
         setTrending(results);
       } else {
-        // If results are null/empty, it might be a silent block
         setError("Please disable ad blocker or check connection");
       }
     } catch (err) {
-      console.error("Blocked or failed:", err);
+      console.warn("Blocked or failed:", err);
       setError("Please disable ad blocker or check connection");
     } finally {
       setLoading(false);
@@ -93,7 +100,7 @@ export default function Home() {
             </p>
 
             <div className="flex flex-wrap gap-4 pt-4">
-              <Button asChild className="rounded-full px-10 h-14 text-lg font-black bg-primary text-black hover:bg-primary/90 transition-transform active:scale-95 border-none">
+              <Button asChild className="rounded-full px-10 h-14 text-lg font-black bg-primary text-black hover:bg-primary/90 transition-transform active:scale-95 border-none shadow-[0_0_20px_rgba(255,215,0,0.3)]">
                 <Link href={`/movie/${heroMovie.id}?type=${heroMovie.media_type || 'movie'}`}>
                   <Play className="mr-2 h-6 w-6 fill-current" /> PLAY NOW
                 </Link>
@@ -131,7 +138,32 @@ export default function Home() {
 
       {/* Content Sections */}
       {!error && trending.length > 0 && (
-        <div className="relative z-20 mt-[-60px] md:mt-[-100px] space-y-8">
+        <div className="relative z-20 mt-[-60px] md:mt-[-100px] space-y-12">
+          {/* Genre Quick Links */}
+          <section className="px-4 md:px-8 space-y-4">
+            <div className="flex items-center gap-2 text-white/60">
+              <LayoutGrid className="h-4 w-4" />
+              <h2 className="text-sm font-black uppercase tracking-widest italic">Browse by Genre</h2>
+            </div>
+            <div className="no-scrollbar flex gap-3 overflow-x-auto pb-2">
+              {QUICK_GENRES.map((genre) => (
+                <Link
+                  key={genre.id}
+                  href={`/genre/${genre.id}?name=${genre.name}&type=movie`}
+                  className="flex-shrink-0 px-6 py-2.5 bg-card/50 hover:bg-primary hover:text-black border border-white/5 rounded-full text-sm font-bold transition-all whitespace-nowrap backdrop-blur-md"
+                >
+                  {genre.name}
+                </Link>
+              ))}
+              <Link
+                href="/genres"
+                className="flex-shrink-0 px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-sm font-bold transition-all whitespace-nowrap text-primary"
+              >
+                View All
+              </Link>
+            </div>
+          </section>
+
           <MovieRow title="🔥 Trending Now" items={trending} />
         </div>
       )}
