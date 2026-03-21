@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { searchMovies, Movie } from "@/lib/tmdb";
 import { MovieCard } from "@/components/movies/movie-card";
 import { Input } from "@/components/ui/input";
-import { Search as SearchIcon, X, Loader2, Film, TrendingUp } from "lucide-center";
+import { Search as SearchIcon, X, Loader2, Film, TrendingUp } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const POPULAR_SEARCHES = ["Avengers", "Batman", "Star Wars", "John Wick", "Spider-Man", "Matrix"];
