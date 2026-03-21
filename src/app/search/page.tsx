@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -33,7 +34,7 @@ export default function SearchPage() {
       const filtered = data?.filter((item: any) => item.poster_path) || [];
       setResults(filtered);
     } catch (error) {
-      console.warn("Search failed:", error);
+      // Errors handled by central observer in next phase
     } finally {
       setLoading(false);
       setHasSearched(true);
@@ -56,7 +57,8 @@ export default function SearchPage() {
 
   const highlightMatch = (text: string, highlight: string) => {
     if (!highlight.trim()) return text;
-    const parts = text.split(new RegExp(`(${highlight})`, "gi"));
+    const escapedHighlight = highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const parts = text.split(new RegExp(`(${escapedHighlight})`, "gi"));
     return (
       <span>
         {parts.map((part, i) => 

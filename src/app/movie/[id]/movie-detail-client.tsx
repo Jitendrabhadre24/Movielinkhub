@@ -83,29 +83,25 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
     return () => unsubscribe();
   }, [user, id]);
 
-  const toggleWatchlist = async () => {
+  const toggleWatchlist = () => {
     if (!user) {
       router.push("/auth");
       return;
     }
 
     const docRef = doc(db, "users", user.uid, "watchlist", id);
-    try {
-      if (isInWatchlist) {
-        await deleteDoc(docRef);
-        toast({ title: "Removed from Watchlist" });
-      } else {
-        await setDoc(docRef, {
-          id: Number(id),
-          title: movie.title || movie.name,
-          poster: movie.poster_path,
-          type: type,
-          addedAt: Date.now()
-        });
-        toast({ title: "Added to Watchlist" });
-      }
-    } catch (err) {
-      toast({ variant: "destructive", title: "Action failed" });
+    if (isInWatchlist) {
+      deleteDoc(docRef);
+      toast({ title: "Removed from Watchlist" });
+    } else {
+      setDoc(docRef, {
+        id: Number(id),
+        title: movie.title || movie.name,
+        poster: movie.poster_path,
+        type: type,
+        addedAt: Date.now()
+      });
+      toast({ title: "Added to Watchlist" });
     }
   };
 
