@@ -17,8 +17,8 @@ export type Movie = {
 
 async function fetchFromTMDB(endpoint: string, params: Record<string, string> = {}) {
   if (!TMDB_API_KEY) {
-    // Return empty results if no API key is set to prevent crashes
-    return { results: [] };
+    // Return safe defaults if no API key is set to prevent crashes
+    return { results: [], genres: [] };
   }
 
   const queryParams = new URLSearchParams({

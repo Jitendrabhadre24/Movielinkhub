@@ -33,7 +33,7 @@ export default function MovieDetail() {
           tmdb.getRecommendations(id as string, type),
         ]);
         setMovie(details);
-        setRecommendations(recs.results);
+        setRecommendations(recs?.results || []);
       } catch (error) {
         console.error("Error loading movie details:", error);
       } finally {
@@ -110,14 +110,22 @@ export default function MovieDetail() {
     );
   }
 
-  if (!movie) return null;
+  if (!movie || (!movie.title && !movie.name)) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center space-y-4">
+        <h2 className="text-2xl font-bold">Content Not Found</h2>
+        <p className="text-muted-foreground">We couldn't retrieve the details for this title.</p>
+        <Button onClick={() => router.back()}>Go Back</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <div className="relative h-[60vh] md:h-[70vh]">
         <Image
           src={tmdb.getImageUrl(movie.backdrop_path, "original") || ""}
-          alt={movie.title || movie.name}
+          alt={movie.title || movie.name || "Backdrop"}
           fill
           className="object-cover opacity-60"
         />
@@ -131,13 +139,19 @@ export default function MovieDetail() {
         </button>
 
         <div className="absolute bottom-0 left-0 p-6 md:p-16 w-full flex flex-col md:flex-row gap-8 items-end">
-          <div className="hidden md:block relative w-64 aspect-[2/3] rounded-lg overflow-hidden border-2 border-primary/20 shadow-2xl">
-            <Image
-              src={tmdb.getImageUrl(movie.poster_path) || ""}
-              alt={movie.title || movie.name}
-              fill
-              className="object-cover"
-            />
+          <div className="hidden md:block relative w-64 aspect-[2/3] rounded-lg overflow-hidden border-2 border-primary/20 shadow-2xl bg-card">
+            {movie.poster_path ? (
+              <Image
+                src={tmdb.getImageUrl(movie.poster_path) || ""}
+                alt={movie.title || movie.name || "Poster"}
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-muted-foreground text-center p-4">
+                No Poster Available
+              </div>
+            )}
           </div>
 
           <div className="flex-1 space-y-6">
@@ -148,11 +162,11 @@ export default function MovieDetail() {
             <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-muted-foreground">
               <div className="flex items-center text-primary">
                 <Star className="h-4 w-4 mr-1 fill-current" />
-                {movie.vote_average.toFixed(1)}
+                {movie.vote_average?.toFixed(1) || "0.0"}
               </div>
               <div className="flex items-center">
                 <Calendar className="h-4 w-4 mr-1" />
-                {movie.release_date || movie.first_air_date}
+                {movie.release_date || movie.first_air_date || "N/A"}
               </div>
               {movie.runtime && (
                 <div className="flex items-center">
@@ -163,7 +177,7 @@ export default function MovieDetail() {
             </div>
 
             <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-3xl line-clamp-4">
-              {movie.overview}
+              {movie.overview || "No overview available for this title."}
             </p>
 
             <div className="flex flex-wrap gap-4 pt-4">
