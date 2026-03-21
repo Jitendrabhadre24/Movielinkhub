@@ -54,7 +54,7 @@ export default function MovieDetailPage() {
         setSimilar(similarRes || []);
         setProviders(providerRes || {});
         
-        // Add to Continue Watching
+        // Auto-save to Continue Watching (Personalization)
         if (user) {
           const cwRef = doc(db, "users", user.uid, "continueWatching", movieId);
           setDoc(cwRef, {
@@ -134,24 +134,25 @@ export default function MovieDetailPage() {
           <AlertCircle className="h-12 w-12 text-muted-foreground" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-2xl font-bold">Content Unavailable</h2>
-          <p className="text-muted-foreground max-sm">
+          <h2 className="text-2xl font-bold uppercase italic tracking-tighter">Content Unavailable</h2>
+          <p className="text-muted-foreground max-w-sm">
             {error || "We couldn't retrieve the details for this title."}
           </p>
         </div>
         <div className="flex gap-4">
-          <button 
+          <Button 
+            variant="outline" 
             onClick={() => router.back()}
-            className="px-6 py-2 border rounded-full hover:bg-white/5 transition-colors"
+            className="rounded-full px-8"
           >
             Go Back
-          </button>
-          <button 
+          </Button>
+          <Button 
             onClick={fetchData} 
-            className="px-6 py-2 bg-primary text-black font-bold rounded-full hover:bg-primary/90 transition-colors"
+            className="bg-primary text-black font-bold rounded-full px-8"
           >
             Try Again
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -160,7 +161,7 @@ export default function MovieDetailPage() {
   const trailer = videos.find((v) => v.type === "Trailer" && v.site === "YouTube");
   const releaseYear = (movie.release_date || movie.first_air_date || "").split("-")[0];
 
-  // Watch Provider Logic
+  // Watch Provider Logic: Priority India (IN) -> Fallback USA (US)
   const regionData = providers?.['IN'] || providers?.['US'] || null;
   const watchLink = regionData?.link;
   const flatrate = regionData?.flatrate || [];
@@ -168,7 +169,7 @@ export default function MovieDetailPage() {
   const buy = regionData?.buy || [];
   
   const allWatchProviders = [...flatrate, ...rent, ...buy];
-  // Deduplicate providers by ID
+  // Deduplicate providers by ID to avoid showing the same platform twice
   const uniqueProviders = Array.from(new Map(allWatchProviders.map(p => [p.provider_id, p])).values());
 
   return (
@@ -202,7 +203,7 @@ export default function MovieDetailPage() {
             </h1>
             
             <div className="flex flex-wrap items-center gap-4 text-sm font-bold text-white/80">
-              <div className="flex items-center text-primary">
+              <div className="flex items-center text-primary bg-primary/10 px-2 py-1 rounded-md border border-primary/20">
                 <Star className="h-4 w-4 mr-1 fill-current" />
                 {movie.vote_average?.toFixed(1) || "N/A"}
               </div>
@@ -218,8 +219,8 @@ export default function MovieDetailPage() {
               )}
               {movie.genres && (
                 <div className="flex gap-2">
-                  {movie.genres.slice(0, 2).map((g: any) => (
-                    <span key={g.id} className="bg-white/10 px-2 py-0.5 rounded text-[10px] uppercase tracking-wider">
+                  {movie.genres.slice(0, 3).map((g: any) => (
+                    <span key={g.id} className="bg-white/5 border border-white/10 px-2 py-0.5 rounded text-[10px] uppercase tracking-wider">
                       {g.name}
                     </span>
                   ))}
@@ -228,51 +229,67 @@ export default function MovieDetailPage() {
             </div>
           </div>
 
-          <p className="text-sm md:text-lg text-muted-foreground leading-relaxed max-w-3xl line-clamp-4 font-medium">
-            {movie.overview || "No overview available."}
+          <p className="text-sm md:text-lg text-muted-foreground leading-relaxed max-w-3xl line-clamp-4 font-medium italic">
+            {movie.overview || "No overview available for this title."}
           </p>
 
           <div className="flex flex-wrap gap-4 pt-2">
-            <Button className="gold-gradient text-black font-black px-8 h-12 rounded-full hover:scale-105 transition-transform active:scale-95 border-none shadow-[0_0_20px_rgba(255,215,0,0.3)]">
-              <Play className="mr-2 h-5 w-5 fill-current" /> WATCH NOW
+            <Button 
+              asChild
+              className="gold-gradient text-black font-black px-10 h-14 rounded-full hover:scale-105 transition-all border-none shadow-[0_0_30px_rgba(255,215,0,0.2)] active:scale-95"
+            >
+              {watchLink ? (
+                <a href={watchLink} target="_blank" rel="noopener noreferrer">
+                  <Play className="mr-2 h-6 w-6 fill-current" /> WATCH NOW
+                </a>
+              ) : (
+                <button>
+                  <Play className="mr-2 h-6 w-6 fill-current" /> WATCH NOW
+                </button>
+              )}
             </Button>
             <Button 
               variant="outline"
               onClick={toggleWatchlist}
-              className="rounded-full px-6 h-12 border-white/20 hover:bg-white/10 font-bold"
+              className="rounded-full px-8 h-14 border-white/10 bg-white/5 backdrop-blur-xl hover:bg-white/10 font-black tracking-tight"
             >
-              {isInWatchlist ? <Check className="mr-2 h-5 w-5 text-primary" /> : <Plus className="mr-2 h-5 w-5" />}
-              {isInWatchlist ? "IN WATCHLIST" : "ADD TO WATCHLIST"}
+              {isInWatchlist ? (
+                <><Check className="mr-2 h-5 w-5 text-primary" /> IN WATCHLIST</>
+              ) : (
+                <><Plus className="mr-2 h-5 w-5" /> ADD TO WATCHLIST</>
+              )}
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="px-6 md:px-16 mt-12 space-y-16">
+      <div className="px-6 md:px-16 mt-12 space-y-20">
         {/* Watch Providers Section */}
         <section className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-black uppercase italic tracking-tight text-white flex items-center gap-2">
-              <span className="h-6 w-1 bg-primary rounded-full" />
-              WHERE TO WATCH
-            </h2>
+          <div className="flex items-center justify-between border-l-4 border-primary pl-6">
+            <div className="space-y-0.5">
+              <h2 className="text-xl font-black uppercase italic tracking-tight text-white">
+                WHERE TO WATCH
+              </h2>
+              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Premium Streaming Platforms</p>
+            </div>
             {watchLink && (
               <a 
                 href={watchLink} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-[10px] font-bold text-primary flex items-center gap-1 hover:underline"
+                className="text-[10px] font-black text-primary flex items-center gap-1.5 hover:underline decoration-primary/30 underline-offset-4"
               >
-                CHECK ALL PROVIDERS <ExternalLink className="h-3 w-3" />
+                BROWSE ALL OPTIONS <ExternalLink className="h-3 w-3" />
               </a>
             )}
           </div>
           
-          <div className="no-scrollbar flex gap-4 overflow-x-auto pb-4">
+          <div className="no-scrollbar flex gap-6 overflow-x-auto pb-4">
             {uniqueProviders.length > 0 ? (
               uniqueProviders.map((provider: any) => (
-                <div key={provider.provider_id} className="flex-shrink-0 flex flex-col items-center gap-2 group">
-                  <div className="relative h-14 w-14 md:h-16 md:w-16 rounded-2xl overflow-hidden border border-white/5 group-hover:border-primary transition-all">
+                <div key={provider.provider_id} className="flex-shrink-0 flex flex-col items-center gap-3 group">
+                  <div className="relative h-16 w-16 md:h-20 md:w-20 rounded-2xl overflow-hidden border border-white/10 group-hover:border-primary/50 group-hover:scale-110 transition-all duration-300 shadow-xl">
                     <Image
                       src={getImageUrl(provider.logo_path, "w185") || ""}
                       alt={provider.provider_name}
@@ -280,15 +297,17 @@ export default function MovieDetailPage() {
                       className="object-cover"
                     />
                   </div>
-                  <span className="text-[10px] font-bold text-muted-foreground group-hover:text-white transition-colors text-center max-w-[80px] line-clamp-1">
+                  <span className="text-[11px] font-bold text-muted-foreground group-hover:text-white transition-colors text-center max-w-[100px] line-clamp-1">
                     {provider.provider_name}
                   </span>
                 </div>
               ))
             ) : (
-              <div className="flex items-center gap-3 p-4 bg-white/5 rounded-2xl border border-white/5 w-full">
-                <AlertCircle className="h-5 w-5 text-muted-foreground/50" />
-                <p className="text-sm font-medium text-muted-foreground">Not currently available on major OTT platforms in your region.</p>
+              <div className="flex items-center gap-4 p-6 bg-white/5 rounded-3xl border border-dashed border-white/10 w-full max-w-lg">
+                <AlertCircle className="h-6 w-6 text-muted-foreground/40" />
+                <p className="text-sm font-medium text-muted-foreground">
+                  Not currently listed on major streaming platforms in your region. Check back soon!
+                </p>
               </div>
             )}
           </div>
@@ -296,14 +315,13 @@ export default function MovieDetailPage() {
 
         {/* Trailer Section */}
         {trailer && (
-          <section className="space-y-6">
-            <h2 className="text-xl font-black uppercase italic tracking-tight text-white flex items-center gap-2">
-              <span className="h-6 w-1 bg-primary rounded-full" />
-              OFFICIAL TRAILER
-            </h2>
-            <div className="aspect-video w-full max-w-4xl mx-auto rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black">
+          <section className="space-y-8">
+            <div className="flex items-center gap-4 border-l-4 border-primary pl-6">
+               <h2 className="text-xl font-black uppercase italic tracking-tight text-white">OFFICIAL TRAILER</h2>
+            </div>
+            <div className="aspect-video w-full max-w-5xl mx-auto rounded-3xl overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] bg-black">
               <iframe
-                src={`https://www.youtube.com/embed/${trailer.key}?rel=0&modestbranding=1`}
+                src={`https://www.youtube.com/embed/${trailer.key}?rel=0&modestbranding=1&autohide=1&showinfo=0`}
                 title="Trailer"
                 className="w-full h-full"
                 allowFullScreen
@@ -314,31 +332,30 @@ export default function MovieDetailPage() {
 
         {/* Cast Section */}
         {cast.length > 0 && (
-          <section className="space-y-6">
-            <h2 className="text-xl font-black uppercase italic tracking-tight text-white flex items-center gap-2">
-              <span className="h-6 w-1 bg-primary rounded-full" />
-              TOP CAST
-            </h2>
-            <div className="no-scrollbar flex gap-6 overflow-x-auto pb-4">
+          <section className="space-y-8">
+            <div className="flex items-center gap-4 border-l-4 border-primary pl-6">
+               <h2 className="text-xl font-black uppercase italic tracking-tight text-white">TOP CAST</h2>
+            </div>
+            <div className="no-scrollbar flex gap-8 overflow-x-auto pb-4">
               {cast.map((person) => (
-                <div key={person.id} className="flex-shrink-0 w-24 md:w-32 text-center space-y-3 group">
-                  <div className="relative aspect-square rounded-full overflow-hidden border-2 border-white/5 group-hover:border-primary transition-colors">
+                <div key={person.id} className="flex-shrink-0 w-28 md:w-36 text-center space-y-4 group">
+                  <div className="relative aspect-square rounded-full overflow-hidden border-2 border-white/5 group-hover:border-primary transition-all duration-500 shadow-2xl">
                     {person.profile_path ? (
                       <Image
                         src={getImageUrl(person.profile_path, "w185") || ""}
                         alt={person.name}
                         fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                        className="object-cover group-hover:scale-110 transition-transform duration-700"
                       />
                     ) : (
                       <div className="h-full w-full bg-muted flex items-center justify-center">
-                        <User className="h-8 w-8 text-muted-foreground" />
+                        <User className="h-10 w-10 text-muted-foreground/30" />
                       </div>
                     )}
                   </div>
-                  <div className="space-y-0.5">
-                    <p className="text-xs md:text-sm font-bold text-white line-clamp-1 group-hover:text-primary transition-colors">{person.name}</p>
-                    <p className="text-[10px] text-muted-foreground line-clamp-1">{person.character}</p>
+                  <div className="space-y-1 px-1">
+                    <p className="text-sm font-black text-white line-clamp-1 group-hover:text-primary transition-colors tracking-tighter uppercase italic">{person.name}</p>
+                    <p className="text-[11px] font-mono text-muted-foreground line-clamp-1 uppercase tracking-tighter">{person.character}</p>
                   </div>
                 </div>
               ))}
@@ -348,7 +365,9 @@ export default function MovieDetailPage() {
 
         {/* Similar Movies */}
         {similar.length > 0 && (
-          <MovieRow title="YOU MAY ALSO LIKE" items={similar} type={type} />
+          <div className="pt-10">
+            <MovieRow title="YOU MAY ALSO LIKE" items={similar} type={type} />
+          </div>
         )}
       </div>
     </div>
