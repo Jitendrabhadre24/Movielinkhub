@@ -29,7 +29,7 @@ export function TopNav() {
   return (
     <header 
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 md:px-12 transition-all duration-500",
+        "sticky top-0 left-0 right-0 z-[40] flex items-center justify-between px-6 py-4 md:px-12 transition-all duration-500",
         isScrolled 
           ? "bg-black/80 backdrop-blur-2xl border-b border-white/5 py-3 shadow-2xl" 
           : "bg-gradient-to-b from-black/95 via-black/40 to-transparent backdrop-blur-[1px] py-6"
