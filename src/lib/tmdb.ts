@@ -33,8 +33,9 @@ export type DiscoverFilters = {
 };
 
 async function fetchFromTMDB(endpoint: string, params: Record<string, string> = {}, cacheOptions: RequestInit = { next: { revalidate: 3600 } }) {
-  if (!API_KEY || API_KEY === "mock-api-key") {
-    console.warn("TMDB API Key is missing or invalid.");
+  // Defensive check for missing API key to avoid malformed requests
+  if (!API_KEY || API_KEY === "mock-api-key" || API_KEY === "undefined") {
+    console.warn("TMDB API Key is missing or invalid. Please set NEXT_PUBLIC_TMDB_API_KEY.");
     return null;
   }
 
@@ -60,7 +61,8 @@ async function fetchFromTMDB(endpoint: string, params: Record<string, string> = 
     
     return await response.json();
   } catch (error) {
-    console.error("Blocked or failed:", error);
+    // Catch hard network errors (CORS, DNS, connection reset)
+    console.error("TMDB fetch failed:", error);
     return null;
   }
 }
