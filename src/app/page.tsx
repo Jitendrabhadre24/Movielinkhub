@@ -154,11 +154,11 @@ export default function Home() {
               grabCursor={true}
               centeredSlides={true}
               slidesPerView={1.3}
-              spaceBetween={10}
+              spaceBetween={12}
               loop={true}
               autoplay={{ delay: 4000, disableOnInteraction: false }}
               breakpoints={{
-                768: { slidesPerView: 2.5, spaceBetween: 20 }
+                768: { slidesPerView: 2.5, spaceBetween: 24 }
               }}
               className="hero-swiper-container w-full"
             >
@@ -173,8 +173,9 @@ export default function Home() {
                         className="object-cover transition-transform duration-1000"
                         priority
                       />
+                      
                       <div className="poster-overlay">
-                        <div className={`space-y-1 transition-all duration-500 ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+                        <div className={`space-y-1 transition-all duration-700 delay-100 ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
                           <div className="flex items-center gap-2">
                             <Star className="h-3 w-3 text-primary fill-primary" />
                             <span className="text-[10px] font-black text-white">{movie.vote_average?.toFixed(1)}</span>
@@ -189,21 +190,19 @@ export default function Home() {
                       </div>
 
                       {/* Floating Action Matrix (Right Side) */}
-                      <div className={`absolute right-4 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-3 transition-all duration-500 ${isActive ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
-                        <Button 
-                          size="icon"
+                      <div className={`action-buttons transition-all duration-700 delay-300 ${isActive ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
+                        <button 
                           onClick={() => handleWatchlistToggle(movie)}
-                          className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 hover:bg-primary hover:text-black transition-all shadow-xl"
+                          className="list-btn hover:scale-110 active:scale-90 transition-all"
                         >
                           {isInWatchlist(movie.id) ? <Check className="h-5 w-5 text-primary" /> : <Plus className="h-5 w-5" />}
-                        </Button>
-                        <Button 
-                          size="icon"
+                        </button>
+                        <button 
                           onClick={() => handleWatchNow(movie)}
-                          className="h-12 w-12 md:h-14 md:w-14 rounded-full bg-primary text-black hover:scale-110 transition-all glow-primary shadow-2xl"
+                          className="play-btn flex items-center justify-center"
                         >
                           <Play className="h-6 w-6 fill-current" />
-                        </Button>
+                        </button>
                       </div>
                     </div>
                   )}
