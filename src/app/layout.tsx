@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { AuthProvider } from "@/components/auth/auth-provider";
+import { FirebaseClientProvider } from '@/firebase';
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -43,13 +43,13 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
       </head>
       <body className="antialiased bg-background min-h-screen text-foreground selection:bg-primary selection:text-primary-foreground">
-        <AuthProvider>
+        <FirebaseClientProvider>
           <main className="pb-20">
             {children}
           </main>
           <BottomNav />
           <Toaster />
-        </AuthProvider>
+        </FirebaseClientProvider>
       </body>
     </html>
   );

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -19,9 +18,8 @@ import { Star, Play, AlertCircle, RefreshCcw, LayoutGrid, Clock, Sparkles, Searc
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAuth } from "@/components/auth/auth-provider";
-import { collection, query, orderBy, limit, onSnapshot } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { useUser, useFirestore, useMemoFirebase, useCollection } from "@/firebase";
+import { collection, query, orderBy, limit } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 
 const QUICK_GENRES = [
@@ -33,8 +31,10 @@ const QUICK_GENRES = [
 ];
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user } = useUser();
+  const firestore = useFirestore();
   const router = useRouter();
+  
   const [trending, setTrending] = useState<Movie[]>([]);
   const [topRated, setTopRated] = useState<Movie[]>([]);
   const [popularTV, setPopularTV] = useState<Movie[]>([]);
@@ -43,11 +43,22 @@ export default function Home() {
   const [anime, setAnime] = useState<Movie[]>([]);
   const [recentlyViewed, setRecentlyViewed] = useState<Movie[]>([]);
   
-  const [continueWatching, setContinueWatching] = useState<any[]>([]);
   const [recommendations, setRecommendations] = useState<Movie[]>([]);
   const [recSourceTitle, setRecSourceTitle] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Firestore Queries using standardized hooks
+  const continueWatchingQuery = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return query(
+      collection(firestore, "users", user.uid, "continueWatching"),
+      orderBy("lastWatched", "desc"),
+      limit(10)
+    );
+  }, [user, firestore]);
+
+  const { data: continueWatching } = useCollection(continueWatchingQuery);
 
   const loadData = async () => {
     setLoading(true);
@@ -62,9 +73,8 @@ export default function Home() {
         getAnimeContent()
       ]);
 
-      // If all major requests return empty, treat it as a connection/API error
       if (!tRes.length && !pTvRes.length && !aniRes.length) {
-        throw new Error("No content received from TMDB. Please check your API key and connection.");
+        throw new Error("No content received from TMDB. Please check your connection.");
       }
 
       setTrending(tRes || []);
@@ -75,7 +85,7 @@ export default function Home() {
       setAnime(aniRes || []);
       
     } catch (err: any) {
-      setError(err.message || "Please check your internet connection or TMDB API key.");
+      setError(err.message || "Please check your internet connection.");
     } finally {
       setLoading(false);
     }
@@ -87,41 +97,19 @@ export default function Home() {
     setRecentlyViewed(recent);
   }, []);
 
+  // Handle recommendations based on latest continue watching item
   useEffect(() => {
-    if (!user) {
-      setContinueWatching([]);
+    if (continueWatching && continueWatching.length > 0) {
+      const lastWatched = continueWatching[0];
+      getRecommendations(lastWatched.id.toString(), lastWatched.type).then(recs => {
+        setRecommendations(recs || []);
+        setRecSourceTitle(lastWatched.title);
+      });
+    } else {
       setRecommendations([]);
       setRecSourceTitle(null);
-      return;
     }
-
-    const q = query(
-      collection(db, "users", user.uid, "continueWatching"),
-      orderBy("lastWatched", "desc"),
-      limit(10)
-    );
-
-    const unsubscribe = onSnapshot(q, async (snapshot) => {
-      const items = snapshot.docs.map(doc => ({
-        ...doc.data(),
-        poster_path: doc.data().poster
-      }));
-      setContinueWatching(items);
-
-      if (items.length > 0) {
-        const lastWatched = items[0];
-        try {
-          const recs = await getRecommendations(lastWatched.id.toString(), lastWatched.type);
-          setRecommendations(recs || []);
-          setRecSourceTitle(lastWatched.title);
-        } catch (e) {
-          console.warn("Failed to fetch recommendations", e);
-        }
-      }
-    });
-
-    return () => unsubscribe();
-  }, [user]);
+  }, [continueWatching]);
 
   if (loading) {
     return (
@@ -129,15 +117,9 @@ export default function Home() {
         <div className="relative h-[85vh] w-full">
           <Skeleton className="h-full w-full rounded-none" />
           <div className="absolute bottom-0 left-0 p-6 md:p-16 space-y-6 w-full max-w-4xl">
-            <div className="flex gap-4">
-              <Skeleton className="h-6 w-20" />
-              <Skeleton className="h-6 w-40" />
-            </div>
+            <div className="flex gap-4"><Skeleton className="h-6 w-20" /><Skeleton className="h-6 w-40" /></div>
             <Skeleton className="h-20 md:h-32 w-full max-w-2xl" />
-            <Skeleton className="h-12 w-full max-w-md" />
-            <div className="flex gap-4">
-              <Skeleton className="h-14 w-40 rounded-full" />
-            </div>
+            <div className="flex gap-4"><Skeleton className="h-14 w-40 rounded-full" /></div>
           </div>
         </div>
       </div>
@@ -169,7 +151,6 @@ export default function Home() {
             <AlertCircle className="h-16 w-16 text-destructive" />
           </div>
           <h2 className="text-3xl font-black uppercase tracking-tighter text-white">CONNECTION ERROR</h2>
-          <p className="text-muted-foreground max-w-md">{error}</p>
           <Button variant="outline" onClick={loadData} className="rounded-full px-12 h-14 text-lg font-black border-primary/50 text-primary hover:bg-primary/10">
             <RefreshCcw className="mr-2 h-5 w-5" /> RETRY HUB ACCESS
           </Button>
@@ -178,7 +159,7 @@ export default function Home() {
         <>
           <section className="relative h-[85vh] w-full overflow-hidden">
             <div className="absolute inset-0">
-              {heroMovie.backdrop_path ? (
+              {heroMovie.backdrop_path && (
                 <Image
                   src={getImageUrl(heroMovie.backdrop_path, "original") || ""}
                   alt={heroMovie.title || heroMovie.name || "Hero"}
@@ -186,12 +167,9 @@ export default function Home() {
                   className="object-cover animate-slow-zoom"
                   priority
                 />
-              ) : (
-                <div className="w-full h-full bg-muted/20" />
               )}
             </div>
             <div className="absolute inset-0 hero-gradient-overlay" />
-            
             <div className="absolute bottom-0 left-0 p-6 md:p-16 space-y-8 max-w-4xl z-10 pb-20 md:pb-32">
               <div className="flex items-center gap-2">
                 <div className="bg-primary/20 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-2 border border-primary/30">
@@ -202,17 +180,14 @@ export default function Home() {
                   <span className="text-sm font-black text-white">{heroMovie.vote_average?.toFixed(1) || "N/A"}</span>
                 </div>
               </div>
-
               <div className="space-y-4">
                 <h1 className="text-5xl md:text-8xl font-black tracking-[-0.05em] uppercase text-white leading-[0.85] drop-shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
                   {heroMovie.title || heroMovie.name}
                 </h1>
-                
                 <p className="text-white/75 text-base md:text-xl line-clamp-3 font-medium max-w-[90%] md:max-w-2xl leading-relaxed">
                   {heroMovie.overview}
                 </p>
               </div>
-
               <div className="flex flex-wrap gap-4 pt-2">
                 <Button asChild className="rounded-full px-12 h-14 text-lg font-black bg-primary text-black hover:bg-primary/90 transition-all hover:scale-[1.05] active:scale-[0.97] border-none shadow-[0_0_20px_rgba(255,215,0,0.4)] group">
                   <Link href={`/movie/${heroMovie.id}?type=${heroMovie.media_type || 'movie'}`}>
@@ -231,24 +206,20 @@ export default function Home() {
               </div>
               <div className="no-scrollbar flex gap-4 overflow-x-auto pb-4">
                 {QUICK_GENRES.map((genre) => (
-                  <Link
-                    key={genre.id}
-                    href={`/genre/${genre.id}?name=${genre.name}&type=movie`}
-                    className="flex-shrink-0 px-8 py-3 bg-white/5 backdrop-blur-xl border border-white/10 hover:border-primary/50 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,215,0,0.1)] rounded-full text-xs font-black transition-all whitespace-nowrap uppercase tracking-wider text-white/80 hover:text-white"
-                  >
+                  <Link key={genre.id} href={`/genre/${genre.id}?name=${genre.name}&type=movie`} className="flex-shrink-0 px-8 py-3 bg-white/5 backdrop-blur-xl border border-white/10 hover:border-primary/50 hover:bg-white/10 rounded-full text-xs font-black transition-all whitespace-nowrap uppercase tracking-wider text-white/80 hover:text-white">
                     {genre.name}
                   </Link>
                 ))}
               </div>
             </section>
 
-            {continueWatching.length > 0 && (
+            {continueWatching && continueWatching.length > 0 && (
               <div className="space-y-4">
                 <div className="px-6 md:px-16 flex items-center gap-3 text-primary">
                   <Clock className="h-5 w-5" />
                   <h2 className="text-xl font-black uppercase tracking-tighter italic glow-text-primary">⏱ RESUME VIEWING</h2>
                 </div>
-                <MovieRow title="" items={continueWatching as Movie[]} />
+                <MovieRow title="" items={continueWatching as any[]} />
               </div>
             )}
 
@@ -291,17 +262,7 @@ export default function Home() {
             </footer>
           </div>
         </>
-      ) : (
-        <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-6 space-y-6">
-          <div className="p-6 bg-muted/20 rounded-full animate-pulse">
-            <Search className="h-16 w-16 text-muted-foreground" />
-          </div>
-          <h2 className="text-2xl font-black uppercase tracking-tighter text-white">SEARCHING FOR CONTENT...</h2>
-          <Button variant="outline" onClick={loadData} className="rounded-full px-12 h-14 text-lg font-black border-primary/50 text-primary">
-            REFRESH HUB
-          </Button>
-        </div>
-      )}
+      ) : null}
     </div>
   );
 }

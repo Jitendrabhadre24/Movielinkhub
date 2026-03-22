@@ -1,49 +1,37 @@
 "use client";
 
-import { useAuth } from "@/components/auth/auth-provider";
+import { useUser, useFirestore, useMemoFirebase, useCollection, useAuth as useFirebaseAuth } from "@/firebase";
 import { useRouter } from "next/navigation";
-import { auth, db } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { LogOut, User as UserIcon, Bookmark, ShieldCheck, Zap } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { useEffect, useState } from "react";
-import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import { collection, query, orderBy } from "firebase/firestore";
 import { MovieCard } from "@/components/movies/movie-card";
 import { Movie } from "@/lib/tmdb";
 
 export default function AccountPage() {
-  const { user, loading } = useAuth();
+  const { user, isUserLoading } = useUser();
+  const auth = useFirebaseAuth();
+  const firestore = useFirestore();
   const router = useRouter();
-  const [watchlist, setWatchlist] = useState<any[]>([]);
-  const [loadingWatchlist, setLoadingWatchlist] = useState(true);
 
-  useEffect(() => {
-    if (!user) return;
-
-    const q = query(
-      collection(db, "users", user.uid, "watchlist"),
+  const watchlistQuery = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return query(
+      collection(firestore, "users", user.uid, "watchlist"),
       orderBy("addedAt", "desc")
     );
+  }, [user, firestore]);
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const items = snapshot.docs.map(doc => ({
-        ...doc.data(),
-        poster_path: doc.data().poster
-      }));
-      setWatchlist(items);
-      setLoadingWatchlist(false);
-    });
-
-    return () => unsubscribe();
-  }, [user]);
+  const { data: watchlist, isLoading: loadingWatchlist } = useCollection(watchlistQuery);
 
   const handleSignOut = async () => {
     await signOut(auth);
     router.push("/auth");
   };
 
-  if (loading) return (
+  if (isUserLoading) return (
     <div className="flex items-center justify-center min-h-screen bg-[#0B0B0B]">
       <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin shadow-[0_0_20px_rgba(255,215,0,0.3)]" />
     </div>
@@ -52,9 +40,7 @@ export default function AccountPage() {
   return (
     <div className="p-4 md:p-8 space-y-12 max-w-7xl mx-auto pb-32 animate-fade-in">
       <header className="relative flex flex-col md:flex-row md:items-center justify-between gap-8 bg-card/40 backdrop-blur-2xl p-8 md:p-12 rounded-[2.5rem] border border-white/5 shadow-2xl overflow-hidden">
-        {/* Decorative elements */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -mr-32 -mt-32" />
-        
         <div className="relative flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
           <div className="relative h-24 w-24 md:h-28 md:w-28 rounded-[2rem] bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center border border-primary/20 shadow-2xl">
             <UserIcon className="h-12 w-12 text-primary" />
@@ -74,20 +60,12 @@ export default function AccountPage() {
             </p>
           </div>
         </div>
-        
         {user ? (
-          <Button 
-            variant="outline" 
-            onClick={handleSignOut}
-            className="border-white/10 text-white/60 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 rounded-xl px-8 h-12 uppercase font-black italic tracking-tighter"
-          >
+          <Button variant="outline" onClick={handleSignOut} className="border-white/10 text-white/60 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 rounded-xl px-8 h-12 uppercase font-black italic tracking-tighter">
             <LogOut className="mr-2 h-4 w-4" /> Termination
           </Button>
         ) : (
-          <Button 
-            onClick={() => router.push("/auth")}
-            className="bg-primary hover:bg-primary/90 text-black font-black uppercase italic tracking-tighter rounded-xl px-12 h-14 glow-primary"
-          >
+          <Button onClick={() => router.push("/auth")} className="bg-primary hover:bg-primary/90 text-black font-black uppercase italic tracking-tighter rounded-xl px-12 h-14 glow-primary">
             Authenticate Now
           </Button>
         )}
@@ -104,29 +82,24 @@ export default function AccountPage() {
               <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em]">SYNCHRONIZED ARCHIVE</p>
             </div>
             <div className="bg-white/5 border border-white/10 px-4 py-2 rounded-xl">
-              <span className="text-xs font-black text-primary font-mono uppercase tracking-widest">{watchlist.length} TITLES</span>
+              <span className="text-xs font-black text-primary font-mono uppercase tracking-widest">{watchlist?.length || 0} TITLES</span>
             </div>
           </div>
 
           {loadingWatchlist ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="aspect-[2/3] skeleton rounded-[1.5rem]" />
-              ))}
+              {[...Array(5)].map((_, i) => <div key={i} className="aspect-[2/3] skeleton rounded-[1.5rem]" />)}
             </div>
-          ) : watchlist.length > 0 ? (
+          ) : watchlist && watchlist.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-              {watchlist.map((item) => (
-                <MovieCard key={item.id} item={item as Movie} type={item.type} />
+              {watchlist.map((item: any) => (
+                <MovieCard key={item.id} item={{...item, poster_path: item.poster} as any} type={item.type} />
               ))}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-24 text-center space-y-6 border border-dashed border-white/5 rounded-[3rem] bg-card/20 backdrop-blur-sm">
               <Bookmark className="h-16 w-16 text-white/10" />
-              <div className="space-y-2">
-                <p className="text-xl font-black text-white/30 uppercase italic tracking-tighter">Your archive is currently empty</p>
-                <p className="text-sm text-white/20 font-medium">Add blockbusters to track your viewing journey.</p>
-              </div>
+              <p className="text-xl font-black text-white/30 uppercase italic tracking-tighter">Your archive is currently empty</p>
               <Button onClick={() => router.push("/")} className="bg-white/5 hover:bg-white/10 text-primary font-black uppercase italic tracking-widest rounded-xl px-8 h-12 border border-white/5">
                 Start Browsing
               </Button>
@@ -136,10 +109,8 @@ export default function AccountPage() {
       )}
 
       <Separator className="bg-white/5" />
-
       <footer className="text-center space-y-2 opacity-30 pb-10">
         <p className="text-[10px] text-white font-black uppercase tracking-[0.5em]">MOVIELINK HUB v2.0.4 PREMIUM</p>
-        <p className="text-[9px] text-white/50 font-mono">End-to-End Encryption Enabled. Cinematic Discovery Active.</p>
       </footer>
     </div>
   );
