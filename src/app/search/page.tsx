@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -8,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Search as SearchIcon, X, Loader2, Film, TrendingUp } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const POPULAR_SEARCHES = ["Avengers", "Batman", "Star Wars", "John Wick", "Spider-Man", "Matrix"];
+const POPULAR_SEARCHES = ["AVENGERS", "BATMAN", "STAR WARS", "JOHN WICK", "SPIDER-MAN", "MATRIX"];
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
@@ -17,37 +16,31 @@ export default function SearchPage() {
   const [hasSearched, setHasSearched] = useState(false);
 
   useEffect(() => {
-    document.title = query ? `Searching: ${query} | MovieLink Hub` : "Search Archives | MovieLink Hub";
+    const timer = setTimeout(() => {
+      if (query.trim()) {
+        performSearch(query);
+      } else {
+        setResults([]);
+        setHasSearched(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
   }, [query]);
 
-  const performSearch = useCallback(async (searchQuery: string) => {
-    if (!searchQuery.trim()) {
-      setResults([]);
-      setHasSearched(false);
-      setLoading(false);
-      return;
-    }
-
+  const performSearch = async (searchQuery: string) => {
     setLoading(true);
     try {
       const data = await searchMovies(searchQuery);
       const filtered = data?.filter((item: any) => item.poster_path) || [];
       setResults(filtered);
     } catch (error) {
-      // Errors handled by central observer in next phase
+      console.error("Search failed", error);
     } finally {
       setLoading(false);
       setHasSearched(true);
     }
-  }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      performSearch(query);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [query, performSearch]);
+  };
 
   const handleClear = () => {
     setQuery("");
@@ -55,70 +48,44 @@ export default function SearchPage() {
     setHasSearched(false);
   };
 
-  const highlightMatch = (text: string, highlight: string) => {
-    if (!highlight.trim()) return text;
-    const escapedHighlight = highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const parts = text.split(new RegExp(`(${escapedHighlight})`, "gi"));
-    return (
-      <span>
-        {parts.map((part, i) => 
-          part.toLowerCase() === highlight.toLowerCase() ? (
-            <span key={i} className="text-primary font-black underline decoration-primary/30 underline-offset-2">
-              {part}
-            </span>
-          ) : (
-            part
-          )
-        )}
-      </span>
-    );
-  };
-
   return (
-    <div className="min-h-screen bg-background pb-32 animate-fade-in">
-      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-2xl border-b border-white/5 px-4 py-6 md:px-8">
+    <div className="min-h-screen bg-background pb-32 animate-fade-in pt-16 sm:pt-20">
+      <div className="sticky top-16 sm:top-20 z-30 bg-background/80 backdrop-blur-2xl border-b border-white/5 px-4 py-4 sm:py-6">
         <div className="relative max-w-4xl mx-auto group">
-          <div className="absolute left-5 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
-            {loading ? (
-              <Loader2 className="h-5 w-5 animate-spin text-primary" />
-            ) : (
-              <SearchIcon className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-            )}
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
+            {loading ? <Loader2 className="h-5 w-5 animate-spin text-primary" /> : <SearchIcon className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />}
           </div>
           
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search blockbusters or creators..."
-            className="pl-14 pr-14 h-16 bg-card/40 border-white/10 focus:border-primary/40 focus:ring-primary/10 text-xl rounded-2xl transition-all shadow-2xl font-medium placeholder:text-muted-foreground/50"
+            className="pl-12 pr-12 h-14 sm:h-16 bg-card/40 border-white/10 focus:border-primary/40 focus:ring-primary/10 text-base sm:text-xl rounded-2xl transition-all shadow-2xl font-medium"
             autoFocus
           />
 
           {query && (
-            <button 
-              onClick={handleClear}
-              className="absolute right-5 top-1/2 -translate-y-1/2 p-2 hover:bg-white/10 rounded-full transition-all text-muted-foreground hover:text-white"
-            >
+            <button onClick={handleClear} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-white/10 rounded-full text-muted-foreground hover:text-white">
               <X className="h-5 w-5" />
             </button>
           )}
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 md:px-8 mt-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-10 sm:mt-16">
         {!query && !loading && (
-          <div className="space-y-12">
+          <div className="space-y-10">
             <div className="space-y-6">
               <div className="flex items-center gap-3 border-l-4 border-primary pl-4">
                 <TrendingUp className="h-5 w-5 text-primary" />
-                <h2 className="text-sm font-black uppercase tracking-widest italic text-white/90">POPULAR SEARCHES</h2>
+                <h2 className="text-[10px] sm:text-xs font-black uppercase tracking-widest italic text-white/90">POPULAR QUERIES</h2>
               </div>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-2 sm:gap-3">
                 {POPULAR_SEARCHES.map((term) => (
                   <button
                     key={term}
                     onClick={() => setQuery(term)}
-                    className="px-6 py-2.5 bg-white/5 hover:bg-primary hover:text-black border border-white/10 rounded-full text-sm font-bold transition-all backdrop-blur-sm"
+                    className="px-5 py-2 sm:px-6 sm:py-2.5 bg-white/5 hover:bg-primary hover:text-black border border-white/10 rounded-full text-[10px] sm:text-xs font-black transition-all backdrop-blur-sm uppercase italic"
                   >
                     {term}
                   </button>
@@ -129,45 +96,30 @@ export default function SearchPage() {
         )}
 
         {loading ? (
-          <div className="space-y-12">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-              {[...Array(12)].map((_, i) => (
-                <div key={i} className="aspect-[2/3] skeleton rounded-2xl border border-white/5" />
-              ))}
-            </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+            {[...Array(12)].map((_, i) => (
+              <div key={i} className="aspect-[2/3] skeleton rounded-2xl border border-white/5" />
+            ))}
           </div>
         ) : results.length > 0 ? (
-          <div className="space-y-10">
-            <div className="flex items-center justify-between border-l-4 border-primary pl-6">
+          <div className="space-y-8">
+            <div className="flex items-center justify-between border-l-4 border-primary pl-4 sm:pl-6">
               <div className="space-y-1">
-                <h2 className="text-2xl font-black uppercase tracking-tighter text-white italic">
-                  SEARCH RESULTS
-                </h2>
-                <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest">
-                  Found {results.length} titles matching "{query}"
-                </p>
+                <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tighter text-white italic">MATCHING TITLES</h2>
+                <p className="text-[8px] sm:text-[10px] text-muted-foreground font-mono uppercase tracking-widest">FOUND {results.length} RESULTS FOR "{query.toUpperCase()}"</p>
               </div>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
               {results.map((item) => (
-                <div key={item.id} className="space-y-3 group">
-                  <MovieCard item={item} className="w-full" />
-                  <div className="px-1">
-                    <p className="text-xs font-black text-white/80 line-clamp-1 group-hover:text-primary transition-colors tracking-tighter uppercase italic">
-                      {highlightMatch(item.title || item.name || "", query)}
-                    </p>
-                  </div>
-                </div>
+                <MovieCard key={item.id} item={item} className="w-full" />
               ))}
             </div>
           </div>
         ) : hasSearched && (
           <div className="flex flex-col items-center justify-center py-40 text-center space-y-8">
             <Film className="h-16 w-16 text-muted-foreground/30" />
-            <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter">NO MATCHES FOUND</h3>
-            <button onClick={handleClear} className="text-primary font-black uppercase text-sm tracking-widest hover:underline underline-offset-8 italic">
-              CLEAR & TRY AGAIN
-            </button>
+            <h3 className="text-2xl sm:text-3xl font-black text-white uppercase italic tracking-tighter">NO MATCHES FOUND</h3>
+            <button onClick={handleClear} className="text-primary font-black uppercase text-xs sm:text-sm tracking-widest hover:underline underline-offset-8 italic">CLEAR ARCHIVE SEARCH</button>
           </div>
         )}
       </div>

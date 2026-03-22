@@ -26,16 +26,16 @@ export function MovieCard({ item, className, type }: MovieCardProps) {
     <Link
       href={`/movie/${item.id}?type=${itemType}`}
       className={cn(
-        "group block flex-shrink-0 w-36 sm:w-44 md:w-52 transition-all duration-500 animate-fade-in",
+        "group block w-full transition-all duration-500 animate-fade-in",
         className
       )}
     >
-      <div className="space-y-4">
-        <div className="relative aspect-[2/3] overflow-hidden rounded-[1.25rem] bg-[#111] shadow-2xl transition-all duration-500 group-hover:scale-[1.05] group-hover:shadow-[0_0_40px_rgba(255,215,0,0.2)] border border-white/5 group-hover:border-primary/40">
+      <div className="space-y-3 sm:space-y-4">
+        <div className="relative aspect-[2/3] w-full overflow-hidden rounded-[1rem] sm:rounded-[1.25rem] bg-[#111] shadow-xl sm:shadow-2xl transition-all duration-500 group-hover:scale-[1.05] group-hover:shadow-[0_0_40px_rgba(255,215,0,0.2)] border border-white/5 group-hover:border-primary/40">
           {/* Top Badge */}
-          <div className="absolute top-3 right-3 z-10 bg-black/70 backdrop-blur-xl px-2 py-1 rounded-lg flex items-center gap-1.5 border border-white/10 shadow-lg group-hover:bg-primary transition-colors duration-300 group-hover:border-primary">
-            <Star className="h-3 w-3 text-primary fill-primary group-hover:text-black group-hover:fill-black transition-colors" />
-            <span className="text-[11px] font-black text-white group-hover:text-black tracking-tighter">
+          <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-10 bg-black/70 backdrop-blur-xl px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg flex items-center gap-1 sm:gap-1.5 border border-white/10 shadow-lg group-hover:bg-primary transition-colors duration-300 group-hover:border-primary">
+            <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-primary fill-primary group-hover:text-black group-hover:fill-black transition-colors" />
+            <span className="text-[9px] sm:text-[11px] font-black text-white group-hover:text-black tracking-tighter">
               {item.vote_average ? item.vote_average.toFixed(1) : "N/A"}
             </span>
           </div>
@@ -47,37 +47,35 @@ export function MovieCard({ item, className, type }: MovieCardProps) {
               alt={title || "Poster"}
               fill
               className="object-cover transition-transform duration-1000 group-hover:scale-110"
-              sizes="(max-width: 768px) 150px, 250px"
+              sizes="(max-width: 640px) 150px, (max-width: 1024px) 250px, 350px"
               placeholder="blur"
               blurDataURL={BLUR_DATA_URL}
               loading="lazy"
             />
           ) : (
             <div className="flex h-full w-full flex-col items-center justify-center bg-muted/10 p-4 text-center">
-              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.1em]">{title}</span>
+              <span className="text-[9px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.1em]">{title}</span>
             </div>
           )}
           
-          {/* Hover Overlay - Netflix Style */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 flex flex-col justify-end p-4">
-            <div className="bg-primary text-black rounded-full p-2 w-fit mb-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 shadow-xl">
-              <Play className="h-4 w-4 fill-current" />
+          {/* Hover Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 flex flex-col justify-end p-3 sm:p-4">
+            <div className="bg-primary text-black rounded-full p-1.5 sm:p-2 w-fit mb-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 shadow-xl">
+              <Play className="h-3 w-3 sm:h-4 sm:w-4 fill-current" />
             </div>
           </div>
         </div>
 
         {/* Metadata */}
-        <div className="space-y-1.5 px-1 transition-all duration-300 group-hover:translate-x-1">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="text-sm md:text-base font-bold text-white/90 line-clamp-2 leading-tight transition-colors group-hover:text-primary uppercase italic tracking-tighter">
-              {title}
-            </h3>
-          </div>
-          <div className="flex items-center gap-3">
-             <span className="text-[10px] text-white/40 font-black uppercase tracking-widest italic">
+        <div className="space-y-1 sm:space-y-1.5 px-1 transition-all duration-300 group-hover:translate-x-1">
+          <h3 className="text-xs sm:text-sm md:text-base font-bold text-white/90 line-clamp-1 sm:line-clamp-2 leading-tight transition-colors group-hover:text-primary uppercase italic tracking-tighter">
+            {title}
+          </h3>
+          <div className="flex items-center gap-2 sm:gap-3">
+             <span className="text-[9px] sm:text-[10px] text-white/40 font-black uppercase tracking-widest italic">
               {releaseYear || "N/A"}
             </span>
-            <span className="shrink-0 text-[8px] font-black border border-white/10 text-white/30 px-1.5 py-0.5 rounded uppercase tracking-widest group-hover:border-primary/30 group-hover:text-primary transition-colors">
+            <span className="shrink-0 text-[7px] sm:text-[8px] font-black border border-white/10 text-white/30 px-1 py-0.5 rounded uppercase tracking-widest group-hover:border-primary/30 group-hover:text-primary transition-colors">
               {quality}
             </span>
           </div>

@@ -1,11 +1,10 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getDetails, getCredits, getVideos, getSimilar, getImageUrl, getWatchProviders, Movie, Cast, TMDBError } from "@/lib/tmdb";
 import Image from "next/image";
-import { Play, Star, ArrowLeft, User, AlertCircle, Plus, Check, RefreshCcw, WifiOff, Settings } from "lucide-react";
+import { Play, Star, ArrowLeft, User, AlertCircle, Plus, Check, RefreshCcw, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MovieRow } from "@/components/movies/movie-row";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -62,19 +61,6 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
         setSimilar(similarRes || []);
         setProviders(providerRes || {});
         
-        const recent = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
-        const newItem = {
-          id: details.id,
-          title: details.title || details.name,
-          poster_path: details.poster_path,
-          vote_average: details.vote_average,
-          release_date: details.release_date || details.first_air_date,
-          media_type: type,
-          timestamp: Date.now()
-        };
-        const filtered = recent.filter((item: any) => item.id !== details.id);
-        localStorage.setItem('recentlyViewed', JSON.stringify([newItem, ...filtered].slice(0, 20)));
-
         if (user && firestore) {
           const cwRef = doc(firestore, "users", user.uid, "continueWatching", id);
           setDocumentNonBlocking(cwRef, {
@@ -91,10 +77,6 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
         }
       }
     } catch (err: any) {
-      const elapsed = Date.now() - startTime;
-      const wait = Math.max(0, MIN_LOAD_TIME - elapsed);
-      await new Promise(r => setTimeout(r, wait));
-
       if (err instanceof TMDBError) {
         setError({ message: err.message, type: err.type });
       } else {
@@ -136,7 +118,7 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
   if (loading) {
     return (
       <div className="min-h-screen bg-background space-y-8 pb-32">
-        <div className="relative h-[70vh] w-full"><Skeleton className="h-full w-full rounded-none" /></div>
+        <div className="relative h-[60vh] md:h-[80vh] w-full"><Skeleton className="h-full w-full rounded-none" /></div>
       </div>
     );
   }
@@ -144,16 +126,16 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
   if (error || !movie) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center space-y-8 bg-background">
-        <div className="relative p-8 bg-card border border-white/5 rounded-full">
+        <div className="p-8 bg-card border border-white/5 rounded-full">
            {error?.type === 'OFFLINE' ? <WifiOff className="h-12 w-12 text-primary" /> : <AlertCircle className="h-12 w-12 text-primary" />}
         </div>
         <div className="space-y-2">
           <h2 className="text-2xl font-black uppercase text-white tracking-tighter">{error?.message || "Content Unavailable"}</h2>
-          <p className="text-white/30 font-mono text-xs uppercase tracking-widest">{error?.type || '404'}</p>
+          <p className="text-white/30 font-mono text-[10px] uppercase tracking-widest">{error?.type || '404'}</p>
         </div>
-        <div className="flex gap-4">
-          <Button variant="outline" onClick={() => router.back()} className="rounded-full px-8 h-12 uppercase font-black italic">Go Back</Button>
-          <Button onClick={fetchData} className="rounded-full px-8 h-12 bg-primary text-black font-black italic"><RefreshCcw className="mr-2 h-4 w-4" /> Retry</Button>
+        <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm">
+          <Button variant="outline" onClick={() => router.back()} className="w-full h-12 rounded-full font-black italic">BACK</Button>
+          <Button onClick={fetchData} className="w-full h-12 bg-primary text-black font-black italic shadow-lg"><RefreshCcw className="mr-2 h-4 w-4" /> RETRY</Button>
         </div>
       </div>
     );
@@ -164,75 +146,76 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
   const providersData = providers?.['IN'] || providers?.['US'] || null;
 
   return (
-    <div className="min-h-screen bg-background pb-32 animate-fade-in">
+    <div className="min-h-screen bg-background pb-32 animate-fade-in overflow-x-hidden">
       <SubscriptionModal isOpen={isSubModalOpen} onOpenChange={setIsSubModalOpen} />
       
-      <div className="relative h-[70vh] w-full">
+      <div className="relative h-[60vh] sm:h-[75vh] lg:h-[90vh] w-full">
         {movie.backdrop_path && (
           <Image src={getImageUrl(movie.backdrop_path, "original") || ""} alt={movie.title || movie.name} fill className="object-cover opacity-60" priority />
         )}
         <div className="absolute inset-0 hero-gradient-overlay" />
-        <button onClick={() => router.back()} className="absolute top-6 left-6 p-3 bg-black/40 backdrop-blur-md rounded-full text-white z-30 border border-white/10">
-          <ArrowLeft className="h-6 w-6" />
+        <button onClick={() => router.back()} className="absolute top-6 left-6 p-2 sm:p-3 bg-black/40 backdrop-blur-md rounded-full text-white z-30 border border-white/10 hover:bg-primary hover:text-black transition-all">
+          <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
         </button>
-        <div className="absolute bottom-0 left-0 p-6 md:p-16 w-full z-20 space-y-6">
-          <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-white uppercase italic leading-none gold-gradient-text">
+        <div className="absolute bottom-0 left-0 p-6 sm:p-12 md:p-16 lg:p-24 w-full z-20 space-y-4 sm:space-y-6">
+          <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter text-white uppercase italic leading-none gold-gradient-text">
             {movie.title || movie.name}
           </h1>
-          <div className="flex flex-wrap items-center gap-4 text-sm font-bold text-white/80">
-            <div className="flex items-center text-primary bg-primary/10 px-2 py-1 rounded-md border border-primary/20"><Star className="h-4 w-4 mr-1 fill-current" />{movie.vote_average?.toFixed(1)}</div>
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-[10px] sm:text-sm font-bold text-white/80">
+            <div className="flex items-center text-primary bg-primary/10 px-2 py-1 rounded-md border border-primary/20"><Star className="h-3.5 w-3.5 mr-1 fill-current" />{movie.vote_average?.toFixed(1)}</div>
             <span>{releaseYear}</span>
-            {movie.runtime && <span>{movie.runtime} min</span>}
+            {movie.runtime && <span>{movie.runtime} MIN</span>}
+            <span className="border border-white/10 px-1.5 py-0.5 rounded text-[8px] uppercase">{movie.vote_average > 7 ? '4K ULTRA' : 'HD'}</span>
           </div>
-          <p className="text-sm md:text-lg text-muted-foreground max-w-3xl line-clamp-4 font-medium italic">{movie.overview}</p>
-          <div className="flex flex-wrap gap-4 pt-2">
+          <p className="text-xs sm:text-base md:text-lg text-muted-foreground max-w-3xl line-clamp-4 font-medium italic leading-relaxed">{movie.overview}</p>
+          <div className="flex flex-col sm:flex-row gap-4 pt-4 sm:pt-6">
             <Button 
               onClick={() => setIsSubModalOpen(true)}
-              className="bg-primary text-black font-black px-10 h-14 rounded-full hover:scale-105 transition-all glow-primary"
+              className="w-full sm:w-auto bg-primary text-black font-black px-12 h-14 rounded-full hover:scale-105 active:scale-95 transition-all glow-primary"
             >
-              <Play className="mr-2 h-6 w-6 fill-current" /> WATCH NOW
+              <Play className="mr-3 h-6 w-6 fill-current" /> WATCH NOW
             </Button>
-            <Button variant="outline" onClick={toggleWatchlist} className="rounded-full px-8 h-14 border-white/10 bg-white/5 backdrop-blur-xl hover:bg-white/10 font-black">
-              {isInWatchlist ? <><Check className="mr-2 h-5 w-5 text-primary" /> IN WATCHLIST</> : <><Plus className="mr-2 h-5 w-5" /> ADD TO WATCHLIST</>}
+            <Button variant="outline" onClick={toggleWatchlist} className="w-full sm:w-auto rounded-full px-10 h-14 border-white/10 bg-white/5 backdrop-blur-xl hover:bg-white/10 font-black">
+              {isInWatchlist ? <><Check className="mr-2 h-5 w-5 text-primary" /> IN LIST</> : <><Plus className="mr-2 h-5 w-5" /> ADD TO LIST</>}
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="px-6 md:px-16 mt-12 space-y-20">
-        <section className="space-y-8">
-          <h2 className="text-2xl font-black uppercase text-white border-l-4 border-primary pl-6">🎬 AVAILABLE ON</h2>
-          <div className="no-scrollbar flex gap-8 overflow-x-auto pb-6">
-            {(providersData?.flatrate || []).length > 0 ? Array.from(new Map((providersData.flatrate as any[]).map((p: any) => [p.provider_id, p])).values()).map((provider: any) => (
-              <div key={provider.provider_id} className="flex-shrink-0 flex flex-col items-center gap-4">
-                <div className="relative h-20 w-20 rounded-3xl overflow-hidden border border-white/10 bg-card/50">
+      <div className="px-6 md:px-16 mt-12 space-y-16 sm:space-y-24">
+        <section className="space-y-6 sm:space-y-8">
+          <h2 className="text-lg sm:text-2xl font-black uppercase text-white border-l-4 border-primary pl-4 sm:pl-6">🎬 AVAILABLE ON</h2>
+          <div className="no-scrollbar flex gap-6 sm:gap-10 overflow-x-auto pb-4">
+            {(providersData?.flatrate || []).length > 0 ? (providersData.flatrate as any[]).map((provider: any) => (
+              <div key={provider.provider_id} className="flex-shrink-0 flex flex-col items-center gap-3 sm:gap-4">
+                <div className="relative h-16 w-16 sm:h-20 sm:w-20 rounded-2xl sm:rounded-3xl overflow-hidden border border-white/10 bg-card/50 shadow-xl">
                   <Image src={getImageUrl(provider.logo_path, "w185") || ""} alt={provider.provider_name} fill className="object-cover" />
                 </div>
-                <span className="text-[12px] font-black text-white/60 uppercase italic">{provider.provider_name}</span>
+                <span className="text-[10px] sm:text-[12px] font-black text-white/60 uppercase italic">{provider.provider_name}</span>
               </div>
-            )) : <p className="text-white/30 uppercase font-black italic">Check local listings for availability</p>}
+            )) : <p className="text-white/30 uppercase font-black italic text-xs sm:text-sm">CHECK LOCAL LISTINGS FOR AVAILABILITY</p>}
           </div>
         </section>
 
         {trailer && (
-          <section className="space-y-8">
-            <h2 className="text-xl font-black uppercase text-white border-l-4 border-primary pl-6">OFFICIAL TRAILER</h2>
-            <div className="aspect-video w-full max-w-5xl mx-auto rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-black">
+          <section className="space-y-6 sm:space-y-8">
+            <h2 className="text-lg sm:text-2xl font-black uppercase text-white border-l-4 border-primary pl-4 sm:pl-6">OFFICIAL TRAILER</h2>
+            <div className="aspect-video w-full max-w-5xl mx-auto rounded-2xl sm:rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-black">
               <iframe src={`https://www.youtube.com/embed/${trailer.key}`} title="Trailer" className="w-full h-full" allowFullScreen />
             </div>
           </section>
         )}
 
         {cast.length > 0 && (
-          <section className="space-y-8">
-            <h2 className="text-xl font-black uppercase text-white border-l-4 border-primary pl-6">TOP CAST</h2>
-            <div className="no-scrollbar flex gap-8 overflow-x-auto pb-4">
+          <section className="space-y-6 sm:space-y-8">
+            <h2 className="text-lg sm:text-2xl font-black uppercase text-white border-l-4 border-primary pl-4 sm:pl-6">TOP CAST</h2>
+            <div className="no-scrollbar flex gap-6 sm:gap-10 overflow-x-auto pb-4">
               {cast.map((person) => (
-                <div key={person.id} className="flex-shrink-0 w-28 md:w-36 text-center space-y-4">
-                  <div className="relative aspect-square rounded-full overflow-hidden border-2 border-white/5">
-                    {person.profile_path ? <Image src={getImageUrl(person.profile_path, "w185") || ""} alt={person.name} fill className="object-cover" /> : <div className="h-full w-full bg-muted flex items-center justify-center"><User className="h-10 w-10 text-muted-foreground/30" /></div>}
+                <div key={person.id} className="flex-shrink-0 w-24 sm:w-36 text-center space-y-3 sm:space-y-4">
+                  <div className="relative aspect-square rounded-full overflow-hidden border-2 border-white/5 shadow-lg">
+                    {person.profile_path ? <Image src={getImageUrl(person.profile_path, "w185") || ""} alt={person.name} fill className="object-cover" /> : <div className="h-full w-full bg-muted flex items-center justify-center"><User className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground/30" /></div>}
                   </div>
-                  <p className="text-sm font-black text-white line-clamp-1 uppercase italic">{person.name}</p>
+                  <p className="text-[10px] sm:text-sm font-black text-white line-clamp-1 uppercase italic">{person.name}</p>
                 </div>
               ))}
             </div>

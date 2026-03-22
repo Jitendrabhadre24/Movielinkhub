@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { FirebaseClientProvider } from '@/firebase';
 import { BottomNav } from "@/components/layout/bottom-nav";
+import { TopNav } from "@/components/layout/top-nav";
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
@@ -56,9 +57,6 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  verification: {
-    google: 'your-google-verification-code', // Placeholder for user
-  },
 };
 
 export default function RootLayout({
@@ -75,7 +73,8 @@ export default function RootLayout({
       </head>
       <body className="antialiased bg-background min-h-screen text-foreground selection:bg-primary selection:text-primary-foreground">
         <FirebaseClientProvider>
-          <main className="pb-20">
+          <TopNav />
+          <main className="pb-20 lg:pt-4">
             {children}
           </main>
           <BottomNav />
