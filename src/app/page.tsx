@@ -50,16 +50,6 @@ export default function Home() {
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<{ message: string; type: string } | null>(null);
-  const [isAdHidden, setIsAdHidden] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      // Hide ad when scrolled down, show when scrolled up or at top
-      setIsAdHidden(window.scrollY > 80);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const watchlistQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -163,13 +153,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#0B0B0B] pb-32 animate-fade-in overflow-x-hidden">
-      <AdsterraBanner 
-        id="top-ad-320x50" 
-        className={cn(
-          "transition-all duration-500 origin-top",
-          isAdHidden && "hide"
-        )} 
-      />
+      {/* Top Banner removed for true full-screen hero experience from top edge */}
 
       {error ? (
         <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-6 space-y-8">
@@ -183,7 +167,7 @@ export default function Home() {
         </div>
       ) : trending.length > 0 ? (
         <>
-          <section className="relative w-full py-4 px-0">
+          <section className="relative w-full py-0 px-0 mt-0">
             <Swiper
               modules={[Autoplay]}
               grabCursor={true}

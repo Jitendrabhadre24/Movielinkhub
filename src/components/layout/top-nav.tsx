@@ -21,13 +21,13 @@ export function TopNav() {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      // Show header after 80px scroll
+      // Reveal the header only after scrolling down 80px
       setIsHeaderVisible(currentScrollY > 80);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     
-    // Initial check in case page is already scrolled
+    // Initial check in case the page is refreshed while scrolled
     handleScroll();
 
     return () => window.removeEventListener("scroll", handleScroll);
