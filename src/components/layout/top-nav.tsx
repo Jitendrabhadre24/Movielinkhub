@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Search } from "lucide-react";
+import { Search, Link as LinkIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
@@ -16,18 +16,15 @@ const navItems = [
 export function TopNav() {
   const pathname = usePathname();
   const router = useRouter();
-  const [isHeaderVisible, setIsHeaderVisible] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      // Reveal the header only after scrolling down 80px
-      setIsHeaderVisible(currentScrollY > 80);
+      setIsScrolled(currentScrollY > 20);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    
-    // Initial check in case the page is refreshed while scrolled
     handleScroll();
 
     return () => window.removeEventListener("scroll", handleScroll);
@@ -36,20 +33,23 @@ export function TopNav() {
   return (
     <header 
       className={cn(
-        "fixed top-0 left-0 right-0 z-[100] h-[60px] w-full flex items-center justify-between px-6 transition-all duration-500 ease-in-out",
-        isHeaderVisible 
-          ? "translate-y-0 opacity-100 bg-black/80 backdrop-blur-xl border-b border-white/5" 
-          : "-translate-y-full opacity-0 pointer-events-none"
+        "fixed top-0 left-0 right-0 z-[100] h-[70px] w-full flex items-center justify-between px-4 sm:px-6 transition-all duration-500 ease-in-out",
+        isScrolled 
+          ? "bg-black/80 backdrop-blur-xl border-b border-white/5 shadow-2xl" 
+          : "bg-transparent border-transparent"
       )}
     >
       <div className="flex items-center gap-8 md:gap-12">
+        {/* Modern Dual-Box Logo */}
         <div 
-          className="flex items-center gap-1 cursor-pointer group select-none"
+          className="inline-flex items-center gap-[4px] cursor-pointer group select-none active:scale-95 transition-transform"
           onClick={() => router.push('/')}
         >
-          <div className="flex items-center font-black tracking-[1px] uppercase text-xl md:text-2xl italic">
-            <span className="text-[#FFD700]">ML</span>
-            <span className="text-white ml-1">LINK</span>
+          <div className="bg-[#FF2D2D] text-white px-[10px] py-[6px] rounded-[8px] font-black text-xs sm:text-sm tracking-tighter shadow-[0_4px_12px_rgba(255,45,45,0.3)]">
+            MOVIE
+          </div>
+          <div className="bg-[#FFD700] text-black px-[8px] py-[6px] rounded-[8px] flex items-center justify-center shadow-[0_4px_12px_rgba(255,215,0,0.3)]">
+            <LinkIcon className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
         </div>
         
