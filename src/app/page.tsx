@@ -226,56 +226,59 @@ export default function Home() {
       ) : heroMovie ? (
         <>
           <section className="relative h-screen w-full overflow-hidden bg-black">
-            {/* Cinematic Background Transitions */}
-            <div className="absolute inset-0 z-0">
-              {trending.slice(0, 5).map((movie, idx) => (
-                <div 
-                  key={movie.id}
-                  className={cn(
-                    "absolute inset-0 transition-opacity duration-1000 ease-in-out",
-                    heroIndex === idx ? "opacity-100" : "opacity-0"
-                  )}
-                >
-                  {movie.backdrop_path && (
-                    <Image
-                      src={getImageUrl(movie.backdrop_path, "original") || ""}
-                      alt={movie.title || movie.name || "Hero"}
-                      fill
-                      className="object-cover animate-slow-zoom brightness-[0.7]"
-                      priority={idx === 0}
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Video Background Layer (Desktop Only) */}
-            <video 
-              autoPlay 
-              muted 
-              loop 
-              playsInline 
-              className="absolute inset-0 w-full h-full object-cover opacity-40 z-10 hidden lg:block pointer-events-none"
-            >
-              <source src="https://assets.mixkit.co/videos/preview/mixkit-stars-in-the-night-sky-slowly-moving-98-large.mp4" type="video/mp4" />
-            </video>
-
-            {/* Trailer Background (Desktop Only - Dynamic Fetch) */}
-            {trailerKey && (
-              <div className="absolute inset-0 z-20 hidden lg:block overflow-hidden pointer-events-none transition-opacity duration-1000">
-                <iframe
-                  className="absolute top-1/2 left-1/2 w-[110vw] h-[110vh] -translate-x-1/2 -translate-y-1/2 scale-[1.3] opacity-0 transition-opacity duration-1000"
-                  src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailerKey}&rel=0&modestbranding=1&iv_load_policy=3&enablejsapi=1`}
-                  allow="autoplay; encrypted-media"
-                  style={{ opacity: 0.6 }}
-                  onLoad={(e) => (e.currentTarget.style.opacity = "0.6")}
-                />
+            {/* Background Layers */}
+            <div className="hero-video">
+              {/* Cinematic Background Transitions */}
+              <div className="absolute inset-0 z-0">
+                {trending.slice(0, 5).map((movie, idx) => (
+                  <div 
+                    key={movie.id}
+                    className={cn(
+                      "absolute inset-0 transition-opacity duration-1000 ease-in-out",
+                      heroIndex === idx ? "opacity-100" : "opacity-0"
+                    )}
+                  >
+                    {movie.backdrop_path && (
+                      <Image
+                        src={getImageUrl(movie.backdrop_path, "original") || ""}
+                        alt={movie.title || movie.name || "Hero"}
+                        fill
+                        className="object-cover animate-slow-zoom brightness-[0.7]"
+                        priority={idx === 0}
+                      />
+                    )}
+                  </div>
+                ))}
               </div>
-            )}
+
+              {/* Video Background Layer (Desktop Only) */}
+              <video 
+                autoPlay 
+                muted 
+                loop 
+                playsInline 
+                className="absolute inset-0 w-full h-full object-cover opacity-40 z-10 hidden lg:block pointer-events-none"
+              >
+                <source src="https://assets.mixkit.co/videos/preview/mixkit-stars-in-the-night-sky-slowly-moving-98-large.mp4" type="video/mp4" />
+              </video>
+
+              {/* Trailer Background (Desktop Only - Dynamic Fetch) */}
+              {trailerKey && (
+                <div className="absolute inset-0 z-20 hidden lg:block overflow-hidden pointer-events-none transition-opacity duration-1000">
+                  <iframe
+                    className="absolute top-1/2 left-1/2 w-[110vw] h-[110vh] -translate-x-1/2 -translate-y-1/2 scale-[1.3] opacity-0 transition-opacity duration-1000"
+                    src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailerKey}&rel=0&modestbranding=1&iv_load_policy=3&enablejsapi=1`}
+                    allow="autoplay; encrypted-media"
+                    style={{ opacity: 0.6 }}
+                    onLoad={(e) => (e.currentTarget.style.opacity = "0.6")}
+                  />
+                </div>
+              )}
+            </div>
             
-            <div className="absolute inset-0 hero-gradient-overlay z-30" />
+            <div className="hero-overlay" />
             
-            <div className="absolute bottom-0 left-0 p-6 sm:p-12 md:p-16 lg:p-24 space-y-4 sm:space-y-6 md:space-y-8 max-w-5xl z-40 pb-16 sm:pb-32 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+            <div className="hero-content absolute bottom-0 left-0 w-full max-w-5xl space-y-4 sm:space-y-6 md:space-y-8 pb-16 sm:pb-32 animate-in fade-in slide-in-from-bottom-8 duration-1000">
               <div className="flex items-center gap-2">
                 <div className="bg-primary/20 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-2 border border-primary/30">
                   <span className="text-[10px] sm:text-[11px] font-black text-primary tracking-widest uppercase italic">🔥 NOW STREAMING</span>
