@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useUser, useFirestore, useDoc, useMemoFirebase, setDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
+import { SubscriptionModal } from "@/components/subscription/subscription-modal";
 
 export default function MovieDetailClient({ id, initialType }: { id: string, initialType: "movie" | "tv" }) {
   const type = initialType;
@@ -26,6 +27,7 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
   const [providers, setProviders] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSubModalOpen, setIsSubModalOpen] = useState(false);
 
   const watchlistRef = useMemoFirebase(() => {
     if (!user || !firestore || !id) return null;
@@ -140,11 +142,11 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
   const trailer = videos.find((v) => v.type === "Trailer" && v.site === "YouTube");
   const releaseYear = (movie.release_date || movie.first_air_date || "").split("-")[0];
   const providersData = providers?.['IN'] || providers?.['US'] || null;
-  const flatrate = providersData?.flatrate || [];
-  const uniqueProviders = Array.from(new Map(flatrate.map((p: any) => [p.provider_id, p])).values());
 
   return (
     <div className="min-h-screen bg-background pb-32 animate-fade-in">
+      <SubscriptionModal isOpen={isSubModalOpen} onOpenChange={setIsSubModalOpen} />
+      
       <div className="relative h-[70vh] w-full">
         {movie.backdrop_path && (
           <Image src={getImageUrl(movie.backdrop_path, "original") || ""} alt={movie.title || movie.name} fill className="object-cover opacity-60" priority />
@@ -164,8 +166,11 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
           </div>
           <p className="text-sm md:text-lg text-muted-foreground max-w-3xl line-clamp-4 font-medium italic">{movie.overview}</p>
           <div className="flex flex-wrap gap-4 pt-2">
-            <Button asChild className="bg-primary text-black font-black px-10 h-14 rounded-full hover:scale-105 transition-all glow-primary">
-              <a href={providersData?.link || "#"} target="_blank" rel="noopener noreferrer"><Play className="mr-2 h-6 w-6 fill-current" /> WATCH NOW</a>
+            <Button 
+              onClick={() => setIsSubModalOpen(true)}
+              className="bg-primary text-black font-black px-10 h-14 rounded-full hover:scale-105 transition-all glow-primary"
+            >
+              <Play className="mr-2 h-6 w-6 fill-current" /> WATCH NOW
             </Button>
             <Button variant="outline" onClick={toggleWatchlist} className="rounded-full px-8 h-14 border-white/10 bg-white/5 backdrop-blur-xl hover:bg-white/10 font-black">
               {isInWatchlist ? <><Check className="mr-2 h-5 w-5 text-primary" /> IN WATCHLIST</> : <><Plus className="mr-2 h-5 w-5" /> ADD TO WATCHLIST</>}
@@ -178,7 +183,7 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
         <section className="space-y-8">
           <h2 className="text-2xl font-black uppercase text-white border-l-4 border-primary pl-6">🎬 AVAILABLE ON</h2>
           <div className="no-scrollbar flex gap-8 overflow-x-auto pb-6">
-            {uniqueProviders.length > 0 ? uniqueProviders.map((provider: any) => (
+            {(providersData?.flatrate || []).length > 0 ? Array.from(new Map((providersData.flatrate as any[]).map((p: any) => [p.provider_id, p])).values()).map((provider: any) => (
               <div key={provider.provider_id} className="flex-shrink-0 flex flex-col items-center gap-4">
                 <div className="relative h-20 w-20 rounded-3xl overflow-hidden border border-white/10 bg-card/50">
                   <Image src={getImageUrl(provider.logo_path, "w185") || ""} alt={provider.provider_name} fill className="object-cover" />
