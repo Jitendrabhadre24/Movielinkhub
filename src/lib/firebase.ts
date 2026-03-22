@@ -3,12 +3,12 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "mock-api-key",
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "movielink-hub.firebaseapp.com",
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "movielink-hub",
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "movielink-hub.appspot.com",
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "000000000000",
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:000000000000:web:000000000000",
+  apiKey: "AIzaSyBmd6aIFToKWzlkWdfzqaxUXJ6tAC8ogu0",
+  authDomain: "studio-2743789597-ea611.firebaseapp.com",
+  projectId: "studio-2743789597-ea611",
+  storageBucket: "studio-2743789597-ea611.firebasestorage.app",
+  messagingSenderId: "1065244788702",
+  appId: "1:1065244788702:web:12372a0e9659a9cc0e7f4f",
 };
 
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
