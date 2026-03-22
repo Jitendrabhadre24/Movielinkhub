@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 
 const navItems = [
   { label: "HOME", href: "/" },
@@ -15,11 +16,33 @@ const navItems = [
 export function TopNav() {
   const pathname = usePathname();
   const router = useRouter();
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 md:px-12 bg-gradient-to-b from-black/95 via-black/50 to-transparent backdrop-blur-[2px]">
+    <header 
+      className={cn(
+        "fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 md:px-12 transition-all duration-500",
+        isScrolled 
+          ? "bg-black/80 backdrop-blur-2xl border-b border-white/5 py-3 shadow-2xl" 
+          : "bg-gradient-to-b from-black/95 via-black/40 to-transparent backdrop-blur-[1px] py-6"
+      )}
+    >
       <div className="flex items-center gap-10">
-        <div className="flex items-center gap-1 cursor-pointer group" onClick={() => router.push('/')}>
+        <div 
+          className={cn(
+            "flex items-center gap-1 cursor-pointer transition-all duration-500 group",
+            !isScrolled && pathname === '/' ? "opacity-0 -translate-x-4 pointer-events-none" : "opacity-100 translate-x-0"
+          )} 
+          onClick={() => router.push('/')}
+        >
           <span className="text-xl md:text-2xl font-black text-white tracking-tighter uppercase italic">MOVIELINK</span>
           <span className="text-xl md:text-2xl font-black bg-primary text-black px-2 py-0.5 rounded-sm tracking-tighter uppercase italic shadow-[0_0_15px_rgba(255,215,0,0.5)]">HUB</span>
         </div>
