@@ -27,7 +27,6 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Watchlist status via standardized hook
   const watchlistRef = useMemoFirebase(() => {
     if (!user || !firestore || !id) return null;
     return doc(firestore, "users", user.uid, "watchlist", id);
@@ -57,7 +56,6 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
         setSimilar(similarRes || []);
         setProviders(providerRes || {});
         
-        // Save to Recently Viewed (LocalStorage)
         const recent = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
         const newItem = {
           id: details.id,
@@ -71,16 +69,18 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
         const filtered = recent.filter((item: any) => item.id !== details.id);
         localStorage.setItem('recentlyViewed', JSON.stringify([newItem, ...filtered].slice(0, 20)));
 
-        // Record progress in Firestore (Continue Watching)
         if (user && firestore) {
           const cwRef = doc(firestore, "users", user.uid, "continueWatching", id);
           setDocumentNonBlocking(cwRef, {
-            id: Number(id),
-            userId: user.uid, // CRITICAL: Security rules require this
+            id: String(id),
+            userId: user.uid,
+            contentId: String(id),
+            contentType: type,
             title: details.title || details.name,
             poster: details.poster_path,
-            type: type,
-            lastWatched: Date.now()
+            lastWatchedAt: new Date().toISOString(),
+            progressSeconds: 0,
+            totalSeconds: details.runtime ? details.runtime * 60 : 0
           }, { merge: true });
         }
       }
@@ -107,12 +107,13 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
       toast({ title: "Removed from Watchlist" });
     } else {
       setDocumentNonBlocking(docRef, {
-        id: Number(id),
-        userId: user.uid, // CRITICAL: Security rules require this
+        id: String(id),
+        userId: user.uid,
+        contentId: String(id),
+        contentType: type,
         title: movie.title || movie.name,
         poster: movie.poster_path,
-        type: type,
-        addedAt: Date.now()
+        addedAt: new Date().toISOString()
       }, { merge: true });
       toast({ title: "Added to Watchlist" });
     }

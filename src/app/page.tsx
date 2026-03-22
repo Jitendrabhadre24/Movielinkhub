@@ -48,12 +48,11 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Firestore Queries using standardized hooks
   const continueWatchingQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
     return query(
       collection(firestore, "users", user.uid, "continueWatching"),
-      orderBy("lastWatched", "desc"),
+      orderBy("lastWatchedAt", "desc"),
       limit(10)
     );
   }, [user, firestore]);
@@ -97,11 +96,10 @@ export default function Home() {
     setRecentlyViewed(recent);
   }, []);
 
-  // Handle recommendations based on latest continue watching item
   useEffect(() => {
     if (continueWatching && continueWatching.length > 0) {
       const lastWatched = continueWatching[0];
-      getRecommendations(lastWatched.id.toString(), lastWatched.type).then(recs => {
+      getRecommendations(lastWatched.contentId || lastWatched.id.toString(), lastWatched.contentType || lastWatched.type).then(recs => {
         setRecommendations(recs || []);
         setRecSourceTitle(lastWatched.title);
       });

@@ -3,93 +3,44 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * FIRESTORE SECURITY RULES DOCUMENTATION
-     *
-     * Core Philosophy:
-     * This ruleset implements a strict "User-Centric Ownership" model. Authorization is primarily 
-     * derived from the document's path. If a document exists within a user's private subcollection, 
-     * only that authenticated user can access it.
-     *
-     * Data Structure:
-     * All application data is organized hierarchically under a root `/users/{userId}` path. 
-     * - `/users/{userId}/watchlist/{id}`: Personal bookmarks for movies/shows.
-     * - `/users/{userId}/continueWatching/{id}`: Playback progress tracking.
-     *
-     * Key Security Decisions:
-     * 1. Path-Based Authorization: We use the `userId` variable from the document path and compare 
-     *    it directly against `request.auth.uid`. This is highly performant as it avoids `get()` calls.
-     * 2. Relational Integrity: On document creation, we enforce that the `userId` field within the 
-     *    document matches the owner's UID and the path ID.
-     * 3. Immutability: Once created, the ownership field (`userId`) is immutable to prevent data 
-     *    from being "stolen" or transferred between user accounts.
-     * 4. Denormalization for Authorization: The `userId` is stored inside the document to allow 
-     *    for invariant checking and easier querying, even though path-based rules are the primary 
-     *    defense.
-     *
-     * Structural Segregation:
-     * Private user data is kept entirely separate from any potentially public data (though none 
-     * is defined in this IR). This prevents accidental leakage during `list` operations.
+     * FIRESTORE SECURITY RULES
+     * 
+     * Implements a User-Centric Ownership model.
+     * Private user data is nested under /users/{userId}.
      */
 
     // --- HELPER FUNCTIONS ---
 
-    /** Checks if the request is made by a signed-in user. */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /** Checks if the authenticated user's UID matches the provided userId. */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    /** Checks if the document exists and the current user is the owner. */
-    function isExistingOwner(userId) {
-      return resource != null && isOwner(userId);
-    }
-
-    /** Validates that the internal userId field matches the path and the authenticated user. */
-    function isValidUserLink(userId) {
-      return request.resource.data.userId == userId && request.resource.data.userId == request.auth.uid;
-    }
-
-    /** Ensures that the ownership field cannot be modified during an update. */
-    function isOwnershipImmutable() {
-      return request.resource.data.userId == resource.data.userId;
-    }
-
     // --- COLLECTION RULES ---
 
-    /**
-     * @description Rules for individual items in a user's movie/TV show watchlist.
-     * @path /users/{userId}/watchlist/{watchlistItemId}
-     * @allow (create) if auth.uid is 'user123', userId path is 'user123', and data.userId is 'user123'.
-     * @deny (list) if auth.uid is 'userA' but path is '/users/userB/watchlist'.
-     * @principle Restricts access to a user's own data tree and validates relational integrity.
-     */
-    match /users/{userId}/watchlist/{watchlistItemId} {
-      allow get, list: if isOwner(userId);
-      allow create: if isOwner(userId) && isValidUserLink(userId);
-      allow update: if isExistingOwner(userId) && isOwnershipImmutable();
-      allow delete: if isExistingOwner(userId);
-    }
+    match /users/{userId} {
+      
+      // Personal watchlist management
+      match /watchlist/{watchlistItemId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.userId == request.auth.uid;
+        allow update: if isOwner(userId) && request.resource.data.userId == resource.data.userId;
+        allow delete: if isOwner(userId);
+      }
 
-    /**
-     * @description Rules for tracking playback progress of movies or episodes.
-     * @path /users/{userId}/continueWatching/{continueWatchingItemId}
-     * @allow (update) if auth.uid is 'user123' and they are updating their own progress record.
-     * @deny (delete) if user is not logged in.
-     * @principle Enforces document ownership for all write operations and ensures path-data consistency.
-     */
-    match /users/{userId}/continueWatching/{continueWatchingItemId} {
-      allow get, list: if isOwner(userId);
-      allow create: if isOwner(userId) && isValidUserLink(userId);
-      allow update: if isExistingOwner(userId) && isOwnershipImmutable();
-      allow delete: if isExistingOwner(userId);
+      // Playback progress tracking
+      match /continueWatching/{continueWatchingItemId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.userId == request.auth.uid;
+        allow update: if isOwner(userId) && request.resource.data.userId == resource.data.userId;
+        allow delete: if isOwner(userId);
+      }
     }
 
     // --- DEFAULT DENY ---
-    // Explicitly deny access to any other paths or subcollections not defined above.
     match /{path=**} {
       allow read, write: if false;
     }
