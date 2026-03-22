@@ -175,15 +175,15 @@ export default function Home() {
                       />
                       
                       <div className="poster-overlay">
-                        <div className={`space-y-1 transition-all duration-700 delay-100 ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+                        <div className={`space-y-1.5 transition-all duration-700 delay-100 ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
                           <div className="flex items-center gap-2">
                             <Star className="h-3 w-3 text-primary fill-primary" />
                             <span className="text-[10px] font-black text-white">{movie.vote_average?.toFixed(1)}</span>
                           </div>
-                          <h1 className="text-lg md:text-2xl font-black text-white uppercase italic tracking-tighter leading-none line-clamp-1">
+                          <h1 className="poster-title text-xl md:text-3xl font-black text-white uppercase italic tracking-tighter leading-[1.1] line-clamp-2">
                             {movie.title || movie.name}
                           </h1>
-                          <p className="text-[8px] md:text-[10px] font-black text-white/50 uppercase tracking-widest italic">
+                          <p className="text-[8px] md:text-[10px] font-black text-white/50 uppercase tracking-[0.15em] italic">
                             {(movie.release_date || movie.first_air_date || "").split("-")[0]} • PREMIUM • HD
                           </p>
                         </div>
@@ -211,13 +211,21 @@ export default function Home() {
             </Swiper>
           </section>
 
-          <BannerAd id="mid-banner" className="mid-ad" />
-
-          <div className="relative z-50 space-y-12">
+          <div className="relative z-50 mt-4 space-y-12">
             <MovieRow title="🔥 TRENDING NOW" items={trending} viewAllHref="/genres" />
+            
+            <BannerAd id="mid-banner" className="mid-ad" />
+
             <MovieRow title="📺 POPULAR SERIES" items={popularTV} type="tv" />
             
-            <BannerAd id="interstitial-banner" className="bg-white/5 mx-6 rounded-2xl border border-white/5" />
+            <div className="px-6">
+              <div className="h-32 w-full bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-2xl border border-primary/10 flex items-center justify-center group cursor-pointer hover:border-primary/30 transition-all">
+                <div className="text-center space-y-1">
+                  <p className="text-[9px] font-black text-primary/40 uppercase tracking-[0.4em] italic">PREMIUM SPONSOR</p>
+                  <p className="text-sm font-black text-white uppercase italic tracking-tighter group-hover:text-primary transition-colors">UNLOCK AD-FREE STREAMING</p>
+                </div>
+              </div>
+            </div>
 
             <MovieRow title="🎌 ANIME MASTERPIECES" items={anime} />
             <MovieRow title="🎬 TOP RATED FILMS" items={topRated} />

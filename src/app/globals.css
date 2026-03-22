@@ -68,8 +68,9 @@
 
   .mid-ad {
     margin: 20px;
-    border-radius: 12px;
+    border-radius: 16px;
     overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   }
 
   .header {
@@ -103,6 +104,7 @@
     overflow: hidden;
     transition: 0.3s;
     background: #111;
+    margin-bottom: 20px;
   }
 
   .poster-overlay {
@@ -110,15 +112,20 @@
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 16px;
-    background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
+    padding: 20px 16px 32px 16px;
+    background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0.5) 70%, transparent 100%);
     z-index: 10;
+  }
+
+  .poster-title {
+    text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+    line-height: 1.1;
   }
 
   .action-buttons {
     position: absolute;
     right: 12px;
-    bottom: 80px;
+    bottom: 90px;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -126,15 +133,15 @@
   }
 
   .play-btn {
-    width: 52px;
-    height: 52px;
+    width: 54px;
+    height: 54px;
     border-radius: 50%;
     background: #FFC107;
     display: flex;
-    items-center: center;
+    align-items: center;
     justify-content: center;
     color: black;
-    box-shadow: 0 0 25px rgba(255, 193, 7, 0.4);
+    box-shadow: 0 0 30px rgba(255, 193, 7, 0.5);
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
@@ -146,26 +153,33 @@
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     display: flex;
-    items-center: center;
+    align-items: center;
     justify-content: center;
     color: white;
+    transition: all 0.2s;
+  }
+
+  .list-btn:active {
+    background: rgba(255, 255, 255, 0.1);
   }
 
   /* Swiper Scaling Logic */
   .hero-swiper-container .swiper-slide {
     transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-    transform: scale(0.88);
+    transform: scale(0.85);
     opacity: 0.5;
+    filter: blur(2px);
   }
 
   .hero-swiper-container .swiper-slide-active {
     transform: scale(1);
     opacity: 1;
     z-index: 10;
+    filter: blur(0px);
   }
 
   .grid-container {

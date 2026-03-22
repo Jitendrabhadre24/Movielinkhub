@@ -33,17 +33,21 @@ export function BannerAd({ id, className, isStickyTop }: BannerAdProps) {
   return (
     <div 
       className={cn(
-        isStickyTop ? "top-ad" : "w-full py-6",
+        isStickyTop ? "top-ad" : "w-full py-2",
         "transition-all duration-500 ease-in-out overflow-hidden flex items-center justify-center bg-[#0B0B0B]",
-        isStickyTop && isAdHidden ? "hide h-0" : "h-[60px] md:h-[90px]",
+        isStickyTop && isAdHidden ? "hide h-0" : "h-[65px] md:h-[95px]",
         className
       )}
     >
-      <div className="relative w-full max-w-[728px] mx-auto px-4">
-        <div className="w-full bg-white/5 border border-white/10 rounded-xl h-[50px] md:h-[75px] flex items-center justify-center group hover:border-primary/40 transition-colors cursor-pointer">
-          <div className="flex flex-col items-center gap-1">
-            <span className="text-[9px] font-black text-primary/40 uppercase tracking-[0.3em] group-hover:text-primary transition-colors italic">ADVERTISING PARTNER</span>
-            <span className="text-[7px] font-mono text-white/20 uppercase tracking-widest">{isStickyTop ? "728x90 LEADERBOARD" : "PREMIUM DISPLAY"}</span>
+      <div className="relative w-full max-w-[728px] mx-auto px-4 h-full flex items-center">
+        <div className="w-full bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-2xl h-[50px] md:h-[75px] flex items-center justify-between px-6 group hover:border-primary/40 transition-all cursor-pointer shadow-lg overflow-hidden relative">
+          <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="flex flex-col justify-center relative z-10">
+            <span className="text-[8px] font-black text-primary uppercase tracking-[0.3em] italic">SPONSORED CONTENT</span>
+            <span className="text-[10px] md:text-xs font-black text-white/90 uppercase italic tracking-tighter">DISCOVER THE NEW ERA OF CINEMA</span>
+          </div>
+          <div className="hidden md:flex flex-col items-end relative z-10">
+            <div className="bg-primary/10 border border-primary/20 px-2 py-0.5 rounded text-[7px] font-black text-primary">LEARN MORE</div>
           </div>
         </div>
       </div>
