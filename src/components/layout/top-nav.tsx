@@ -21,39 +21,36 @@ export function TopNav() {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      
-      // Show header and hide ad after 100px scroll
-      if (currentScrollY > 100) {
-        setIsHeaderVisible(true);
-      } else {
-        setIsHeaderVisible(false);
-      }
+      // Show header after 80px scroll
+      setIsHeaderVisible(currentScrollY > 80);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     
-    // Subpages always show header
-    if (pathname !== '/') {
-      setIsHeaderVisible(true);
-    }
+    // Initial check in case page is already scrolled
+    handleScroll();
 
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [pathname]);
+  }, []);
 
   return (
     <header 
       className={cn(
-        "header",
-        isHeaderVisible && "show"
+        "fixed top-0 left-0 right-0 z-[100] h-[60px] w-full flex items-center justify-between px-6 transition-all duration-500 ease-in-out",
+        isHeaderVisible 
+          ? "translate-y-0 opacity-100 bg-black/80 backdrop-blur-xl border-b border-white/5" 
+          : "-translate-y-full opacity-0 pointer-events-none"
       )}
     >
-      <div className="flex items-center gap-6 md:gap-10">
+      <div className="flex items-center gap-8 md:gap-12">
         <div 
-          className="flex items-center gap-1 cursor-pointer group"
+          className="flex items-center gap-1 cursor-pointer group select-none"
           onClick={() => router.push('/')}
         >
-          <span className="text-lg md:text-2xl font-black text-white tracking-tighter uppercase italic">MOVIE<span className="text-primary">LINK</span></span>
-          <span className="hidden sm:inline-flex text-lg md:text-2xl font-black bg-primary text-black px-2 py-0.5 rounded-sm tracking-tighter uppercase italic shadow-[0_0_15px_rgba(255,193,7,0.5)]">HUB</span>
+          <div className="flex items-center font-black tracking-[1px] uppercase text-xl md:text-2xl italic">
+            <span className="text-[#FFD700]">ML</span>
+            <span className="text-white ml-1">LINK</span>
+          </div>
         </div>
         
         <nav className="hidden lg:flex items-center gap-8">
@@ -62,7 +59,7 @@ export function TopNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                "text-xs font-black tracking-widest transition-colors uppercase italic",
+                "text-[10px] font-black tracking-[0.2em] transition-colors uppercase italic",
                 pathname === item.href ? "text-primary" : "text-white/60 hover:text-white"
               )}
             >
@@ -76,10 +73,10 @@ export function TopNav() {
         <Button 
           variant="ghost" 
           size="icon" 
-          className="rounded-full bg-white/5 backdrop-blur-md text-white hover:text-primary border border-white/5 h-10 w-10"
+          className="rounded-full bg-white/5 backdrop-blur-md text-white hover:text-primary border border-white/10 h-10 w-10 shadow-lg transition-transform active:scale-90"
           onClick={() => router.push('/search')}
         >
-          <Search className="h-5 w-5" />
+          <Search className="h-4 w-4" />
         </Button>
       </div>
     </header>

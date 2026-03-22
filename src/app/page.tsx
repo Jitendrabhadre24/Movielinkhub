@@ -54,7 +54,8 @@ export default function Home() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsAdHidden(window.scrollY > 100);
+      // Hide ad when scrolled down, show when scrolled up or at top
+      setIsAdHidden(window.scrollY > 80);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -165,13 +166,13 @@ export default function Home() {
       <AdsterraBanner 
         id="top-ad-320x50" 
         className={cn(
-          "pt-24 sm:pt-28 transition-all duration-500 origin-top",
-          isAdHidden && "opacity-0 -translate-y-full pointer-events-none h-0 p-0"
+          "transition-all duration-500 origin-top",
+          isAdHidden && "hide"
         )} 
       />
 
       {error ? (
-        <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-6 space-y-8 pt-32">
+        <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-6 space-y-8">
           <div className="p-8 bg-card/40 backdrop-blur-2xl border border-white/5 rounded-full">
             {error.type === 'OFFLINE' ? <WifiOff className="h-12 w-12 text-primary" /> : <AlertCircle className="h-12 w-12 text-destructive" />}
           </div>
@@ -182,7 +183,7 @@ export default function Home() {
         </div>
       ) : trending.length > 0 ? (
         <>
-          <section className="relative w-full pt-4 md:pt-8 px-0">
+          <section className="relative w-full py-4 px-0">
             <Swiper
               modules={[Autoplay]}
               grabCursor={true}
@@ -215,15 +216,15 @@ export default function Home() {
                             <span className="text-[10px] font-black text-white">{movie.vote_average?.toFixed(1)}</span>
                           </div>
                           <div className="space-y-1">
-                            <h1 className="poster-title text-xl md:text-4xl font-black text-white uppercase italic tracking-tighter leading-[1.1] line-clamp-2 drop-shadow-lg">
+                            <h1 className="poster-title text-xl md:text-3xl font-black text-white uppercase italic tracking-tighter leading-[1.1] line-clamp-2 drop-shadow-lg">
                               {movie.title || movie.name}
                             </h1>
-                            <p className="text-[9px] md:text-[11px] font-black text-primary/80 uppercase tracking-widest italic opacity-80">
+                            <p className="text-[9px] md:text-[10px] font-black text-primary/80 uppercase tracking-[0.15em] italic opacity-80">
                               {getGenreString((movie as any).genre_ids)}
                             </p>
                           </div>
-                          <p className="text-[8px] md:text-[10px] font-black text-white/40 uppercase tracking-[0.2em] italic">
-                            {(movie.release_date || movie.first_air_date || "").split("-")[0]} • PREMIUM • HD
+                          <p className="text-[8px] md:text-[9px] font-black text-white/40 uppercase tracking-[0.2em] italic">
+                            {(movie.release_date || movie.first_air_date || "").split("-")[0]} • PREMIUM • 4K UHD
                           </p>
                         </div>
                       </div>
@@ -231,7 +232,7 @@ export default function Home() {
                       <div className={`action-buttons transition-all duration-700 delay-300 ${isActive ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
                         <button 
                           onClick={() => handleWatchlistToggle(movie)}
-                          className="list-btn hover:scale-110 active:scale-95 transition-all bg-white/10 backdrop-blur-xl border border-white/20"
+                          className="list-btn hover:scale-110 active:scale-95 transition-all"
                         >
                           {isInWatchlist(movie.id) ? <Check className="h-5 w-5 text-primary" /> : <Plus className="h-5 w-5" />}
                         </button>
@@ -239,7 +240,7 @@ export default function Home() {
                           onClick={() => handleWatchNow(movie)}
                           className="play-btn hover:scale-110 active:scale-95 transition-all glow-primary"
                         >
-                          <Play className="h-6 w-6 fill-current" />
+                          <Play className="h-5 w-5 fill-current" />
                         </button>
                       </div>
                     </div>
@@ -249,22 +250,13 @@ export default function Home() {
             </Swiper>
           </section>
 
-          <div className="relative z-50 mt-8 space-y-12">
+          <div className="relative z-50 mt-4 space-y-12">
             <MovieRow title="🔥 TRENDING NOW" items={trending} viewAllHref="/genres" />
             
             <AdsterraBanner id="mid-ad-320x50" className="my-6" />
 
             <MovieRow title="📺 POPULAR SERIES" items={popularTV} type="tv" />
             
-            <div className="px-6 md:px-12 lg:px-16">
-              <div className="h-32 w-full bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-2xl border border-primary/10 flex items-center justify-center group cursor-pointer hover:border-primary/30 transition-all">
-                <div className="text-center space-y-1">
-                  <p className="text-[9px] font-black text-primary/40 uppercase tracking-[0.4em] italic">PREMIUM SPONSOR</p>
-                  <p className="text-sm font-black text-white uppercase italic tracking-tighter group-hover:text-primary transition-colors">UNLOCK AD-FREE STREAMING</p>
-                </div>
-              </div>
-            </div>
-
             <MovieRow title="🎌 ANIME MASTERPIECES" items={anime} />
             <MovieRow title="🎬 TOP RATED FILMS" items={topRated} />
 

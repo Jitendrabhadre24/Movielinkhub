@@ -80,7 +80,7 @@ export default function RootLayout({
       <body className="antialiased bg-background min-h-screen text-foreground selection:bg-primary selection:text-primary-foreground">
         <FirebaseClientProvider>
           <TopNav />
-          <main className="pb-20 lg:pt-4">
+          <main className="pb-20">
             {children}
           </main>
           <BottomNav />
