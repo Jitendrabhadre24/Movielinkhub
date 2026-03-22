@@ -6,7 +6,7 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword 
 } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { useAuth } from "@/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +20,7 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const auth = useAuth();
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +54,6 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-[#0B0B0B] relative overflow-hidden">
-      {/* Cinematic Background */}
       <div 
         className="absolute inset-0 opacity-20 bg-cover bg-center animate-slow-zoom" 
         style={{ backgroundImage: "url('https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&q=80')" }}

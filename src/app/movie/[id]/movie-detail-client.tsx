@@ -39,7 +39,6 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
   const isInWatchlist = !!watchlistItem;
 
   const fetchData = async () => {
-    const startTime = Date.now();
     setLoading(true);
     setError(null);
     try {
@@ -59,21 +58,6 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
         setVideos(videoRes || []);
         setSimilar(similarRes || []);
         setProviders(providerRes || {});
-        
-        if (user && firestore) {
-          const cwRef = doc(firestore, "users", user.uid, "continueWatching", id);
-          setDocumentNonBlocking(cwRef, {
-            id: String(id),
-            userId: user.uid,
-            contentId: String(id),
-            contentType: type,
-            title: details.title || details.name,
-            poster: details.poster_path,
-            lastWatchedAt: new Date().toISOString(),
-            progressSeconds: 0,
-            totalSeconds: details.runtime ? details.runtime * 60 : 0
-          }, { merge: true });
-        }
       }
     } catch (err: any) {
       if (err instanceof TMDBError) {
@@ -115,6 +99,20 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
   };
 
   const handleWatchNow = () => {
+    if (user && firestore && movie) {
+      const cwRef = doc(firestore, "users", user.uid, "continueWatching", id);
+      setDocumentNonBlocking(cwRef, {
+        id: String(id),
+        userId: user.uid,
+        contentId: String(id),
+        contentType: type,
+        title: movie.title || movie.name,
+        poster: movie.poster_path,
+        lastWatchedAt: new Date().toISOString(),
+        progressSeconds: 0,
+        totalSeconds: movie.runtime ? movie.runtime * 60 : 0
+      }, { merge: true });
+    }
     setIsSubModalOpen(true);
     triggerAdsterraPopunder();
   };

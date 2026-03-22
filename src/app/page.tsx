@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { triggerAdsterraPopunder } from "@/lib/ad-service";
 import { AdsterraBanner } from "@/components/ads/adsterra-banner";
+import { cn } from "@/lib/utils";
 
 // Swiper imports
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -49,6 +50,15 @@ export default function Home() {
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<{ message: string; type: string } | null>(null);
+  const [isAdHidden, setIsAdHidden] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsAdHidden(window.scrollY > 100);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const watchlistQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -152,8 +162,13 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#0B0B0B] pb-32 animate-fade-in overflow-x-hidden">
-      {/* Top Banner Adsterra */}
-      <AdsterraBanner id="top-ad-320x50" className="pt-24 sm:pt-28" />
+      <AdsterraBanner 
+        id="top-ad-320x50" 
+        className={cn(
+          "pt-24 sm:pt-28 transition-all duration-500 origin-top",
+          isAdHidden && "opacity-0 -translate-y-full pointer-events-none h-0 p-0"
+        )} 
+      />
 
       {error ? (
         <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-6 space-y-8 pt-32">
@@ -237,7 +252,6 @@ export default function Home() {
           <div className="relative z-50 mt-8 space-y-12">
             <MovieRow title="🔥 TRENDING NOW" items={trending} viewAllHref="/genres" />
             
-            {/* Mid Banner Adsterra */}
             <AdsterraBanner id="mid-ad-320x50" className="my-6" />
 
             <MovieRow title="📺 POPULAR SERIES" items={popularTV} type="tv" />

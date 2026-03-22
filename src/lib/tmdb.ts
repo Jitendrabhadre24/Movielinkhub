@@ -1,8 +1,5 @@
 const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
-// Debug log as requested (note: this will be visible in browser console)
-console.log("TMDB KEY:", API_KEY);
-
 export type Movie = {
   id: number;
   title?: string;
@@ -51,7 +48,12 @@ const CACHE_DURATION = 1000 * 60 * 5; // 5 minutes
 async function fetchFromTMDB(endpoint: string, params: Record<string, string> = {}, cacheOptions: RequestInit = { next: { revalidate: 3600 } }) {
   // Strict check for API key presence
   if (!API_KEY || API_KEY === "undefined" || API_KEY === "") {
-    throw new TMDBError('CONFIG_ERROR', 'TMDB API key missing. Please set NEXT_PUBLIC_TMDB_API_KEY in your environment variables.');
+    if (process.env.NODE_ENV === "production") {
+      throw new TMDBError('CONFIG_ERROR', 'TMDB API key missing. Please set NEXT_PUBLIC_TMDB_API_KEY.');
+    } else {
+      console.warn("TMDB API Key is missing. Returning empty data.");
+      return null;
+    }
   }
 
   if (typeof window !== 'undefined' && !window.navigator.onLine) {
