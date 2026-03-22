@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -219,10 +220,11 @@ export default function Home() {
       )}
 
       {!error && trending.length > 0 && (
-        <div className="relative z-20 mt-[-80px] md:mt-[-120px] space-y-16">
-          <section className="px-6 md:px-16 space-y-6">
-            <div className="flex items-center gap-3 text-white/30 pl-1">
-              <h2 className="text-[10px] font-black uppercase tracking-[0.4em]">DISCOVER BY CATEGORY</h2>
+        <div className="relative z-20 mt-[-70px] md:mt-[-100px] space-y-16">
+          <section className="px-6 md:px-16 space-y-8">
+            <div className="flex items-center gap-2.5 opacity-60 pl-1">
+              <LayoutGrid className="h-3.5 w-3.5 text-white" />
+              <h2 className="text-[12px] font-black uppercase tracking-[0.2em] text-white">EXPLORE</h2>
             </div>
             <div className="no-scrollbar flex gap-4 overflow-x-auto pb-4">
               {QUICK_GENRES.map((genre) => (
