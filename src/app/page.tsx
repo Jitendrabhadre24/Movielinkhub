@@ -148,24 +148,24 @@ export default function Home() {
         </div>
       ) : trending.length > 0 ? (
         <>
-          <section className="relative w-full pt-16 md:pt-24 px-0">
+          <section className="relative w-full pt-20 md:pt-24 px-0">
             <Swiper
               modules={[Autoplay]}
               grabCursor={true}
               centeredSlides={true}
               slidesPerView={1.3}
-              spaceBetween={0}
+              spaceBetween={10}
               loop={true}
               autoplay={{ delay: 4000, disableOnInteraction: false }}
               breakpoints={{
-                768: { slidesPerView: 2.5 }
+                768: { slidesPerView: 2.5, spaceBetween: 20 }
               }}
               className="hero-swiper-container w-full"
             >
               {trending.slice(0, 10).map((movie) => (
                 <SwiperSlide key={movie.id}>
                   {({ isActive }) => (
-                    <div className="relative hero-poster-card shadow-2xl mx-2">
+                    <div className="poster-card shadow-2xl">
                       <Image
                         src={getImageUrl(movie.poster_path, "original") || ""}
                         alt={movie.title || movie.name || "Poster"}
@@ -173,40 +173,36 @@ export default function Home() {
                         className="object-cover transition-transform duration-1000"
                         priority
                       />
-                      <div className="hero-overlay" />
-                      
-                      {/* Active Card Content */}
-                      <div className={`absolute bottom-0 left-0 w-full p-4 sm:p-10 z-20 space-y-2 transition-opacity duration-500 ${isActive ? 'opacity-100' : 'opacity-0'}`}>
-                        <div className="flex items-center gap-2">
-                           <div className="bg-primary px-2 py-0.5 rounded text-[8px] font-black text-black tracking-widest uppercase">PREMIUM</div>
-                           <div className="flex items-center gap-1 text-[10px] text-white/80 font-bold">
-                             <Star className="h-3 w-3 text-primary fill-primary" />
-                             {movie.vote_average?.toFixed(1)}
-                           </div>
+                      <div className="poster-overlay">
+                        <div className={`space-y-1 transition-all duration-500 ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+                          <div className="flex items-center gap-2">
+                            <Star className="h-3 w-3 text-primary fill-primary" />
+                            <span className="text-[10px] font-black text-white">{movie.vote_average?.toFixed(1)}</span>
+                          </div>
+                          <h1 className="text-lg md:text-2xl font-black text-white uppercase italic tracking-tighter leading-none line-clamp-1">
+                            {movie.title || movie.name}
+                          </h1>
+                          <p className="text-[8px] md:text-[10px] font-black text-white/50 uppercase tracking-widest italic">
+                            {(movie.release_date || movie.first_air_date || "").split("-")[0]} • PREMIUM • HD
+                          </p>
                         </div>
-                        <h1 className="text-xl sm:text-4xl font-black text-white uppercase italic tracking-tighter leading-none drop-shadow-xl line-clamp-2">
-                          {movie.title || movie.name}
-                        </h1>
-                        <p className="text-[9px] sm:text-xs font-black text-white/50 uppercase tracking-widest italic">
-                          {(movie.release_date || movie.first_air_date || "").split("-")[0]} • ACTION • HD
-                        </p>
                       </div>
 
-                      {/* Floating Action Buttons Matrix */}
-                      <div className={`absolute right-4 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-4 transition-all duration-500 ${isActive ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
+                      {/* Floating Action Matrix (Right Side) */}
+                      <div className={`absolute right-4 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-3 transition-all duration-500 ${isActive ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
                         <Button 
                           size="icon"
                           onClick={() => handleWatchlistToggle(movie)}
-                          className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white/10 backdrop-blur-xl border border-white/10 hover:bg-primary hover:text-black transition-all"
+                          className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 hover:bg-primary hover:text-black transition-all shadow-xl"
                         >
-                          {isInWatchlist(movie.id) ? <Check className="h-5 w-5 sm:h-6 sm:w-6 text-primary" /> : <Plus className="h-5 w-5 sm:h-6 sm:w-6" />}
+                          {isInWatchlist(movie.id) ? <Check className="h-5 w-5 text-primary" /> : <Plus className="h-5 w-5" />}
                         </Button>
                         <Button 
                           size="icon"
                           onClick={() => handleWatchNow(movie)}
-                          className="h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-primary text-black hover:scale-110 transition-all glow-primary"
+                          className="h-12 w-12 md:h-14 md:w-14 rounded-full bg-primary text-black hover:scale-110 transition-all glow-primary shadow-2xl"
                         >
-                          <Play className="h-6 w-6 sm:h-8 sm:w-8 fill-current" />
+                          <Play className="h-6 w-6 fill-current" />
                         </Button>
                       </div>
                     </div>

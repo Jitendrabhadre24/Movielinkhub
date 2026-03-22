@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 
 const navItems = [
   { label: "HOME", href: "/" },
@@ -16,30 +16,25 @@ const navItems = [
 export function TopNav() {
   const pathname = usePathname();
   const router = useRouter();
-  const [isVisible, setIsVisible] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const lastScrollY = useRef(0);
+  const [isHeaderVisible, setIsHeaderVisible] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       
-      // Mobile logic: Reappear on scroll up, hide on scroll down
-      if (currentScrollY < lastScrollY.current || currentScrollY < 100) {
-        setIsVisible(true);
+      // Show header and hide ad after 100px scroll
+      if (currentScrollY > 100) {
+        setIsHeaderVisible(true);
       } else {
-        setIsVisible(false);
+        setIsHeaderVisible(false);
       }
-      
-      setIsScrolled(currentScrollY > 20);
-      lastScrollY.current = currentScrollY;
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     
-    // Always show on subpages or if at top
-    if (pathname !== '/' || window.scrollY < 100) {
-      setIsVisible(true);
+    // Subpages always show header
+    if (pathname !== '/') {
+      setIsHeaderVisible(true);
     }
 
     return () => window.removeEventListener("scroll", handleScroll);
@@ -49,8 +44,7 @@ export function TopNav() {
     <header 
       className={cn(
         "header",
-        isVisible && "show",
-        isScrolled && "scrolled"
+        isHeaderVisible && "show"
       )}
     >
       <div className="flex items-center gap-6 md:gap-10">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface BannerAdProps {
@@ -10,8 +10,7 @@ interface BannerAdProps {
 }
 
 export function BannerAd({ id, className, isStickyTop }: BannerAdProps) {
-  const [isVisible, setIsVisible] = useState(true);
-  const lastScrollY = useRef(0);
+  const [isAdHidden, setIsAdHidden] = useState(false);
 
   useEffect(() => {
     if (!isStickyTop) return;
@@ -19,14 +18,12 @@ export function BannerAd({ id, className, isStickyTop }: BannerAdProps) {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       
-      // Hide on scroll down, show on scroll up
-      if (currentScrollY < lastScrollY.current || currentScrollY < 50) {
-        setIsVisible(true);
+      // Hide ad when scrolled past 100px
+      if (currentScrollY > 100) {
+        setIsAdHidden(true);
       } else {
-        setIsVisible(false);
+        setIsAdHidden(false);
       }
-      
-      lastScrollY.current = currentScrollY;
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -38,7 +35,7 @@ export function BannerAd({ id, className, isStickyTop }: BannerAdProps) {
       className={cn(
         isStickyTop ? "top-ad" : "w-full py-6",
         "transition-all duration-500 ease-in-out overflow-hidden flex items-center justify-center bg-[#0B0B0B]",
-        isStickyTop && !isVisible ? "hide h-0" : "h-[60px] md:h-[90px]",
+        isStickyTop && isAdHidden ? "hide h-0" : "h-[60px] md:h-[90px]",
         className
       )}
     >
