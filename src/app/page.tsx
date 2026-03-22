@@ -8,6 +8,7 @@ import {
   getKidsContent, 
   getAnimationContent, 
   getAnimeContent, 
+  getVideos,
   Movie, 
   getImageUrl, 
   getRecommendations,
@@ -15,14 +16,15 @@ import {
 } from "@/lib/tmdb";
 import { MovieRow } from "@/components/movies/movie-row";
 import Image from "next/image";
-import { Star, Play, AlertCircle, RefreshCcw, LayoutGrid, Clock, Sparkles, Search, WifiOff, Bookmark } from "lucide-react";
+import { Star, Play, AlertCircle, RefreshCcw, LayoutGrid, Plus, Check, Search, WifiOff, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useUser, useFirestore, useMemoFirebase, useCollection } from "@/firebase";
-import { collection, query, orderBy, limit } from "firebase/firestore";
+import { useUser, useFirestore, useMemoFirebase, useCollection, setDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase";
+import { collection, query, orderBy, limit, doc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 const QUICK_GENRES = [
   { id: 28, name: "Action" },
@@ -32,12 +34,11 @@ const QUICK_GENRES = [
   { id: 16, name: "Animation" },
 ];
 
-const MIN_LOAD_TIME = 2500; 
-
 export default function Home() {
   const { user } = useUser();
   const firestore = useFirestore();
   const router = useRouter();
+  const { toast } = useToast();
   
   const [trending, setTrending] = useState<Movie[]>([]);
   const [topRated, setTopRated] = useState<Movie[]>([]);
@@ -47,6 +48,7 @@ export default function Home() {
   const [anime, setAnime] = useState<Movie[]>([]);
   
   const [heroIndex, setHeroIndex] = useState(0);
+  const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [recommendations, setRecommendations] = useState<Movie[]>([]);
   const [recSourceTitle, setRecSourceTitle] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -116,10 +118,30 @@ export default function Home() {
     if (trending.length > 0 && !loading) {
       const timer = setInterval(() => {
         setHeroIndex((prev) => (prev + 1) % Math.min(trending.length, 5));
-      }, 8000);
+      }, 10000); // 10s for video playback
       return () => clearInterval(timer);
     }
   }, [trending, loading]);
+
+  const heroMovie = trending[heroIndex];
+
+  // Fetch Trailer for Hero
+  useEffect(() => {
+    const fetchTrailer = async () => {
+      if (!heroMovie) return;
+      setTrailerKey(null);
+      try {
+        const videos = await getVideos(heroMovie.id.toString(), heroMovie.media_type || 'movie');
+        const trailer = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+        if (trailer) {
+          setTrailerKey(trailer.key);
+        }
+      } catch (e) {
+        console.error("Hero trailer fetch failed", e);
+      }
+    };
+    fetchTrailer();
+  }, [heroMovie?.id]);
 
   useEffect(() => {
     const fetchRecs = async () => {
@@ -136,6 +158,35 @@ export default function Home() {
     };
     fetchRecs();
   }, [continueWatching, watchlistData]);
+
+  const isInWatchlist = (id: number) => {
+    return watchlistData?.some(item => String(item.contentId) === String(id) || String(item.id) === String(id));
+  };
+
+  const handleWatchlistToggle = (movie: Movie) => {
+    if (!user || !firestore) {
+      router.push("/auth");
+      return;
+    }
+    const id = String(movie.id);
+    const docRef = doc(firestore, "users", user.uid, "watchlist", id);
+    
+    if (isInWatchlist(movie.id)) {
+      deleteDocumentNonBlocking(docRef);
+      toast({ title: "REMOVED FROM LIST", description: `${movie.title || movie.name} has been archived.` });
+    } else {
+      setDocumentNonBlocking(docRef, {
+        id,
+        userId: user.uid,
+        contentId: id,
+        contentType: movie.media_type || 'movie',
+        title: movie.title || movie.name,
+        poster: movie.poster_path,
+        addedAt: new Date().toISOString()
+      }, { merge: true });
+      toast({ title: "ADDED TO LIST", description: `${movie.title || movie.name} is now secured.` });
+    }
+  };
 
   if (loading) {
     return (
@@ -158,8 +209,6 @@ export default function Home() {
     );
   }
 
-  const heroMovie = trending[heroIndex];
-
   return (
     <div className="flex flex-col min-h-screen bg-[#0B0B0B] pb-32 animate-fade-in overflow-x-hidden">
       {error ? (
@@ -177,61 +226,90 @@ export default function Home() {
         </div>
       ) : heroMovie ? (
         <>
-          <section className="relative min-h-screen w-full overflow-hidden pt-20">
-            {trending.slice(0, 5).map((movie, idx) => (
-              <div 
-                key={movie.id}
-                className={cn(
-                  "absolute inset-0 transition-opacity duration-1000 ease-in-out",
-                  heroIndex === idx ? "opacity-100 z-0" : "opacity-0 z-[-1]"
-                )}
-              >
-                {movie.backdrop_path && (
-                  <Image
-                    src={getImageUrl(movie.backdrop_path, "original") || ""}
-                    alt={movie.title || movie.name || "Hero"}
-                    fill
-                    className="object-cover animate-slow-zoom"
-                    priority={idx === 0}
-                  />
-                )}
+          <section className="relative h-screen w-full overflow-hidden bg-black">
+            {/* Background Transitions */}
+            <div className="absolute inset-0 z-0">
+              {trending.slice(0, 5).map((movie, idx) => (
+                <div 
+                  key={movie.id}
+                  className={cn(
+                    "absolute inset-0 transition-opacity duration-1000 ease-in-out",
+                    heroIndex === idx ? "opacity-100" : "opacity-0"
+                  )}
+                >
+                  {movie.backdrop_path && (
+                    <Image
+                      src={getImageUrl(movie.backdrop_path, "original") || ""}
+                      alt={movie.title || movie.name || "Hero"}
+                      fill
+                      className="object-cover animate-slow-zoom brightness-[0.7]"
+                      priority={idx === 0}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Trailer Background (Desktop Only) */}
+            {trailerKey && (
+              <div className="absolute inset-0 z-10 hidden lg:block overflow-hidden pointer-events-none transition-opacity duration-1000">
+                <iframe
+                  className="absolute top-1/2 left-1/2 w-[110vw] h-[110vh] -translate-x-1/2 -translate-y-1/2 scale-[1.3] opacity-0 transition-opacity duration-1000"
+                  src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailerKey}&rel=0&modestbranding=1&iv_load_policy=3&enablejsapi=1`}
+                  allow="autoplay; encrypted-media"
+                  style={{ opacity: 0.6 }}
+                  onLoad={(e) => (e.currentTarget.style.opacity = "0.6")}
+                />
               </div>
-            ))}
+            )}
             
-            <div className="absolute inset-0 hero-gradient-overlay z-10" />
+            <div className="absolute inset-0 hero-gradient-overlay z-20" />
             
-            <div className="absolute bottom-0 left-0 p-6 sm:p-12 md:p-16 lg:p-24 space-y-4 sm:space-y-6 md:space-y-8 max-w-5xl z-20 pb-16 sm:pb-32 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+            <div className="absolute bottom-0 left-0 p-6 sm:p-12 md:p-16 lg:p-24 space-y-4 sm:space-y-6 md:space-y-8 max-w-5xl z-30 pb-16 sm:pb-32 animate-in fade-in slide-in-from-bottom-8 duration-1000">
               <div className="flex items-center gap-2">
-                <div className="bg-primary/20 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-2 border border-primary/30">
-                  <span className="text-[8px] sm:text-[10px] font-black text-primary tracking-widest uppercase italic">🔥 TRENDING</span>
+                <div className="bg-primary/20 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-2 border border-primary/30">
+                  <span className="text-[10px] sm:text-[11px] font-black text-primary tracking-widest uppercase italic">🔥 NOW STREAMING</span>
                 </div>
-                <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-2 py-1 rounded-lg border border-white/10">
+                <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10">
                   <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary fill-primary" />
-                  <span className="text-[10px] sm:text-sm font-black text-white">{heroMovie.vote_average?.toFixed(1) || "N/A"}</span>
+                  <span className="text-[11px] sm:text-sm font-black text-white">{heroMovie.vote_average?.toFixed(1) || "N/A"}</span>
                 </div>
               </div>
+
               <div className="space-y-2 sm:space-y-4">
-                <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter uppercase text-white leading-[0.9] italic drop-shadow-2xl">
+                <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter uppercase text-white leading-[0.9] italic drop-shadow-2xl gold-gradient-text">
                   {heroMovie.title || heroMovie.name}
                 </h1>
-                <p className="text-white/80 text-xs sm:text-sm md:text-lg lg:text-xl line-clamp-3 font-medium max-w-2xl leading-relaxed italic drop-shadow-md">
+                <p className="text-white/80 text-xs sm:text-sm md:text-lg lg:text-xl line-clamp-2 font-medium max-w-2xl leading-relaxed italic drop-shadow-md">
                   {heroMovie.overview}
                 </p>
               </div>
-              <div className="flex flex-col sm:flex-row gap-4 pt-4 sm:pt-6">
-                <Button asChild className="w-full sm:w-auto rounded-full px-12 h-14 text-lg font-black bg-primary text-black hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_rgba(255,215,0,0.4)]">
+
+              <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 sm:pt-6">
+                <Button asChild className="w-full sm:w-auto rounded-full px-12 h-16 text-xl font-black bg-primary text-black hover:scale-105 active:scale-95 transition-all shadow-[0_0_35px_rgba(255,215,0,0.5)]">
                   <Link href={`/movie/${heroMovie.id}?type=${heroMovie.media_type || 'movie'}`}>
-                    <Play className="mr-3 h-6 w-6 fill-current" /> WATCH NOW
+                    <Play className="mr-3 h-7 w-7 fill-current" /> WATCH NOW
                   </Link>
                 </Button>
-                <div className="hidden sm:flex gap-2 items-center ml-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleWatchlistToggle(heroMovie)}
+                  className="w-full sm:w-auto rounded-full px-10 h-16 border-white/10 bg-white/5 backdrop-blur-xl hover:bg-white/10 font-black text-white hover:text-primary"
+                >
+                  {isInWatchlist(heroMovie.id) ? (
+                    <><Check className="mr-2 h-6 w-6 text-primary" /> IN LIST</>
+                  ) : (
+                    <><Plus className="mr-2 h-6 w-6" /> ADD TO LIST</>
+                  )}
+                </Button>
+                <div className="hidden sm:flex gap-3 items-center ml-4">
                    {[...Array(5)].map((_, i) => (
                      <button 
                        key={i}
                        onClick={() => setHeroIndex(i)}
                        className={cn(
-                         "h-1 transition-all duration-300 rounded-full",
-                         heroIndex === i ? "w-8 bg-primary" : "w-2 bg-white/20"
+                         "h-1.5 transition-all duration-300 rounded-full",
+                         heroIndex === i ? "w-10 bg-primary" : "w-3 bg-white/20 hover:bg-white/40"
                        )}
                      />
                    ))}
@@ -240,15 +318,15 @@ export default function Home() {
             </div>
           </section>
 
-          <div className="relative z-30 mt-[-60px] sm:mt-[-100px] space-y-12 sm:space-y-16 lg:space-y-20">
+          <div className="relative z-40 mt-[-80px] sm:mt-[-120px] space-y-12 sm:space-y-16 lg:space-y-20">
             <section className="px-4 md:px-12 lg:px-16 space-y-6">
               <div className="flex items-center gap-2 opacity-40 pl-1">
                 <LayoutGrid className="h-3 w-3 text-white" />
-                <h2 className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-white">DISCOVER ARCHIVES</h2>
+                <h2 className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-white">SYSTEM DISCOVERY</h2>
               </div>
               <div className="no-scrollbar flex gap-3 sm:gap-4 overflow-x-auto pb-4 snap-x snap-mandatory">
                 {QUICK_GENRES.map((genre) => (
-                  <Link key={genre.id} href={`/genre/${genre.id}?name=${genre.name}&type=movie`} className="flex-shrink-0 px-6 py-3 bg-white/5 backdrop-blur-xl border border-white/5 hover:border-primary/50 hover:bg-white/10 rounded-full text-[10px] sm:text-[11px] font-black transition-all whitespace-nowrap uppercase tracking-widest text-white/60 hover:text-white snap-start italic">
+                  <Link key={genre.id} href={`/genre/${genre.id}?name=${genre.name}&type=movie`} className="flex-shrink-0 px-8 py-4 bg-white/5 backdrop-blur-xl border border-white/5 hover:border-primary/50 hover:bg-white/10 rounded-full text-[11px] sm:text-[12px] font-black transition-all whitespace-nowrap uppercase tracking-[0.2em] text-white/60 hover:text-white snap-start italic">
                     {genre.name}
                   </Link>
                 ))}
@@ -256,16 +334,16 @@ export default function Home() {
             </section>
 
             {continueWatching && continueWatching.length > 0 && (
-              <MovieRow title="⏱ CONTINUE STREAMING" items={continueWatching as any[]} />
+              <MovieRow title="⏱ RESUME ARCHIVE" items={continueWatching as any[]} />
             )}
 
             {watchlistData && watchlistData.length > 0 && (
-              <MovieRow title="⭐ FROM YOUR WATCHLIST" items={watchlistData as any[]} />
+              <MovieRow title="⭐ SECURED LIST" items={watchlistData as any[]} />
             )}
 
             {recommendations.length > 0 && (
               <div className="py-10 bg-gradient-to-r from-primary/5 via-transparent to-transparent border-y border-white/5">
-                <MovieRow title={`SIMILAR TO "${recSourceTitle}"`} items={recommendations} />
+                <MovieRow title={`SIMILAR TO "${recSourceTitle?.toUpperCase()}"`} items={recommendations} />
               </div>
             )}
 
@@ -276,9 +354,12 @@ export default function Home() {
             <MovieRow title="👶 FOR KIDS & FAMILY" items={kidsContent} />
             <MovieRow title="⭐ CRITICALLY ACCLAIMED" items={topRated} />
 
-            <footer className="py-20 text-center space-y-4 opacity-20">
-              <div className="h-px w-24 bg-primary/30 mx-auto" />
-              <p className="text-[8px] sm:text-[10px] font-black tracking-[0.5em] text-white uppercase">MOVIELINK HUB PREMIUM OTT v3.5</p>
+            <footer className="py-24 text-center space-y-6 opacity-20">
+              <div className="h-px w-32 bg-primary/30 mx-auto" />
+              <div className="space-y-2">
+                <p className="text-[10px] font-black tracking-[0.6em] text-white uppercase italic">MOVIELINK HUB PREMIUM OTT v4.0</p>
+                <p className="text-[8px] font-mono text-white/40 uppercase">ALL RIGHTS RESERVED // ENCRYPTED CONNECTION</p>
+              </div>
             </footer>
           </div>
         </>
