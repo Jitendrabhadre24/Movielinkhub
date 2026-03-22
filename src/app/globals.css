@@ -52,6 +52,12 @@
 }
 
 @layer utilities {
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+  }
+
   .logo-text {
     font-weight: 900;
     letter-spacing: 0.1em;

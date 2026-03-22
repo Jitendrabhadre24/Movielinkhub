@@ -199,7 +199,7 @@ export default function GenreClient({ id, name, type, initialPage }: GenreClient
           <Button onClick={loadItems} className="rounded-full px-12 h-14 bg-primary text-black font-black italic"><RefreshCcw className="mr-2 h-4 w-4" /> RETRY LOAD</Button>
         </div>
       ) : loading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        <div className="grid-container">
           {[...Array(12)].map((_, i) => (
             <div key={i} className="space-y-3">
               <Skeleton className="aspect-[2/3] w-full rounded-2xl" />
@@ -209,7 +209,7 @@ export default function GenreClient({ id, name, type, initialPage }: GenreClient
         </div>
       ) : items.length > 0 ? (
         <div className="space-y-16">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+          <div className="grid-container">
             {items.map((item) => (
               <MovieCard key={item.id} item={item} type={type} className="w-full" />
             ))}
