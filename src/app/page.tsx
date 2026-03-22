@@ -28,12 +28,13 @@ import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { triggerAdsterraPopunder } from "@/lib/ad-service";
 import { BannerAd } from "@/components/ads/banner-ad";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  type CarouselApi,
-} from "@/components/ui/carousel";
+
+// Swiper imports
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Pagination, EffectFade } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/pagination";
+import "swiper/css/effect-fade";
 
 const QUICK_GENRES = [
   { id: 28, name: "Action" },
@@ -57,10 +58,6 @@ export default function Home() {
   const [animation, setAnimation] = useState<Movie[]>([]);
   const [anime, setAnime] = useState<Movie[]>([]);
   
-  const [api, setApi] = useState<CarouselApi>();
-  const [current, setCurrent] = useState(0);
-  const [count, setCount] = useState(0);
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<{ message: string; type: string } | null>(null);
   const [recommendations, setRecommendations] = useState<Movie[]>([]);
@@ -121,15 +118,6 @@ export default function Home() {
   useEffect(() => {
     loadData();
   }, [loadData]);
-
-  useEffect(() => {
-    if (!api) return;
-    setCount(api.scrollSnapList().length);
-    setCurrent(api.selectedScrollSnap());
-    api.on("select", () => {
-      setCurrent(api.selectedScrollSnap());
-    });
-  }, [api]);
 
   useEffect(() => {
     const fetchRecs = async () => {
@@ -214,21 +202,26 @@ export default function Home() {
       ) : trending.length > 0 ? (
         <>
           <section className="relative w-full pt-16 md:pt-0">
-            <Carousel 
-              setApi={setApi}
-              opts={{ loop: true, align: "start" }}
-              className="w-full"
+            <Swiper
+              modules={[Autoplay, Pagination, EffectFade]}
+              spaceBetween={0}
+              slidesPerView={1}
+              effect="fade"
+              loop={true}
+              autoplay={{ delay: 4000, disableOnInteraction: false }}
+              pagination={{ clickable: true, dynamicBullets: true }}
+              className="w-full h-[75vh] md:h-screen"
             >
-              <CarouselContent>
-                {trending.slice(0, 6).map((movie, idx) => (
-                  <CarouselItem key={movie.id} className="relative h-[75vh] md:h-screen w-full">
+              {trending.slice(0, 8).map((movie, idx) => (
+                <SwiperSlide key={movie.id}>
+                  <div className="relative w-full h-full group">
                     <div className="absolute inset-0 z-0">
                       {movie.backdrop_path && (
                         <Image
                           src={getImageUrl(movie.backdrop_path, "original") || ""}
                           alt={movie.title || movie.name || "Hero"}
                           fill
-                          className="object-cover brightness-[0.6] animate-slow-zoom"
+                          className="object-cover brightness-[0.6] transition-transform duration-[10s] group-hover:scale-110"
                           priority={idx === 0}
                           loading={idx === 0 ? "eager" : "lazy"}
                         />
@@ -236,7 +229,7 @@ export default function Home() {
                       <div className="absolute inset-0 hero-gradient-overlay" />
                     </div>
                     
-                    <div className="absolute bottom-0 left-0 w-full max-w-6xl space-y-4 md:space-y-8 px-6 md:px-16 pb-20 md:pb-32 z-20">
+                    <div className="absolute bottom-0 left-0 w-full max-w-6xl space-y-4 md:space-y-8 px-6 md:px-16 pb-24 md:pb-32 z-20">
                       <div className="flex items-center gap-3">
                         <div className="bg-primary/20 backdrop-blur-xl px-3 py-1.5 rounded-full border border-primary/30">
                           <span className="text-[10px] font-black text-primary tracking-widest uppercase italic">⚡ FEATURED PREMIERE</span>
@@ -248,7 +241,7 @@ export default function Home() {
                       </div>
 
                       <div className="space-y-2 md:space-y-4">
-                        <h1 className="text-4xl md:text-8xl font-black tracking-tighter uppercase text-white leading-none italic drop-shadow-2xl gold-gradient-text">
+                        <h1 className="text-4xl md:text-8xl font-black tracking-tighter uppercase text-white leading-none italic drop-shadow-2xl gold-gradient-text animate-fade-in">
                           {movie.title || movie.name}
                         </h1>
                         <p className="text-white/60 text-xs md:text-lg font-medium max-w-2xl line-clamp-2 italic leading-relaxed">
@@ -273,24 +266,23 @@ export default function Home() {
                         </Button>
                       </div>
                     </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-
-              {/* Slider Dots */}
-              <div className="absolute bottom-10 right-16 z-30 hidden md:flex items-center gap-3">
-                {Array.from({ length: Math.min(6, count) }).map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => api?.scrollTo(i)}
-                    className={cn(
-                      "h-1.5 transition-all duration-500 rounded-full",
-                      current === i ? "w-10 bg-primary shadow-[0_0_15px_rgba(255,215,0,0.5)]" : "w-3 bg-white/20 hover:bg-white/40"
-                    )}
-                  />
-                ))}
-              </div>
-            </Carousel>
+                  </div>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+            
+            <style jsx global>{`
+              .swiper-pagination-bullet {
+                background: white !important;
+                opacity: 0.3;
+              }
+              .swiper-pagination-bullet-active {
+                background: hsl(var(--primary)) !important;
+                opacity: 1;
+                width: 24px !important;
+                border-radius: 4px !important;
+              }
+            `}</style>
           </section>
 
           <BannerAd id="mid-banner" className="bg-gradient-to-b from-transparent to-background" />
