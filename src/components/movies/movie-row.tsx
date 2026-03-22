@@ -32,12 +32,14 @@ export function MovieRow({ title, items, type, viewAllHref }: MovieRowProps) {
           </Link>
         )}
       </div>
-      <div className="no-scrollbar flex gap-4 sm:gap-6 overflow-x-auto px-4 md:px-12 lg:px-16 snap-x snap-mandatory scroll-smooth pb-4">
+      {/* Scroll Container with Flex, Overflow-X, 12px Gap (gap-3), and mandatory snap */}
+      <div className="no-scrollbar flex gap-3 sm:gap-6 overflow-x-auto px-4 md:px-12 lg:px-16 snap-x snap-mandatory scroll-smooth pb-4">
         {items.map((item) => (
           <div key={item.id} className="snap-start shrink-0 w-[180px] md:w-[220px]">
             <MovieCard item={item} type={type} />
           </div>
         ))}
+        {/* Spacer to allow scrolling past the last item */}
         <div className="min-w-[20px] sm:min-w-[40px] h-1 shrink-0" />
       </div>
     </section>
