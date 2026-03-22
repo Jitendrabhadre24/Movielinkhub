@@ -1,8 +1,7 @@
-
 const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
 // Debug log as requested (note: this will be visible in browser console)
-console.log("API KEY:", API_KEY);
+console.log("TMDB KEY:", API_KEY);
 
 export type Movie = {
   id: number;
@@ -42,10 +41,13 @@ export class TMDBError extends Error {
   }
 }
 
+const BASE_URL = "https://api.themoviedb.org/3";
+const IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
+
 async function fetchFromTMDB(endpoint: string, params: Record<string, string> = {}, cacheOptions: RequestInit = { next: { revalidate: 3600 } }) {
   // Strict check for API key presence
   if (!API_KEY || API_KEY === "undefined" || API_KEY === "") {
-    throw new TMDBError('CONFIG_ERROR', 'TMDB API key is missing. Please set NEXT_PUBLIC_TMDB_API_KEY in your environment variables.');
+    throw new TMDBError('CONFIG_ERROR', 'TMDB API key missing. Please set NEXT_PUBLIC_TMDB_API_KEY in your environment variables.');
   }
 
   if (typeof window !== 'undefined' && !window.navigator.onLine) {
@@ -77,9 +79,6 @@ async function fetchFromTMDB(endpoint: string, params: Record<string, string> = 
     throw new TMDBError('OFFLINE', 'Check your internet connection');
   }
 }
-
-const BASE_URL = "https://api.themoviedb.org/3";
-const IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
 
 export async function getTrending(): Promise<Movie[]> {
   const data = await fetchFromTMDB("/trending/movie/week");
