@@ -167,29 +167,31 @@ export default function Home() {
           </div>
           <div className="absolute inset-0 hero-gradient-overlay" />
           
-          <div className="absolute bottom-0 left-0 p-6 md:p-16 space-y-6 max-w-4xl z-10 pb-20 md:pb-32">
-            <div className="flex items-center gap-3">
-              <div className="bg-primary/20 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-2 border border-primary/30">
+          <div className="absolute bottom-0 left-0 p-6 md:p-16 space-y-8 max-w-4xl z-10 pb-20 md:pb-32">
+            <div className="flex items-center gap-2">
+              <div className="bg-primary/20 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-2 border border-primary/30">
                 <span className="text-[10px] font-black text-primary tracking-[0.2em] uppercase">🔥 TRENDING NOW</span>
               </div>
-              <div className="flex items-center gap-1 bg-black/40 backdrop-blur-md px-2 py-1 rounded-md border border-white/10">
-                <Star className="h-3 w-3 text-primary fill-primary" />
-                <span className="text-xs font-black text-white">{heroMovie.vote_average?.toFixed(1) || "N/A"}</span>
+              <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-2.5 py-1.5 rounded-lg border border-white/10">
+                <Star className="h-3.5 w-3.5 text-primary fill-primary" />
+                <span className="text-sm font-black text-white">{heroMovie.vote_average?.toFixed(1) || "N/A"}</span>
               </div>
             </div>
 
-            <h1 className="text-5xl md:text-8xl font-black tracking-tight uppercase text-white leading-[0.9] drop-shadow-2xl">
-              {heroMovie.title || heroMovie.name}
-            </h1>
-            
-            <p className="text-white/70 text-base md:text-xl line-clamp-3 font-medium max-w-2xl leading-relaxed">
-              {heroMovie.overview}
-            </p>
+            <div className="space-y-4">
+              <h1 className="text-5xl md:text-8xl font-black tracking-[-0.05em] uppercase text-white leading-[0.85] drop-shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+                {heroMovie.title || heroMovie.name}
+              </h1>
+              
+              <p className="text-white/75 text-base md:text-xl line-clamp-3 font-medium max-w-[90%] md:max-w-2xl leading-relaxed">
+                {heroMovie.overview}
+              </p>
+            </div>
 
-            <div className="flex flex-wrap gap-4 pt-4">
-              <Button asChild className="rounded-full px-12 h-14 text-lg font-black bg-primary text-black hover:bg-primary/90 transition-all hover:scale-105 active:scale-95 border-none shadow-[0_0_20px_rgba(255,215,0,0.4)] group">
+            <div className="flex flex-wrap gap-4 pt-2">
+              <Button asChild className="rounded-full px-12 h-14 text-lg font-black bg-primary text-black hover:bg-primary/90 transition-all hover:scale-[1.05] active:scale-[0.97] border-none shadow-[0_0_20px_rgba(255,215,0,0.4)] group">
                 <Link href={`/movie/${heroMovie.id}?type=${heroMovie.media_type || 'movie'}`}>
-                  <Play className="mr-2 h-7 w-7 fill-current transition-transform group-hover:translate-x-1" /> PLAY NOW
+                  <Play className="mr-3 h-7 w-7 fill-current transition-transform group-hover:translate-x-1" /> PLAY NOW
                 </Link>
               </Button>
             </div>
@@ -219,23 +221,22 @@ export default function Home() {
       {!error && trending.length > 0 && (
         <div className="relative z-20 mt-[-80px] md:mt-[-120px] space-y-16">
           <section className="px-6 md:px-16 space-y-6">
-            <div className="flex items-center gap-3 text-white/40 border-l-4 border-white/10 pl-4">
-              <LayoutGrid className="h-4 w-4" />
-              <h2 className="text-[10px] font-black uppercase tracking-[0.3em]">DISCOVER BY CATEGORY</h2>
+            <div className="flex items-center gap-3 text-white/30 pl-1">
+              <h2 className="text-[10px] font-black uppercase tracking-[0.4em]">DISCOVER BY CATEGORY</h2>
             </div>
             <div className="no-scrollbar flex gap-4 overflow-x-auto pb-4">
               {QUICK_GENRES.map((genre) => (
                 <Link
                   key={genre.id}
                   href={`/genre/${genre.id}?name=${genre.name}&type=movie`}
-                  className="flex-shrink-0 px-8 py-3 bg-white/5 backdrop-blur-xl border border-white/10 hover:border-primary/50 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] rounded-full text-xs font-black transition-all whitespace-nowrap uppercase tracking-wider text-white/80 hover:text-white"
+                  className="flex-shrink-0 px-8 py-3 bg-white/5 backdrop-blur-xl border border-white/10 hover:border-primary/50 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,215,0,0.1)] rounded-full text-xs font-black transition-all whitespace-nowrap uppercase tracking-wider text-white/80 hover:text-white"
                 >
                   {genre.name}
                 </Link>
               ))}
               <Link
                 href="/genres"
-                className="flex-shrink-0 px-8 py-3 bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-full text-xs font-black transition-all whitespace-nowrap text-primary uppercase tracking-wider"
+                className="flex-shrink-0 px-8 py-3 bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-full text-xs font-black transition-all whitespace-nowrap text-primary uppercase tracking-wider shadow-[0_0_15px_rgba(255,215,0,0.05)]"
               >
                 BROWSE ALL
               </Link>
