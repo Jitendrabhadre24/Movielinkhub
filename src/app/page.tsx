@@ -158,7 +158,7 @@ export default function Home() {
                 src={getImageUrl(heroMovie.backdrop_path, "original") || ""}
                 alt={heroMovie.title || heroMovie.name || "Hero"}
                 fill
-                className="object-cover"
+                className="object-cover animate-slow-zoom"
                 priority
               />
             ) : (

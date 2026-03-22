@@ -114,11 +114,20 @@
   .glass-chip {
     @apply bg-white/5 backdrop-blur-xl border border-white/10;
   }
+
+  .animate-slow-zoom {
+    animation: slow-zoom 10s ease-in-out infinite;
+  }
 }
 
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
+}
+
+@keyframes slow-zoom {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 
 .animate-fade-in {
