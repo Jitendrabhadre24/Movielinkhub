@@ -120,7 +120,7 @@ export function SubscriptionModal({ isOpen, onOpenChange }: SubscriptionModalPro
             SECURE ENCRYPTED VERIFICATION REQUIRED
           </p>
         </div>
-      </div>
+      </DialogContent>
     </Dialog>
   );
 }
