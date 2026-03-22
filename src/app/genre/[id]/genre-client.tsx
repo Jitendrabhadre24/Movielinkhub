@@ -1,9 +1,10 @@
+
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { discoverContent, Movie, DiscoverFilters } from "@/lib/tmdb";
+import { discoverContent, Movie, DiscoverFilters, TMDBError } from "@/lib/tmdb";
 import { MovieCard } from "@/components/movies/movie-card";
-import { ChevronLeft, ChevronRight, AlertCircle, ArrowLeft, Filter, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, AlertCircle, ArrowLeft, Filter, X, RefreshCcw, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -33,18 +34,13 @@ const SORT_OPTIONS = [
   { label: "Latest", value: "primary_release_date.desc" },
 ];
 
-interface GenreClientProps {
-  id: string;
-  name: string;
-  type: "movie" | "tv";
-  initialPage: number;
-}
+const MIN_LOAD_TIME = 2000;
 
 export default function GenreClient({ id, name, type, initialPage }: GenreClientProps) {
   const router = useRouter();
   const [items, setItems] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ message: string; type: string } | null>(null);
   const [page, setPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(1);
   
@@ -53,6 +49,7 @@ export default function GenreClient({ id, name, type, initialPage }: GenreClient
   });
 
   const loadItems = useCallback(async () => {
+    const startTime = Date.now();
     setLoading(true);
     setError(null);
     try {
@@ -61,10 +58,18 @@ export default function GenreClient({ id, name, type, initialPage }: GenreClient
         setItems(data.results);
         setTotalPages(data.total_pages);
       } else {
-        setError("Unable to fetch content. Please check your connection.");
+        throw new TMDBError('SERVER_ERROR', 'Unable to fetch items');
       }
-    } catch (err) {
-      setError("An unexpected error occurred.");
+    } catch (err: any) {
+      const elapsed = Date.now() - startTime;
+      const wait = Math.max(0, MIN_LOAD_TIME - elapsed);
+      await new Promise(r => setTimeout(r, wait));
+
+      if (err instanceof TMDBError) {
+        setError({ message: err.message, type: err.type });
+      } else {
+        setError({ message: "Network failure", type: "OFFLINE" });
+      }
     } finally {
       setLoading(false);
     }
@@ -184,11 +189,15 @@ export default function GenreClient({ id, name, type, initialPage }: GenreClient
       </section>
 
       {error ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center space-y-6">
-          <div className="p-4 bg-destructive/10 rounded-full">
-            <AlertCircle className="h-12 w-12 text-destructive" />
+        <div className="flex flex-col items-center justify-center py-32 text-center space-y-8 animate-in fade-in zoom-in">
+          <div className="p-8 bg-card border border-white/5 rounded-full">
+            {error.type === 'OFFLINE' ? <WifiOff className="h-12 w-12 text-primary" /> : <AlertCircle className="h-12 w-12 text-primary" />}
           </div>
-          <p className="text-muted-foreground max-w-xs font-medium">{error}</p>
+          <div className="space-y-2">
+             <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">{error.message}</h3>
+             <p className="text-white/20 font-mono text-[10px] uppercase tracking-widest">{error.type}</p>
+          </div>
+          <Button onClick={loadItems} className="rounded-full px-12 h-14 bg-primary text-black font-black italic"><RefreshCcw className="mr-2 h-4 w-4" /> RETRY LOAD</Button>
         </div>
       ) : loading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
@@ -237,6 +246,13 @@ export default function GenreClient({ id, name, type, initialPage }: GenreClient
       )}
     </div>
   );
+}
+
+interface GenreClientProps {
+  id: string;
+  name: string;
+  type: "movie" | "tv";
+  initialPage: number;
 }
 
 function FilterChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {

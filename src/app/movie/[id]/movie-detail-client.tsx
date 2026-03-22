@@ -1,10 +1,11 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getDetails, getCredits, getVideos, getSimilar, getImageUrl, getWatchProviders, Movie, Cast } from "@/lib/tmdb";
+import { getDetails, getCredits, getVideos, getSimilar, getImageUrl, getWatchProviders, Movie, Cast, TMDBError } from "@/lib/tmdb";
 import Image from "next/image";
-import { Play, Star, ArrowLeft, User, AlertCircle, Plus, Check } from "lucide-react";
+import { Play, Star, ArrowLeft, User, AlertCircle, Plus, Check, RefreshCcw, WifiOff, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MovieRow } from "@/components/movies/movie-row";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,6 +13,8 @@ import { useUser, useFirestore, useDoc, useMemoFirebase, setDocumentNonBlocking,
 import { doc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { SubscriptionModal } from "@/components/subscription/subscription-modal";
+
+const MIN_LOAD_TIME = 2000;
 
 export default function MovieDetailClient({ id, initialType }: { id: string, initialType: "movie" | "tv" }) {
   const type = initialType;
@@ -26,7 +29,7 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
   const [similar, setSimilar] = useState<Movie[]>([]);
   const [providers, setProviders] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ message: string; type: string } | null>(null);
   const [isSubModalOpen, setIsSubModalOpen] = useState(false);
 
   const watchlistRef = useMemoFirebase(() => {
@@ -38,6 +41,7 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
   const isInWatchlist = !!watchlistItem;
 
   const fetchData = async () => {
+    const startTime = Date.now();
     setLoading(true);
     setError(null);
     try {
@@ -50,7 +54,7 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
       ]);
 
       if (!details) {
-        setError("Content not found");
+        throw new TMDBError('SERVER_ERROR', 'Content not found');
       } else {
         setMovie(details);
         setCast(credits?.slice(0, 10) || []);
@@ -86,8 +90,16 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
           }, { merge: true });
         }
       }
-    } catch (err) {
-      setError("Please check your connection");
+    } catch (err: any) {
+      const elapsed = Date.now() - startTime;
+      const wait = Math.max(0, MIN_LOAD_TIME - elapsed);
+      await new Promise(r => setTimeout(r, wait));
+
+      if (err instanceof TMDBError) {
+        setError({ message: err.message, type: err.type });
+      } else {
+        setError({ message: "Unable to reach archives", type: "SERVER_ERROR" });
+      }
     } finally {
       setLoading(false);
     }
@@ -131,10 +143,18 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
 
   if (error || !movie) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center space-y-6">
-        <AlertCircle className="h-12 w-12 text-muted-foreground" />
-        <h2 className="text-2xl font-bold uppercase text-white">Content Unavailable</h2>
-        <Button variant="outline" onClick={() => router.back()} className="rounded-full px-8">Go Back</Button>
+      <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center space-y-8 bg-background">
+        <div className="relative p-8 bg-card border border-white/5 rounded-full">
+           {error?.type === 'OFFLINE' ? <WifiOff className="h-12 w-12 text-primary" /> : <AlertCircle className="h-12 w-12 text-primary" />}
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-2xl font-black uppercase text-white tracking-tighter">{error?.message || "Content Unavailable"}</h2>
+          <p className="text-white/30 font-mono text-xs uppercase tracking-widest">{error?.type || '404'}</p>
+        </div>
+        <div className="flex gap-4">
+          <Button variant="outline" onClick={() => router.back()} className="rounded-full px-8 h-12 uppercase font-black italic">Go Back</Button>
+          <Button onClick={fetchData} className="rounded-full px-8 h-12 bg-primary text-black font-black italic"><RefreshCcw className="mr-2 h-4 w-4" /> Retry</Button>
+        </div>
       </div>
     );
   }

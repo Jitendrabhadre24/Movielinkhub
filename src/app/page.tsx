@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -10,11 +11,12 @@ import {
   getAnimeContent, 
   Movie, 
   getImageUrl, 
-  getRecommendations 
+  getRecommendations,
+  TMDBError
 } from "@/lib/tmdb";
 import { MovieRow } from "@/components/movies/movie-row";
 import Image from "next/image";
-import { Star, Play, AlertCircle, RefreshCcw, LayoutGrid, Clock, Sparkles, Search } from "lucide-react";
+import { Star, Play, AlertCircle, RefreshCcw, LayoutGrid, Clock, Sparkles, Search, WifiOff, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,6 +31,8 @@ const QUICK_GENRES = [
   { id: 878, name: "Sci-Fi" },
   { id: 16, name: "Animation" },
 ];
+
+const MIN_LOAD_TIME = 2500; // 2.5s to prevent flicker and show skeletons
 
 export default function Home() {
   const { user } = useUser();
@@ -46,7 +50,7 @@ export default function Home() {
   const [recommendations, setRecommendations] = useState<Movie[]>([]);
   const [recSourceTitle, setRecSourceTitle] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ message: string; type: string } | null>(null);
 
   const continueWatchingQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -60,6 +64,7 @@ export default function Home() {
   const { data: continueWatching } = useCollection(continueWatchingQuery);
 
   const loadData = async () => {
+    const startTime = Date.now();
     setLoading(true);
     setError(null);
     try {
@@ -72,9 +77,9 @@ export default function Home() {
         getAnimeContent()
       ]);
 
-      if (!tRes.length && !pTvRes.length && !aniRes.length) {
-        throw new Error("No content received from TMDB. Please check your connection.");
-      }
+      // If successful, check if we need to wait to satisfy MIN_LOAD_TIME
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 500) await new Promise(r => setTimeout(r, 500)); // Minimal delay for feel
 
       setTrending(tRes || []);
       setTopRated(trRes || []);
@@ -84,7 +89,16 @@ export default function Home() {
       setAnime(aniRes || []);
       
     } catch (err: any) {
-      setError(err.message || "Please check your internet connection.");
+      // For errors, we always wait at least 2.5s so user sees skeletons first
+      const elapsed = Date.now() - startTime;
+      const wait = Math.max(0, MIN_LOAD_TIME - elapsed);
+      await new Promise(r => setTimeout(r, wait));
+
+      if (err instanceof TMDBError) {
+        setError({ message: err.message, type: err.type });
+      } else {
+        setError({ message: "An unexpected error occurred", type: "SERVER_ERROR" });
+      }
     } finally {
       setLoading(false);
     }
@@ -102,7 +116,7 @@ export default function Home() {
       getRecommendations(lastWatched.contentId || lastWatched.id.toString(), lastWatched.contentType || lastWatched.type).then(recs => {
         setRecommendations(recs || []);
         setRecSourceTitle(lastWatched.title);
-      });
+      }).catch(() => {}); // Silent catch for recommendations
     } else {
       setRecommendations([]);
       setRecSourceTitle(null);
@@ -144,13 +158,28 @@ export default function Home() {
       </header>
 
       {error ? (
-        <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-6 space-y-6">
-          <div className="p-6 bg-destructive/10 rounded-full">
-            <AlertCircle className="h-16 w-16 text-destructive" />
+        <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-6 space-y-8 animate-in fade-in zoom-in duration-500">
+          <div className="relative">
+            <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
+            <div className="relative p-8 bg-card/40 backdrop-blur-2xl border border-white/5 rounded-full shadow-2xl">
+              {error.type === 'OFFLINE' ? (
+                <WifiOff className="h-16 w-16 text-primary" />
+              ) : error.type === 'CONFIG_ERROR' ? (
+                <Settings className="h-16 w-16 text-primary" />
+              ) : (
+                <AlertCircle className="h-16 w-16 text-destructive" />
+              )}
+            </div>
           </div>
-          <h2 className="text-3xl font-black uppercase tracking-tighter text-white">CONNECTION ERROR</h2>
-          <Button variant="outline" onClick={loadData} className="rounded-full px-12 h-14 text-lg font-black border-primary/50 text-primary hover:bg-primary/10">
-            <RefreshCcw className="mr-2 h-5 w-5" /> RETRY HUB ACCESS
+          <div className="space-y-2">
+            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-white">{error.message}</h2>
+            <p className="text-white/40 font-mono text-xs uppercase tracking-[0.3em]">Code: {error.type}</p>
+          </div>
+          <Button 
+            onClick={loadData} 
+            className="rounded-full px-12 h-16 text-lg font-black bg-primary text-black hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_rgba(255,215,0,0.2)]"
+          >
+            <RefreshCcw className="mr-3 h-5 w-5" /> RETRY CONNECTION
           </Button>
         </div>
       ) : heroMovie ? (

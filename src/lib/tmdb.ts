@@ -32,11 +32,22 @@ export type DiscoverFilters = {
   sortBy?: string;
 };
 
+export type TMDBErrorType = 'OFFLINE' | 'SERVER_ERROR' | 'CONFIG_ERROR';
+
+export class TMDBError extends Error {
+  constructor(public type: TMDBErrorType, message: string) {
+    super(message);
+    this.name = 'TMDBError';
+  }
+}
+
 async function fetchFromTMDB(endpoint: string, params: Record<string, string> = {}, cacheOptions: RequestInit = { next: { revalidate: 3600 } }) {
-  // Defensive check for missing API key to avoid malformed requests
-  if (!API_KEY || API_KEY === "mock-api-key" || API_KEY === "undefined") {
-    console.warn("TMDB API Key is missing or invalid. Please set NEXT_PUBLIC_TMDB_API_KEY.");
-    return null;
+  if (!API_KEY || API_KEY === "mock-api-key" || API_KEY === "undefined" || API_KEY === "") {
+    throw new TMDBError('CONFIG_ERROR', 'Configuration error: TMDB API Key is missing.');
+  }
+
+  if (typeof window !== 'undefined' && !window.navigator.onLine) {
+    throw new TMDBError('OFFLINE', 'Check your internet connection');
   }
 
   const queryParams = new URLSearchParams({
@@ -55,15 +66,13 @@ async function fetchFromTMDB(endpoint: string, params: Record<string, string> = 
     });
     
     if (!response.ok) {
-      console.warn(`TMDB API Error: ${response.status} at ${endpoint}`);
-      return null;
+      throw new TMDBError('SERVER_ERROR', 'Server busy, try again');
     }
     
     return await response.json();
-  } catch (error) {
-    // Catch hard network errors (CORS, DNS, connection reset)
-    console.error("TMDB fetch failed:", error);
-    return null;
+  } catch (error: any) {
+    if (error instanceof TMDBError) throw error;
+    throw new TMDBError('OFFLINE', 'Check your internet connection');
   }
 }
 
