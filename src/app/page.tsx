@@ -105,8 +105,8 @@ export default function Home() {
       setAnimation(aRes || []);
       setAnime(aniRes || []);
       
-      // Fetch trailers for the top 5 trending movies
-      const topMovies = tRes?.slice(0, 5) || [];
+      // Fetch trailers for the top 8 trending movies
+      const topMovies = tRes?.slice(0, 8) || [];
       const keys: Record<number, string> = {};
       await Promise.all(topMovies.map(async (movie) => {
         try {
@@ -309,9 +309,9 @@ export default function Home() {
             `}</style>
           </section>
 
-          <BannerAd id="mid-banner" className="bg-gradient-to-b from-transparent to-background" />
+          <BannerAd id="mid-banner" className="mid-ad" />
 
-          <div className="relative z-50 space-y-12 md:space-y-24 mt-[-40px]">
+          <div className="relative z-50 space-y-12 md:space-y-24">
             <section className="px-6 md:px-16 space-y-6">
               <div className="no-scrollbar flex gap-4 overflow-x-auto pb-4 snap-x">
                 {QUICK_GENRES.map((genre) => (
@@ -342,7 +342,7 @@ export default function Home() {
 
             <MovieRow title="🔥 TRENDING WORLDWIDE" items={trending} viewAllHref="/genres" />
             
-            <BannerAd id="bottom-banner" />
+            <BannerAd id="interstitial-banner" />
 
             <MovieRow title="📺 TOP RATED TV SERIES" items={popularTV} type="tv" />
             <MovieRow title="🎌 GLOBAL ANIME HITS" items={anime} />
