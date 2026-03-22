@@ -34,7 +34,7 @@ export function MovieRow({ title, items, type, viewAllHref }: MovieRowProps) {
       </div>
       <div className="no-scrollbar flex gap-4 sm:gap-6 overflow-x-auto px-4 md:px-12 lg:px-16 snap-x snap-mandatory scroll-smooth pb-4">
         {items.map((item) => (
-          <div key={item.id} className="snap-start shrink-0 w-[140px] sm:w-[180px] md:w-[220px] lg:w-[260px]">
+          <div key={item.id} className="snap-start shrink-0 w-[180px] md:w-[220px]">
             <MovieCard item={item} type={type} />
           </div>
         ))}
