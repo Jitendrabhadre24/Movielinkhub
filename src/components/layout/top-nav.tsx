@@ -17,6 +17,7 @@ export function TopNav() {
   const pathname = usePathname();
   const router = useRouter();
   const [isVisible, setIsVisible] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const lastScrollY = useRef(0);
 
   useEffect(() => {
@@ -30,6 +31,7 @@ export function TopNav() {
         setIsVisible(false);
       }
       
+      setIsScrolled(currentScrollY > 20);
       lastScrollY.current = currentScrollY;
     };
 
@@ -47,7 +49,8 @@ export function TopNav() {
     <header 
       className={cn(
         "header",
-        isVisible && "show"
+        isVisible && "show",
+        isScrolled && "scrolled"
       )}
     >
       <div className="flex items-center gap-6 md:gap-10">

@@ -5,7 +5,6 @@ import {
   getTrending, 
   getTopRated, 
   getPopularTV, 
-  getKidsContent, 
   getAnimeContent, 
   Movie, 
   getImageUrl, 
@@ -25,9 +24,8 @@ import { BannerAd } from "@/components/ads/banner-ad";
 
 // Swiper imports
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, EffectCoverflow } from "swiper/modules";
+import { Autoplay } from "swiper/modules";
 import "swiper/css";
-import "swiper/css/effect-coverflow";
 
 export default function Home() {
   const { user } = useUser();
@@ -150,42 +148,35 @@ export default function Home() {
         </div>
       ) : trending.length > 0 ? (
         <>
-          <section className="relative w-full pt-16 md:pt-24 hero-swiper-container">
+          <section className="relative w-full pt-16 md:pt-24 px-0">
             <Swiper
-              modules={[Autoplay, EffectCoverflow]}
-              effect="coverflow"
+              modules={[Autoplay]}
               grabCursor={true}
               centeredSlides={true}
-              slidesPerView={1.15}
+              slidesPerView={1.3}
+              spaceBetween={0}
               loop={true}
               autoplay={{ delay: 4000, disableOnInteraction: false }}
-              coverflowEffect={{
-                rotate: 0,
-                stretch: 0,
-                depth: 100,
-                modifier: 2.5,
-                slideShadows: false,
-              }}
               breakpoints={{
                 768: { slidesPerView: 2.5 }
               }}
-              className="w-full"
+              className="hero-swiper-container w-full"
             >
               {trending.slice(0, 10).map((movie) => (
                 <SwiperSlide key={movie.id}>
                   {({ isActive }) => (
-                    <div className="relative hero-poster-card group shadow-2xl">
+                    <div className="relative hero-poster-card shadow-2xl mx-2">
                       <Image
                         src={getImageUrl(movie.poster_path, "original") || ""}
                         alt={movie.title || movie.name || "Poster"}
                         fill
-                        className="object-cover transition-transform duration-[10s] group-hover:scale-110"
+                        className="object-cover transition-transform duration-1000"
                         priority
                       />
                       <div className="hero-overlay" />
                       
                       {/* Active Card Content */}
-                      <div className={`absolute bottom-0 left-0 w-full p-6 sm:p-10 z-20 space-y-3 transition-opacity duration-500 ${isActive ? 'opacity-100' : 'opacity-0'}`}>
+                      <div className={`absolute bottom-0 left-0 w-full p-4 sm:p-10 z-20 space-y-2 transition-opacity duration-500 ${isActive ? 'opacity-100' : 'opacity-0'}`}>
                         <div className="flex items-center gap-2">
                            <div className="bg-primary px-2 py-0.5 rounded text-[8px] font-black text-black tracking-widest uppercase">PREMIUM</div>
                            <div className="flex items-center gap-1 text-[10px] text-white/80 font-bold">
@@ -193,10 +184,10 @@ export default function Home() {
                              {movie.vote_average?.toFixed(1)}
                            </div>
                         </div>
-                        <h1 className="text-2xl sm:text-4xl font-black text-white uppercase italic tracking-tighter leading-none drop-shadow-xl line-clamp-2">
+                        <h1 className="text-xl sm:text-4xl font-black text-white uppercase italic tracking-tighter leading-none drop-shadow-xl line-clamp-2">
                           {movie.title || movie.name}
                         </h1>
-                        <p className="text-[10px] sm:text-xs font-black text-white/50 uppercase tracking-widest italic">
+                        <p className="text-[9px] sm:text-xs font-black text-white/50 uppercase tracking-widest italic">
                           {(movie.release_date || movie.first_air_date || "").split("-")[0]} • ACTION • HD
                         </p>
                       </div>
@@ -206,16 +197,16 @@ export default function Home() {
                         <Button 
                           size="icon"
                           onClick={() => handleWatchlistToggle(movie)}
-                          className="h-12 w-12 rounded-full bg-white/10 backdrop-blur-xl border border-white/10 hover:bg-primary hover:text-black transition-all"
+                          className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white/10 backdrop-blur-xl border border-white/10 hover:bg-primary hover:text-black transition-all"
                         >
-                          {isInWatchlist(movie.id) ? <Check className="h-6 w-6 text-primary" /> : <Plus className="h-6 w-6" />}
+                          {isInWatchlist(movie.id) ? <Check className="h-5 w-5 sm:h-6 sm:w-6 text-primary" /> : <Plus className="h-5 w-5 sm:h-6 sm:w-6" />}
                         </Button>
                         <Button 
                           size="icon"
                           onClick={() => handleWatchNow(movie)}
-                          className="h-14 w-14 rounded-full bg-primary text-black hover:scale-110 transition-all glow-primary"
+                          className="h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-primary text-black hover:scale-110 transition-all glow-primary"
                         >
-                          <Play className="h-8 w-8 fill-current" />
+                          <Play className="h-6 w-6 sm:h-8 sm:w-8 fill-current" />
                         </Button>
                       </div>
                     </div>

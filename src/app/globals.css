@@ -77,14 +77,13 @@
     top: 0;
     width: 100%;
     z-index: 60;
-    backdrop-filter: blur(16px);
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 12px 20px;
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    background: rgba(11, 11, 11, 0.8);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: transparent;
+    border-bottom: 1px solid transparent;
     transform: translateY(-100%);
   }
 
@@ -92,12 +91,18 @@
     transform: translateY(0);
   }
 
+  .header.scrolled {
+    background: rgba(11, 11, 11, 0.9);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
   .hero-poster-card {
     position: relative;
     aspect-ratio: 2/3;
     border-radius: 20px;
     overflow: hidden;
-    transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: all 0.3s ease-in-out;
   }
 
   .hero-overlay {
@@ -171,7 +176,7 @@
 
 /* Swiper Active Scale Logic */
 .hero-swiper-container .swiper-slide {
-  transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: all 0.3s ease-in-out;
   transform: scale(0.9);
   opacity: 0.6;
 }
