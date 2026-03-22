@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -34,7 +33,7 @@ const SORT_OPTIONS = [
   { label: "Latest", value: "primary_release_date.desc" },
 ];
 
-const MIN_LOAD_TIME = 2000;
+const MIN_LOAD_TIME = 2500;
 
 export default function GenreClient({ id, name, type, initialPage }: GenreClientProps) {
   const router = useRouter();
@@ -200,8 +199,8 @@ export default function GenreClient({ id, name, type, initialPage }: GenreClient
           <Button onClick={loadItems} className="rounded-full px-12 h-14 bg-primary text-black font-black italic"><RefreshCcw className="mr-2 h-4 w-4" /> RETRY LOAD</Button>
         </div>
       ) : loading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
-          {[...Array(10)].map((_, i) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+          {[...Array(12)].map((_, i) => (
             <div key={i} className="space-y-3">
               <Skeleton className="aspect-[2/3] w-full rounded-2xl" />
               <Skeleton className="h-4 w-3/4" />
@@ -210,7 +209,7 @@ export default function GenreClient({ id, name, type, initialPage }: GenreClient
         </div>
       ) : items.length > 0 ? (
         <div className="space-y-16">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {items.map((item) => (
               <MovieCard key={item.id} item={item} type={type} className="w-full" />
             ))}

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useUser, useFirestore, useMemoFirebase, useCollection, useAuth as useFirebaseAuth } from "@/firebase";
@@ -9,7 +8,6 @@ import { LogOut, User as UserIcon, Bookmark, ShieldCheck, Zap, LayoutGrid, Clock
 import { Separator } from "@/components/ui/separator";
 import { collection, query, orderBy } from "firebase/firestore";
 import { MovieCard } from "@/components/movies/movie-card";
-import { MovieRow } from "@/components/movies/movie-row";
 
 export default function AccountPage() {
   const { user, isUserLoading } = useUser();
@@ -99,11 +97,11 @@ export default function AccountPage() {
             </div>
 
             {loadingWatchlist ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                {[...Array(5)].map((_, i) => <div key={i} className="aspect-[2/3] skeleton rounded-[1.5rem]" />)}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                {[...Array(6)].map((_, i) => <div key={i} className="aspect-[2/3] skeleton rounded-[1.5rem]" />)}
               </div>
             ) : watchlist && watchlist.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {watchlist.map((item: any) => (
                   <MovieCard key={item.id} item={{...item, poster_path: item.poster} as any} type={item.type} className="w-full" />
                 ))}
@@ -132,11 +130,11 @@ export default function AccountPage() {
             </div>
 
             {loadingHistory ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                {[...Array(5)].map((_, i) => <div key={i} className="aspect-[2/3] skeleton rounded-[1.5rem]" />)}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                {[...Array(6)].map((_, i) => <div key={i} className="aspect-[2/3] skeleton rounded-[1.5rem]" />)}
               </div>
             ) : history && history.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {history.map((item: any) => (
                   <MovieCard key={item.id} item={{...item, poster_path: item.poster} as any} type={item.type} className="w-full" />
                 ))}
