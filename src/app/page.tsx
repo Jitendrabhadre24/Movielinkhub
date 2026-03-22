@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -15,7 +16,7 @@ import {
 } from "@/lib/tmdb";
 import { MovieRow } from "@/components/movies/movie-row";
 import Image from "next/image";
-import { Star, Play, AlertCircle, RefreshCcw, LayoutGrid, Clock, Sparkles, Search, WifiOff, ChevronRight, ChevronLeft } from "lucide-react";
+import { Star, Play, AlertCircle, RefreshCcw, LayoutGrid, Clock, Sparkles, Search, WifiOff, ChevronRight, Bookmark, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -53,6 +54,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<{ message: string; type: string } | null>(null);
 
+  // Firestore Queries for Personalized Rows
   const continueWatchingQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
     return query(
@@ -62,7 +64,17 @@ export default function Home() {
     );
   }, [user, firestore]);
 
+  const watchlistQuery = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return query(
+      collection(firestore, "users", user.uid, "watchlist"),
+      orderBy("addedAt", "desc"),
+      limit(15)
+    );
+  }, [user, firestore]);
+
   const { data: continueWatching } = useCollection(continueWatchingQuery);
+  const { data: watchlistData } = useCollection(watchlistQuery);
 
   const loadData = async () => {
     const startTime = Date.now();
@@ -119,15 +131,23 @@ export default function Home() {
     }
   }, [trending, loading]);
 
+  // Personalized Recommendation Logic
   useEffect(() => {
-    if (continueWatching && continueWatching.length > 0) {
-      const lastWatched = continueWatching[0];
-      getRecommendations(lastWatched.contentId || lastWatched.id.toString(), lastWatched.contentType || lastWatched.type).then(recs => {
-        setRecommendations(recs || []);
-        setRecSourceTitle(lastWatched.title);
-      }).catch(() => {});
-    }
-  }, [continueWatching]);
+    const fetchRecs = async () => {
+      // Prioritize Continue Watching, then Watchlist
+      const source = (continueWatching && continueWatching[0]) || (watchlistData && watchlistData[0]);
+      if (source) {
+        try {
+          const recs = await getRecommendations(source.contentId || source.id.toString(), source.contentType || source.type);
+          setRecommendations(recs || []);
+          setRecSourceTitle(source.title);
+        } catch (e) {
+          console.error("Rec fetch failed", e);
+        }
+      }
+    };
+    fetchRecs();
+  }, [continueWatching, watchlistData]);
 
   if (loading) {
     return (
@@ -202,7 +222,6 @@ export default function Home() {
       ) : heroMovie ? (
         <>
           <section className="relative h-[85vh] w-full overflow-hidden">
-            {/* Background Images for Cross-fade */}
             {trending.slice(0, 5).map((movie, idx) => (
               <div 
                 key={movie.id}
@@ -251,8 +270,6 @@ export default function Home() {
                     <Play className="mr-3 h-7 w-7 fill-current transition-transform group-hover:translate-x-1" /> WATCH NOW
                   </Link>
                 </Button>
-                
-                {/* Carousel Indicators */}
                 <div className="flex gap-2 items-center ml-2">
                    {[...Array(5)].map((_, i) => (
                      <button 
@@ -270,7 +287,6 @@ export default function Home() {
           </section>
 
           <div className="relative z-30 mt-[-80px] md:mt-[-120px] space-y-16">
-            {/* Quick Explore */}
             <section className="px-6 md:px-16 space-y-8">
               <div className="flex items-center gap-2.5 opacity-40 pl-1">
                 <LayoutGrid className="h-3 w-3 text-white" />
@@ -285,6 +301,7 @@ export default function Home() {
               </div>
             </section>
 
+            {/* Personalized: Continue Watching */}
             {continueWatching && continueWatching.length > 0 && (
               <div className="space-y-4">
                 <div className="px-6 md:px-16 flex items-center gap-3 text-primary">
@@ -295,19 +312,19 @@ export default function Home() {
               </div>
             )}
 
-            {recentlyViewed.length > 0 && (
+            {/* Personalized: From Your Watchlist (My List) */}
+            {watchlistData && watchlistData.length > 0 && (
               <div className="space-y-4">
-                <div className="px-6 md:px-16 flex items-center gap-3 text-white/50">
-                  <Clock className="h-5 w-5" />
-                  <h2 className="text-xl font-black uppercase tracking-tighter italic">🕒 RECENTLY EXPLORED</h2>
+                <div className="px-6 md:px-16 flex items-center gap-3 text-white">
+                  <Bookmark className="h-5 w-5 text-primary fill-primary" />
+                  <h2 className="text-xl font-black uppercase tracking-tighter italic">⭐ FROM YOUR WATCHLIST</h2>
+                  <Link href="/account" className="ml-auto text-[10px] font-black text-white/30 hover:text-primary transition-colors uppercase tracking-[0.2em]">MANAGE ALL</Link>
                 </div>
-                <MovieRow title="" items={recentlyViewed} />
+                <MovieRow title="" items={watchlistData as any[]} />
               </div>
             )}
 
-            <MovieRow title="🔥 WORLDWIDE TRENDS" items={trending} viewAllHref="/genres" />
-            <MovieRow title="📺 POPULAR TV SERIES" items={popularTV} type="tv" />
-            
+            {/* Personalized: Recommendations */}
             {recommendations.length > 0 && (
               <div className="space-y-6 py-10 bg-gradient-to-r from-primary/5 via-transparent to-transparent border-y border-white/5">
                 <div className="px-6 md:px-16 space-y-2">
@@ -323,6 +340,18 @@ export default function Home() {
               </div>
             )}
 
+            {recentlyViewed.length > 0 && (
+              <div className="space-y-4">
+                <div className="px-6 md:px-16 flex items-center gap-3 text-white/50">
+                  <Clock className="h-5 w-5" />
+                  <h2 className="text-xl font-black uppercase tracking-tighter italic">🕒 RECENTLY EXPLORED</h2>
+                </div>
+                <MovieRow title="" items={recentlyViewed} />
+              </div>
+            )}
+
+            <MovieRow title="🔥 WORLDWIDE TRENDS" items={trending} viewAllHref="/genres" />
+            <MovieRow title="📺 POPULAR TV SERIES" items={popularTV} type="tv" />
             <MovieRow title="🎬 ANIMATION BLOCKBUSTERS" items={animation} />
             <MovieRow title="🎌 ANIME CORNER" items={anime} />
             <MovieRow title="👶 FOR KIDS & FAMILY" items={kidsContent} />
