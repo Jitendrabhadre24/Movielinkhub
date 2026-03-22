@@ -45,7 +45,6 @@ export default function Home() {
   const [kidsContent, setKidsContent] = useState<Movie[]>([]);
   const [animation, setAnimation] = useState<Movie[]>([]);
   const [anime, setAnime] = useState<Movie[]>([]);
-  const [recentlyViewed, setRecentlyViewed] = useState<Movie[]>([]);
   
   const [heroIndex, setHeroIndex] = useState(0);
   const [recommendations, setRecommendations] = useState<Movie[]>([]);
@@ -111,8 +110,6 @@ export default function Home() {
 
   useEffect(() => {
     loadData();
-    const recent = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
-    setRecentlyViewed(recent);
   }, []);
 
   useEffect(() => {
@@ -143,7 +140,7 @@ export default function Home() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0B0B0B] pb-32">
-        <div className="relative h-[60vh] md:h-[85vh] w-full">
+        <div className="relative h-screen w-full">
           <Skeleton className="h-full w-full rounded-none" />
         </div>
         <div className="mt-8 space-y-12 px-4 md:px-16">
@@ -180,7 +177,7 @@ export default function Home() {
         </div>
       ) : heroMovie ? (
         <>
-          <section className="relative h-[65vh] sm:h-[75vh] lg:h-[90vh] w-full overflow-hidden">
+          <section className="relative min-h-screen w-full overflow-hidden pt-20">
             {trending.slice(0, 5).map((movie, idx) => (
               <div 
                 key={movie.id}
@@ -203,7 +200,7 @@ export default function Home() {
             
             <div className="absolute inset-0 hero-gradient-overlay z-10" />
             
-            <div className="absolute bottom-0 left-0 p-6 sm:p-12 md:p-16 lg:p-24 space-y-4 sm:space-y-6 md:space-y-8 max-w-5xl z-20 pb-12 sm:pb-24 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+            <div className="absolute bottom-0 left-0 p-6 sm:p-12 md:p-16 lg:p-24 space-y-4 sm:space-y-6 md:space-y-8 max-w-5xl z-20 pb-16 sm:pb-32 animate-in fade-in slide-in-from-bottom-8 duration-1000">
               <div className="flex items-center gap-2">
                 <div className="bg-primary/20 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-2 border border-primary/30">
                   <span className="text-[8px] sm:text-[10px] font-black text-primary tracking-widest uppercase italic">🔥 TRENDING</span>

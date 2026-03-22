@@ -13,8 +13,6 @@ import { doc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { SubscriptionModal } from "@/components/subscription/subscription-modal";
 
-const MIN_LOAD_TIME = 2000;
-
 export default function MovieDetailClient({ id, initialType }: { id: string, initialType: "movie" | "tv" }) {
   const type = initialType;
   const router = useRouter();
@@ -118,7 +116,7 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
   if (loading) {
     return (
       <div className="min-h-screen bg-background space-y-8 pb-32">
-        <div className="relative h-[60vh] md:h-[80vh] w-full"><Skeleton className="h-full w-full rounded-none" /></div>
+        <div className="relative h-screen w-full"><Skeleton className="h-full w-full rounded-none" /></div>
       </div>
     );
   }
@@ -149,15 +147,15 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
     <div className="min-h-screen bg-background pb-32 animate-fade-in overflow-x-hidden">
       <SubscriptionModal isOpen={isSubModalOpen} onOpenChange={setIsSubModalOpen} />
       
-      <div className="relative h-[60vh] sm:h-[75vh] lg:h-[90vh] w-full">
+      <div className="relative min-h-screen w-full pt-20">
         {movie.backdrop_path && (
           <Image src={getImageUrl(movie.backdrop_path, "original") || ""} alt={movie.title || movie.name} fill className="object-cover opacity-60" priority />
         )}
         <div className="absolute inset-0 hero-gradient-overlay" />
-        <button onClick={() => router.back()} className="absolute top-6 left-6 p-2 sm:p-3 bg-black/40 backdrop-blur-md rounded-full text-white z-30 border border-white/10 hover:bg-primary hover:text-black transition-all">
+        <button onClick={() => router.back()} className="absolute top-24 left-6 p-2 sm:p-3 bg-black/40 backdrop-blur-md rounded-full text-white z-30 border border-white/10 hover:bg-primary hover:text-black transition-all">
           <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
         </button>
-        <div className="absolute bottom-0 left-0 p-6 sm:p-12 md:p-16 lg:p-24 w-full z-20 space-y-4 sm:space-y-6">
+        <div className="absolute bottom-0 left-0 p-6 sm:p-12 md:p-16 lg:p-24 w-full z-20 space-y-4 sm:space-y-6 pb-16 sm:pb-32">
           <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter text-white uppercase italic leading-none gold-gradient-text">
             {movie.title || movie.name}
           </h1>
