@@ -2,7 +2,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getTrending, getTopRated, Movie, getImageUrl, getRecommendations } from "@/lib/tmdb";
+import { 
+  getTrending, 
+  getTopRated, 
+  getPopularTV, 
+  getKidsContent, 
+  getAnimationContent, 
+  getAnimeContent, 
+  Movie, 
+  getImageUrl, 
+  getRecommendations 
+} from "@/lib/tmdb";
 import { MovieRow } from "@/components/movies/movie-row";
 import Image from "next/image";
 import { Star, Play, AlertCircle, RefreshCcw, LayoutGrid, Clock, Sparkles, Search } from "lucide-react";
@@ -13,7 +23,6 @@ import { useAuth } from "@/components/auth/auth-provider";
 import { collection, query, orderBy, limit, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
 
 const QUICK_GENRES = [
   { id: 28, name: "Action" },
@@ -28,6 +37,12 @@ export default function Home() {
   const router = useRouter();
   const [trending, setTrending] = useState<Movie[]>([]);
   const [topRated, setTopRated] = useState<Movie[]>([]);
+  const [popularTV, setPopularTV] = useState<Movie[]>([]);
+  const [kidsContent, setKidsContent] = useState<Movie[]>([]);
+  const [animation, setAnimation] = useState<Movie[]>([]);
+  const [anime, setAnime] = useState<Movie[]>([]);
+  const [recentlyViewed, setRecentlyViewed] = useState<Movie[]>([]);
+  
   const [continueWatching, setContinueWatching] = useState<any[]>([]);
   const [recommendations, setRecommendations] = useState<Movie[]>([]);
   const [recSourceTitle, setRecSourceTitle] = useState<string | null>(null);
@@ -38,19 +53,24 @@ export default function Home() {
     setLoading(true);
     setError(null);
     try {
-      const [trendingRes, topRatedRes] = await Promise.all([
+      const [tRes, trRes, pTvRes, kRes, aRes, aniRes] = await Promise.all([
         getTrending(),
-        getTopRated()
+        getTopRated(),
+        getPopularTV(),
+        getKidsContent(),
+        getAnimationContent(),
+        getAnimeContent()
       ]);
 
-      if (trendingRes && trendingRes.length > 0) {
-        setTrending(trendingRes);
-        setTopRated(topRatedRes || []);
-      } else {
-        setError("Please disable ad blocker or check connection");
-      }
+      setTrending(tRes || []);
+      setTopRated(trRes || []);
+      setPopularTV(pTvRes || []);
+      setKidsContent(kRes || []);
+      setAnimation(aRes || []);
+      setAnime(aniRes || []);
+      
     } catch (err) {
-      setError("Please disable ad blocker or check connection");
+      setError("Please check your internet connection.");
     } finally {
       setLoading(false);
     }
@@ -58,6 +78,9 @@ export default function Home() {
 
   useEffect(() => {
     loadData();
+    // Load Recently Viewed from LocalStorage
+    const recent = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+    setRecentlyViewed(recent);
   }, []);
 
   useEffect(() => {
@@ -113,18 +136,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div className="mt-12 space-y-16">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="px-6 md:px-16 space-y-6">
-              <Skeleton className="h-8 w-64" />
-              <div className="flex gap-4 overflow-hidden">
-                {[...Array(6)].map((_, j) => (
-                  <Skeleton key={j} className="flex-shrink-0 w-36 sm:w-44 md:w-52 aspect-[2/3] rounded-[14px]" />
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
     );
   }
@@ -134,10 +145,7 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-[#0B0B0B] pb-32 animate-fade-in">
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-6 bg-gradient-to-b from-black/80 to-transparent">
-        <div 
-          className="flex items-center gap-1 cursor-pointer group" 
-          onClick={() => router.push('/')}
-        >
+        <div className="flex items-center gap-1 cursor-pointer group" onClick={() => router.push('/')}>
           <span className="text-xl md:text-2xl font-black text-white tracking-tighter uppercase">MOVIELINK</span>
           <span className="text-xl md:text-2xl font-black bg-primary text-black px-2 py-0.5 rounded-sm tracking-tighter uppercase shadow-[0_0_15px_rgba(255,215,0,0.5)]">HUB</span>
         </div>
@@ -203,23 +211,14 @@ export default function Home() {
           <div className="p-6 bg-destructive/10 rounded-full">
             <AlertCircle className="h-16 w-16 text-destructive" />
           </div>
-          <div className="space-y-3">
-            <h2 className="text-3xl font-black uppercase italic tracking-tighter text-white">CONNECTION ERROR</h2>
-            <p className="text-muted-foreground max-w-sm mx-auto font-medium">
-              {error}
-            </p>
-          </div>
-          <Button 
-            variant="outline" 
-            onClick={loadData} 
-            className="rounded-full px-12 h-14 text-lg font-black border-primary/50 text-primary hover:bg-primary/10"
-          >
+          <h2 className="text-3xl font-black uppercase tracking-tighter text-white">CONNECTION ERROR</h2>
+          <Button variant="outline" onClick={loadData} className="rounded-full px-12 h-14 text-lg font-black border-primary/50 text-primary hover:bg-primary/10">
             <RefreshCcw className="mr-2 h-5 w-5" /> RETRY HUB ACCESS
           </Button>
         </div>
       )}
 
-      {!error && trending.length > 0 && (
+      {!error && (
         <div className="relative z-20 mt-[-70px] md:mt-[-100px] space-y-16">
           <section className="px-6 md:px-16 space-y-8">
             <div className="flex items-center gap-2.5 opacity-60 pl-1">
@@ -236,56 +235,55 @@ export default function Home() {
                   {genre.name}
                 </Link>
               ))}
-              <Link
-                href="/genres"
-                className="flex-shrink-0 px-8 py-3 bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-full text-xs font-black transition-all whitespace-nowrap text-primary uppercase tracking-wider shadow-[0_0_15px_rgba(255,215,0,0.05)]"
-              >
-                BROWSE ALL
-              </Link>
             </div>
           </section>
 
           {continueWatching.length > 0 && (
             <div className="space-y-4">
               <div className="px-6 md:px-16 flex items-center gap-3 text-primary">
-                <div className="p-2 bg-primary/10 rounded-xl">
-                  <Clock className="h-5 w-5" />
-                </div>
+                <Clock className="h-5 w-5" />
                 <h2 className="text-xl font-black uppercase tracking-tighter italic glow-text-primary">⏱ RESUME VIEWING</h2>
               </div>
               <MovieRow title="" items={continueWatching as Movie[]} />
             </div>
           )}
 
-          {recommendations.length > 0 && (
-            <div className="space-y-6 py-4">
-              <div className="px-6 md:px-16 flex flex-col gap-2">
-                <div className="flex items-center gap-2 text-accent bg-accent/5 w-fit px-3 py-1 rounded-full border border-accent/20">
-                  <Sparkles className="h-3 w-3 fill-accent" />
-                  <h2 className="text-[9px] font-black uppercase tracking-[0.4em]">HUB AI INTELLIGENCE</h2>
-                </div>
-                <div className="border-l-4 border-primary pl-6">
-                  <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter leading-tight">
-                    BECAUSE YOU WATCHED <span className="gold-gradient-text">"{recSourceTitle}"</span>
-                  </h2>
-                  <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mt-1">Based on your recent cinematic profile</p>
-                </div>
+          {recentlyViewed.length > 0 && (
+            <div className="space-y-4">
+              <div className="px-6 md:px-16 flex items-center gap-3 text-white">
+                <Clock className="h-5 w-5" />
+                <h2 className="text-xl font-black uppercase tracking-tighter italic">🕒 RECENTLY VIEWED</h2>
               </div>
-              <div className="bg-gradient-to-r from-primary/5 via-transparent to-transparent">
-                <MovieRow title="" items={recommendations} />
-              </div>
+              <MovieRow title="" items={recentlyViewed} />
             </div>
           )}
 
-          <div className="space-y-4">
-            <MovieRow title="🔥 WORLDWIDE TRENDS" items={trending} />
-            <MovieRow title="⭐ CRITICALLY ACCLAIMED" items={topRated} />
-          </div>
+          <MovieRow title="🔥 WORLDWIDE TRENDS" items={trending} viewAllHref="/genres" />
+          <MovieRow title="📺 POPULAR TV SERIES" items={popularTV} type="tv" />
+          
+          {recommendations.length > 0 && (
+            <div className="space-y-6 py-4 bg-gradient-to-r from-primary/5 via-transparent to-transparent">
+              <div className="px-6 md:px-16 space-y-2">
+                <div className="flex items-center gap-2 text-accent">
+                  <Sparkles className="h-3 w-3 fill-accent" />
+                  <h2 className="text-[9px] font-black uppercase tracking-[0.4em]">HUB AI</h2>
+                </div>
+                <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter">
+                  BECAUSE YOU WATCHED <span className="gold-gradient-text">"{recSourceTitle}"</span>
+                </h2>
+              </div>
+              <MovieRow title="" items={recommendations} />
+            </div>
+          )}
+
+          <MovieRow title="🎬 ANIMATION BLOCKBUSTERS" items={animation} />
+          <MovieRow title="🎌 ANIME CORNER" items={anime} />
+          <MovieRow title="👶 FOR KIDS & FAMILY" items={kidsContent} />
+          <MovieRow title="⭐ CRITICALLY ACCLAIMED" items={topRated} />
 
           <footer className="py-20 text-center space-y-4 opacity-30">
             <div className="h-px w-32 bg-primary/50 mx-auto" />
             <p className="text-[10px] font-black tracking-[0.5em] text-white uppercase">MOVIELINK HUB PREMIUM OTT</p>
-            <p className="text-[8px] font-mono text-muted-foreground uppercase">Authorized Archive Access v1.0.8</p>
           </footer>
         </div>
       )}

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -51,6 +52,20 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
         setSimilar(similarRes || []);
         setProviders(providerRes || {});
         
+        // Save to Recently Viewed (LocalStorage)
+        const recent = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+        const newItem = {
+          id: details.id,
+          title: details.title || details.name,
+          poster_path: details.poster_path,
+          vote_average: details.vote_average,
+          release_date: details.release_date || details.first_air_date,
+          media_type: type,
+          timestamp: Date.now()
+        };
+        const filtered = recent.filter((item: any) => item.id !== details.id);
+        localStorage.setItem('recentlyViewed', JSON.stringify([newItem, ...filtered].slice(0, 20)));
+
         if (user) {
           const cwRef = doc(db, "users", user.uid, "continueWatching", movieId);
           setDoc(cwRef, {
@@ -98,7 +113,8 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
         title: movie.title || movie.name,
         poster: movie.poster_path,
         type: type,
-        addedAt: Date.now()
+        addedAt: Date.now(),
+        userId: user.uid
       });
       toast({ title: "Added to Watchlist" });
     }
@@ -127,7 +143,7 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center space-y-6">
         <AlertCircle className="h-12 w-12 text-muted-foreground" />
-        <h2 className="text-2xl font-bold uppercase italic tracking-tighter">Content Unavailable</h2>
+        <h2 className="text-2xl font-bold uppercase italic tracking-tighter text-white">Content Unavailable</h2>
         <Button variant="outline" onClick={() => router.back()} className="rounded-full px-8">Go Back</Button>
       </div>
     );
@@ -186,7 +202,7 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
           </p>
 
           <div className="flex flex-wrap gap-4 pt-2">
-            <Button asChild className="gold-gradient text-black font-black px-10 h-14 rounded-full hover:scale-105 transition-all glow-primary">
+            <Button asChild className="bg-primary text-black font-black px-10 h-14 rounded-full hover:scale-105 transition-all glow-primary">
               <a href={watchLink || "#"} target={watchLink ? "_blank" : "_self"} rel="noopener noreferrer">
                 <Play className="mr-2 h-6 w-6 fill-current" /> WATCH NOW
               </a>

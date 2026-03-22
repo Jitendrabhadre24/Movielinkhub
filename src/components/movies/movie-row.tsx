@@ -1,33 +1,44 @@
+
 "use client";
 
 import { Movie } from "@/lib/tmdb";
 import { MovieCard } from "./movie-card";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 
 interface MovieRowProps {
   title: string;
   items: Movie[];
   type?: "movie" | "tv";
+  viewAllHref?: string;
 }
 
-export function MovieRow({ title, items, type }: MovieRowProps) {
+export function MovieRow({ title, items, type, viewAllHref }: MovieRowProps) {
   if (!items || items.length === 0) return null;
 
   return (
     <section className="space-y-6 py-6">
-      {title && (
-        <div className="px-4 md:px-8">
-          <div className="border-l-4 border-primary pl-4">
-            <h2 className="text-xl font-black text-white uppercase italic tracking-tighter">
-              {title}
-            </h2>
-          </div>
+      <div className="px-4 md:px-8 flex items-center justify-between">
+        <div className="border-l-4 border-primary pl-4">
+          <h2 className="text-xl font-black text-white uppercase italic tracking-tighter">
+            {title}
+          </h2>
         </div>
-      )}
-      <div className="no-scrollbar flex gap-4 overflow-x-auto px-4 md:px-8">
+        {viewAllHref && (
+          <Link 
+            href={viewAllHref}
+            className="flex items-center gap-1 text-[10px] font-black text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest"
+          >
+            VIEW ALL <ChevronRight className="h-3 w-3" />
+          </Link>
+        )}
+      </div>
+      <div className="no-scrollbar flex gap-4 overflow-x-auto px-4 md:px-8 snap-x snap-mandatory">
         {items.map((item) => (
-          <MovieCard key={item.id} item={item} type={type} />
+          <div key={item.id} className="snap-start">
+            <MovieCard item={item} type={type} />
+          </div>
         ))}
-        {/* Spacer for horizontal scroll end padding */}
         <div className="min-w-[1px] h-1" />
       </div>
     </section>

@@ -75,8 +75,30 @@ export async function getTopRated(): Promise<Movie[]> {
   return data?.results || [];
 }
 
+export async function getPopularTV(): Promise<Movie[]> {
+  const data = await fetchFromTMDB("/tv/popular");
+  return data?.results?.map((item: any) => ({ ...item, media_type: 'tv' })) || [];
+}
+
+export async function getKidsContent(): Promise<Movie[]> {
+  const data = await fetchFromTMDB("/discover/movie", { with_genres: "10751" });
+  return data?.results || [];
+}
+
+export async function getAnimationContent(): Promise<Movie[]> {
+  const data = await fetchFromTMDB("/discover/movie", { with_genres: "16" });
+  return data?.results || [];
+}
+
+export async function getAnimeContent(): Promise<Movie[]> {
+  const data = await fetchFromTMDB("/discover/movie", { 
+    with_genres: "16",
+    with_original_language: "ja" 
+  });
+  return data?.results || [];
+}
+
 export async function getDetails(id: string, type: "movie" | "tv"): Promise<any> {
-  // Use a shorter revalidate for details as they change rarely but might need updates
   return await fetchFromTMDB(`/${type}/${id}`, {}, { next: { revalidate: 7200 } });
 }
 
@@ -106,7 +128,6 @@ export async function getWatchProviders(id: string, type: "movie" | "tv"): Promi
 }
 
 export async function searchMovies(query: string): Promise<Movie[]> {
-  // No caching for search results to ensure accuracy
   const data = await fetchFromTMDB("/search/multi", { query }, { cache: 'no-store' });
   return data?.results || [];
 }
