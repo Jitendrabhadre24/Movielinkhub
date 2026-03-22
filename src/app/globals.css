@@ -57,6 +57,17 @@
     position: sticky;
     top: 0;
     z-index: 50;
+    transition: all 0.5s ease-in-out;
+  }
+
+  .top-ad.hide {
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .header {
+    transition: all 0.5s ease-in-out;
   }
 
   .hero-video {

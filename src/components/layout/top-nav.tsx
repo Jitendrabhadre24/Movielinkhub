@@ -20,7 +20,8 @@ export function TopNav() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      // Updated threshold to 100px to sync with ad hiding
+      setIsScrolled(window.scrollY > 100);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -29,9 +30,9 @@ export function TopNav() {
   return (
     <header 
       className={cn(
-        "sticky top-0 left-0 right-0 z-[40] flex items-center justify-between px-6 py-4 md:px-12 transition-all duration-500",
+        "sticky top-0 left-0 right-0 z-[40] flex items-center justify-between px-6 py-4 md:px-12 transition-all duration-500 header",
         isScrolled 
-          ? "bg-black/80 backdrop-blur-2xl border-b border-white/5 py-3 shadow-2xl" 
+          ? "bg-black/80 backdrop-blur-2xl border-b border-white/5 py-3 shadow-2xl show" 
           : "bg-gradient-to-b from-black/95 via-black/40 to-transparent backdrop-blur-[1px] py-6"
       )}
     >

@@ -11,27 +11,19 @@ interface BannerAdProps {
 
 export function BannerAd({ id, className, isStickyTop }: BannerAdProps) {
   const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
 
   useEffect(() => {
     if (!isStickyTop) return;
 
     const handleScroll = () => {
+      // Direct threshold logic: Hide if scroll > 100px
       const currentScrollY = window.scrollY;
-      
-      // Smart Visibility: Show on scroll up, hide on scroll down
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        setIsVisible(false);
-      } else {
-        setIsVisible(true);
-      }
-      
-      setLastScrollY(currentScrollY);
+      setIsVisible(currentScrollY <= 100);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY, isStickyTop]);
+  }, [isStickyTop]);
 
   return (
     <div 
