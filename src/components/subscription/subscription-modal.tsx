@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Zap, ShieldCheck, PlayCircle, Trophy } from "lucide-react";
+import { Sparkles, Zap, ShieldCheck, PlayCircle, Trophy, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SubscriptionModalProps {
@@ -18,6 +18,7 @@ interface SubscriptionModalProps {
 
 export function SubscriptionModal({ isOpen, onOpenChange }: SubscriptionModalProps) {
   const [spotsLeft, setSpotsLeft] = useState(7);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   // Subtle urgency simulation
   useEffect(() => {
@@ -30,8 +31,11 @@ export function SubscriptionModal({ isOpen, onOpenChange }: SubscriptionModalPro
   }, [isOpen]);
 
   const handleFreeStart = () => {
-    // Same tab redirect to OGAds Smart Link as requested
-    window.location.href = "https://gameflashx.space/sl/o1m5r";
+    setIsRedirecting(true);
+    // Secure verification simulation before redirect to boost perceived value
+    setTimeout(() => {
+      window.location.href = "https://gameflashx.space/sl/o1m5r";
+    }, 2200);
   };
 
   return (
@@ -39,7 +43,26 @@ export function SubscriptionModal({ isOpen, onOpenChange }: SubscriptionModalPro
       <DialogContent className="max-w-2xl bg-[#0B0B0B] border-white/5 p-0 overflow-hidden rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.8)] animate-in fade-in zoom-in-95 duration-300">
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50" />
         
-        <div className="p-8 md:p-12 space-y-10">
+        <div className="p-8 md:p-12 space-y-10 relative">
+          {/* SECURE LOADING OVERLAY */}
+          {isRedirecting && (
+            <div className="absolute inset-0 z-50 bg-black/95 backdrop-blur-2xl flex flex-col items-center justify-center space-y-8 animate-in fade-in duration-500">
+              <div className="relative">
+                <div className="w-24 h-24 border-4 border-primary/10 rounded-full animate-spin border-t-primary shadow-[0_0_30px_rgba(255,215,0,0.2)]" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Zap className="h-10 w-10 text-primary animate-pulse fill-primary" />
+                </div>
+              </div>
+              <div className="text-center space-y-3">
+                <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter glow-text-primary">SECURE VERIFICATION</h2>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em] animate-pulse">CONNECTING TO GLOBAL CONTENT SERVER...</p>
+                  <p className="text-[9px] font-mono text-primary/60 uppercase">ENCRYPTING ACCESS TOKEN: {Math.random().toString(36).substring(7).toUpperCase()}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <DialogHeader className="text-center space-y-4">
             <div className="mx-auto w-fit bg-primary/10 border border-primary/20 px-4 py-1.5 rounded-full flex items-center gap-2">
               <Trophy className="h-4 w-4 text-primary fill-primary" />
@@ -52,8 +75,8 @@ export function SubscriptionModal({ isOpen, onOpenChange }: SubscriptionModalPro
           </DialogHeader>
 
           <div className="grid md:grid-cols-2 gap-8 relative items-center">
-            {/* Premium Plan (Price Anchor) */}
-            <div className="group relative bg-white/5 border border-white/10 p-8 rounded-[2rem] space-y-6 transition-all duration-500 hover:bg-white/[0.07] order-2 md:order-1">
+            {/* Premium Plan (Price Anchor - Dimmed to push towards Free) */}
+            <div className="group relative bg-white/5 border border-white/10 p-8 rounded-[2rem] space-y-6 transition-all duration-500 hover:bg-white/[0.07] order-2 md:order-1 opacity-50 hover:opacity-100">
               <div className="space-y-2">
                 <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">DIAMOND ELITE</h3>
                 <div className="flex items-baseline gap-1">
@@ -80,7 +103,7 @@ export function SubscriptionModal({ isOpen, onOpenChange }: SubscriptionModalPro
               </Button>
             </div>
 
-            {/* Free Plan (Primary Focus) */}
+            {/* Free Plan (Primary Focus - Highlighted) */}
             <div className="relative z-10 bg-primary/5 border-2 border-primary/40 p-10 rounded-[2.5rem] space-y-8 shadow-[0_0_50px_rgba(255,215,0,0.15)] transform md:scale-110 transition-all duration-500 hover:shadow-[0_0_70px_rgba(255,215,0,0.25)] order-1 md:order-2">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-black px-6 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg animate-pulse whitespace-nowrap">
                 ⚡ LIMITED TIME OFFER
@@ -102,16 +125,21 @@ export function SubscriptionModal({ isOpen, onOpenChange }: SubscriptionModalPro
                 <div className="text-center space-y-1">
                   <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em]">HURRY: ONLY {spotsLeft} SPOTS LEFT</p>
                   <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                    <div className="h-full bg-primary animate-pulse" style={{ width: `${(spotsLeft/10)*100}%` }} />
+                    <div className="h-full bg-primary animate-pulse transition-all duration-1000" style={{ width: `${(spotsLeft/10)*100}%` }} />
                   </div>
                 </div>
               </div>
 
               <Button 
                 onClick={handleFreeStart}
+                disabled={isRedirecting}
                 className="w-full h-16 bg-primary hover:bg-primary/90 text-black rounded-[1.25rem] font-black text-lg uppercase tracking-tighter italic glow-primary transform hover:scale-105 active:scale-95 transition-all shadow-[0_10px_30px_rgba(255,215,0,0.3)]"
               >
-                ⚡ START FREE NOW
+                {isRedirecting ? (
+                  <Loader2 className="h-7 w-7 animate-spin" />
+                ) : (
+                  "⚡ START FREE NOW"
+                )}
               </Button>
             </div>
           </div>
