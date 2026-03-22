@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Movie } from "@/lib/tmdb";
@@ -17,7 +16,7 @@ export function MovieRow({ title, items, type, viewAllHref }: MovieRowProps) {
   if (!items || items.length === 0) return null;
 
   return (
-    <section className="space-y-6 py-6">
+    <section className="space-y-6 py-6 overflow-hidden">
       <div className="px-4 md:px-8 flex items-center justify-between">
         <div className="border-l-4 border-primary pl-4">
           <h2 className="text-xl font-black text-white uppercase italic tracking-tighter">
@@ -33,13 +32,13 @@ export function MovieRow({ title, items, type, viewAllHref }: MovieRowProps) {
           </Link>
         )}
       </div>
-      <div className="no-scrollbar flex gap-4 overflow-x-auto px-4 md:px-8 snap-x snap-mandatory">
+      <div className="no-scrollbar flex gap-4 overflow-x-auto px-4 md:px-8 snap-x snap-mandatory scroll-smooth pb-4">
         {items.map((item) => (
           <div key={item.id} className="snap-start">
             <MovieCard item={item} type={type} />
           </div>
         ))}
-        <div className="min-w-[1px] h-1" />
+        <div className="min-w-[40px] h-1 shrink-0" /> {/* Spacer for end of scroll */}
       </div>
     </section>
   );

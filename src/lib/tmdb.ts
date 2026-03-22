@@ -44,6 +44,10 @@ export class TMDBError extends Error {
 const BASE_URL = "https://api.themoviedb.org/3";
 const IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
 
+// Simple client-side in-memory cache to reduce redundant API calls during a single session
+const apiCache = new Map<string, { data: any, timestamp: number }>();
+const CACHE_DURATION = 1000 * 60 * 5; // 5 minutes
+
 async function fetchFromTMDB(endpoint: string, params: Record<string, string> = {}, cacheOptions: RequestInit = { next: { revalidate: 3600 } }) {
   // Strict check for API key presence
   if (!API_KEY || API_KEY === "undefined" || API_KEY === "") {
@@ -62,6 +66,14 @@ async function fetchFromTMDB(endpoint: string, params: Record<string, string> = 
 
   const url = `${BASE_URL}${endpoint}?${queryParams}`;
 
+  // Check client-side cache
+  if (typeof window !== 'undefined') {
+    const cached = apiCache.get(url);
+    if (cached && (Date.now() - cached.timestamp < CACHE_DURATION)) {
+      return cached.data;
+    }
+  }
+
   try {
     const response = await fetch(url, {
       method: 'GET',
@@ -73,7 +85,14 @@ async function fetchFromTMDB(endpoint: string, params: Record<string, string> = 
       throw new TMDBError('SERVER_ERROR', 'Server busy, try again');
     }
     
-    return await response.json();
+    const data = await response.json();
+    
+    // Save to client-side cache
+    if (typeof window !== 'undefined') {
+      apiCache.set(url, { data, timestamp: Date.now() });
+    }
+    
+    return data;
   } catch (error: any) {
     if (error instanceof TMDBError) throw error;
     throw new TMDBError('OFFLINE', 'Check your internet connection');

@@ -12,13 +12,15 @@ interface MovieCardProps {
   type?: "movie" | "tv";
 }
 
+// Low-res blurred placeholder base64 (grey pixel)
+const BLUR_DATA_URL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==";
+
 export function MovieCard({ item, className, type }: MovieCardProps) {
   const itemType = type || item.media_type || "movie";
   const posterUrl = getImageUrl(item.poster_path);
   const title = item.title || item.name;
   const releaseYear = (item.release_date || item.first_air_date || "").split("-")[0];
   
-  // Logic for a "Quality" tag as a visual placeholder
   const quality = item.vote_average > 7 ? "4K UHD" : "HD";
 
   return (
@@ -30,9 +32,7 @@ export function MovieCard({ item, className, type }: MovieCardProps) {
       )}
     >
       <div className="space-y-3">
-        {/* Card Image Container */}
         <div className="relative aspect-[2/3] overflow-hidden rounded-[14px] bg-[#111] shadow-2xl transition-all duration-500 group-hover:scale-[1.03] group-active:scale-95">
-          {/* Rating Badge */}
           <div className="absolute top-3 right-3 z-10 bg-black/70 backdrop-blur-xl px-2 py-1 rounded-lg flex items-center gap-1.5 border border-white/10 shadow-lg group-hover:bg-primary transition-colors group-hover:border-primary">
             <Star className="h-3 w-3 text-primary fill-primary group-hover:text-black group-hover:fill-black" />
             <span className="text-[11px] font-black text-white group-hover:text-black">
@@ -46,7 +46,9 @@ export function MovieCard({ item, className, type }: MovieCardProps) {
               alt={title || "Poster"}
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-110"
-              sizes="(max-width: 768px) 180px, 220px"
+              sizes="(max-width: 768px) 150px, 250px"
+              placeholder="blur"
+              blurDataURL={BLUR_DATA_URL}
               loading="lazy"
             />
           ) : (
@@ -55,11 +57,9 @@ export function MovieCard({ item, className, type }: MovieCardProps) {
             </div>
           )}
           
-          {/* Subtle Overlay on hover */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
         </div>
 
-        {/* Metadata Section */}
         <div className="space-y-1.5 px-1">
           <div className="flex items-start justify-between gap-2">
             <h3 className="text-sm md:text-base font-bold text-white line-clamp-2 leading-tight transition-colors group-hover:text-white/100 group-hover:glow-text-primary">

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -32,7 +31,7 @@ const QUICK_GENRES = [
   { id: 16, name: "Animation" },
 ];
 
-const MIN_LOAD_TIME = 2500; // 2.5s to prevent flicker and show skeletons
+const MIN_LOAD_TIME = 2500; 
 
 export default function Home() {
   const { user } = useUser();
@@ -77,9 +76,8 @@ export default function Home() {
         getAnimeContent()
       ]);
 
-      // If successful, check if we need to wait to satisfy MIN_LOAD_TIME
       const elapsed = Date.now() - startTime;
-      if (elapsed < 500) await new Promise(r => setTimeout(r, 500)); // Minimal delay for feel
+      if (elapsed < 800) await new Promise(r => setTimeout(r, 800));
 
       setTrending(tRes || []);
       setTopRated(trRes || []);
@@ -89,7 +87,6 @@ export default function Home() {
       setAnime(aniRes || []);
       
     } catch (err: any) {
-      // For errors, we always wait at least 2.5s so user sees skeletons first
       const elapsed = Date.now() - startTime;
       const wait = Math.max(0, MIN_LOAD_TIME - elapsed);
       await new Promise(r => setTimeout(r, wait));
@@ -116,7 +113,7 @@ export default function Home() {
       getRecommendations(lastWatched.contentId || lastWatched.id.toString(), lastWatched.contentType || lastWatched.type).then(recs => {
         setRecommendations(recs || []);
         setRecSourceTitle(lastWatched.title);
-      }).catch(() => {}); // Silent catch for recommendations
+      }).catch(() => {});
     } else {
       setRecommendations([]);
       setRecSourceTitle(null);
@@ -132,6 +129,17 @@ export default function Home() {
             <div className="flex gap-4"><Skeleton className="h-6 w-20" /><Skeleton className="h-6 w-40" /></div>
             <Skeleton className="h-20 md:h-32 w-full max-w-2xl" />
             <div className="flex gap-4"><Skeleton className="h-14 w-40 rounded-full" /></div>
+          </div>
+        </div>
+        <div className="mt-12 space-y-12 px-6 md:px-16">
+          <Skeleton className="h-8 w-48" />
+          <div className="flex gap-6 overflow-hidden">
+             {[...Array(6)].map((_, i) => (
+               <div key={i} className="space-y-4 shrink-0">
+                 <Skeleton className="h-72 w-48 rounded-2xl" />
+                 <Skeleton className="h-4 w-32" />
+               </div>
+             ))}
           </div>
         </div>
       </div>
@@ -193,6 +201,8 @@ export default function Home() {
                   fill
                   className="object-cover animate-slow-zoom"
                   priority
+                  placeholder="blur"
+                  blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
                 />
               )}
             </div>
@@ -231,9 +241,9 @@ export default function Home() {
                 <LayoutGrid className="h-3.5 w-3.5 text-white" />
                 <h2 className="text-[12px] font-black uppercase tracking-[0.2em] text-white">EXPLORE</h2>
               </div>
-              <div className="no-scrollbar flex gap-4 overflow-x-auto pb-4">
+              <div className="no-scrollbar flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth">
                 {QUICK_GENRES.map((genre) => (
-                  <Link key={genre.id} href={`/genre/${genre.id}?name=${genre.name}&type=movie`} className="flex-shrink-0 px-8 py-3 bg-white/5 backdrop-blur-xl border border-white/10 hover:border-primary/50 hover:bg-white/10 rounded-full text-xs font-black transition-all whitespace-nowrap uppercase tracking-wider text-white/80 hover:text-white">
+                  <Link key={genre.id} href={`/genre/${genre.id}?name=${genre.name}&type=movie`} className="flex-shrink-0 px-8 py-3 bg-white/5 backdrop-blur-xl border border-white/10 hover:border-primary/50 hover:bg-white/10 rounded-full text-xs font-black transition-all whitespace-nowrap uppercase tracking-wider text-white/80 hover:text-white snap-start">
                     {genre.name}
                   </Link>
                 ))}
