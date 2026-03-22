@@ -165,6 +165,13 @@ export default function Home() {
     return watchlistData?.some(item => String(item.contentId) === String(id) || String(item.id) === String(id));
   };
 
+  const handleWatchNow = () => {
+    triggerAdsterraPopunder();
+    setTimeout(() => {
+      router.push(`/movie/${heroMovie.id}?type=${heroMovie.media_type || 'movie'}`);
+    }, 1000);
+  };
+
   const handleWatchlistToggle = (movie: Movie) => {
     if (!user || !firestore) {
       router.push("/auth");
@@ -290,13 +297,10 @@ export default function Home() {
 
               <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 sm:pt-6">
                 <Button 
-                  asChild 
-                  onClick={() => triggerAdsterraPopunder()}
+                  onClick={handleWatchNow}
                   className="w-full sm:w-auto rounded-full px-12 h-16 text-xl font-black bg-primary text-black hover:scale-105 active:scale-95 transition-all shadow-[0_0_35px_rgba(255,215,0,0.3)] cursor-pointer"
                 >
-                  <Link href={`/movie/${heroMovie.id}?type=${heroMovie.media_type || 'movie'}`}>
-                    <Play className="mr-3 h-7 w-7 fill-current" /> WATCH NOW
-                  </Link>
+                  <Play className="mr-3 h-7 w-7 fill-current" /> WATCH NOW
                 </Button>
                 <Button 
                   variant="outline" 

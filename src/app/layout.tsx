@@ -4,6 +4,7 @@ import { FirebaseClientProvider } from '@/firebase';
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { TopNav } from "@/components/layout/top-nav";
 import { Toaster } from "@/components/ui/toaster";
+import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: {
@@ -70,6 +71,11 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+        {/* Adsterra Popunder Script */}
+        <Script 
+          src="https://actionfurmap.com/09/49/9d/09499d1cbbb3fe2df210a04980c1be6b.js" 
+          strategy="beforeInteractive" 
+        />
       </head>
       <body className="antialiased bg-background min-h-screen text-foreground selection:bg-primary selection:text-primary-foreground">
         <FirebaseClientProvider>
