@@ -6,28 +6,59 @@ import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: {
-    default: 'MOVIELINK HUB | Premium OTT Experience',
+    default: 'MOVIELINK HUB | Watch Free Movies & Latest TV Shows Online',
     template: '%s | MovieLink Hub'
   },
-  description: 'Experience MovieLink Hub, the ultimate premium OTT platform for the latest movies, TV shows, and anime. Discover details, cast, and legal streaming options on Netflix, Prime Video, and more.',
-  keywords: ['movies', 'streaming', 'OTT', 'TV shows', 'watchlist', 'premium content', 'legal streaming', 'watch online'],
+  description: 'Experience MovieLink Hub, the ultimate premium OTT platform. Watch the latest blockbusters, trending TV shows, and top-rated anime for free. Discover where to stream on Netflix, Prime Video, and more.',
+  keywords: [
+    'free movies', 
+    'watch online', 
+    'latest movies 2024', 
+    'streaming OTT', 
+    'TV shows online', 
+    'anime streaming', 
+    'movie discovery', 
+    'premium cinema', 
+    'watchlist', 
+    'legal streaming options'
+  ],
+  authors: [{ name: 'MovieLink Hub Team' }],
   openGraph: {
-    title: 'MOVIELINK HUB | Premium OTT',
-    description: 'Premium OTT platform for blockbusters and trending shows.',
+    title: 'MOVIELINK HUB | Watch Latest Movies & TV Shows',
+    description: 'The ultimate premium OTT experience. Discover and track the best cinematic content across all platforms.',
     url: 'https://movielink-hub.web.app',
     siteName: 'MovieLink Hub',
+    images: [
+      {
+        url: 'https://picsum.photos/seed/seo/1200/630',
+        width: 1200,
+        height: 630,
+        alt: 'MovieLink Hub Premium OTT',
+      },
+    ],
     locale: 'en_US',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'MOVIELINK HUB',
-    description: 'Premium OTT experience with high-quality content discovery.',
+    title: 'MOVIELINK HUB | Premium OTT Experience',
+    description: 'Stream the latest movies and TV shows. Your cinematic journey starts here.',
+    images: ['https://picsum.photos/seed/seo/1200/630'],
   },
   robots: {
     index: true,
     follow: true,
-  }
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    google: 'your-google-verification-code', // Placeholder for user
+  },
 };
 
 export default function RootLayout({

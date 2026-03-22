@@ -1,4 +1,3 @@
-
 import { Metadata } from "next";
 import GenreClient from "./genre-client";
 
@@ -8,13 +7,17 @@ interface Props {
 }
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
-  const { name = "Genre" } = await searchParams;
+  const { name = "Genre", type = "movie" } = await searchParams;
+  const displayType = type === 'movie' ? 'Movies' : 'TV Series';
+  
   return {
-    title: `${name.toUpperCase()} ARCHIVE - MovieLink Hub`,
-    description: `Explore the ultimate collection of ${name} movies and TV shows on MovieLink Hub. Filter by rating, release year, and language for a personalized discovery experience.`,
+    title: `Best ${name} ${displayType} to Watch Online - MovieLink Hub`,
+    description: `Discover the top-rated ${name} ${displayType.toLowerCase()}. Browse the ultimate collection, filter by release year and rating, and find where to stream the best ${name} content online.`,
+    keywords: [`${name} movies`, `best ${name} tv shows`, `watch ${name} online`, 'movie categories', 'genre discovery'],
     openGraph: {
-      title: `${name} Archive | MovieLink Hub`,
-      description: `The best ${name} blockbusters and TV series available for streaming.`,
+      title: `${name} Archive | MovieLink Hub Discovery`,
+      description: `The most comprehensive archive of ${name} blockbusters and series available for streaming.`,
+      images: [`https://picsum.photos/seed/${name}/1200/630`],
     }
   };
 }
