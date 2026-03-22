@@ -25,6 +25,7 @@ import { collection, query, orderBy, limit, doc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const QUICK_GENRES = [
   { id: 28, name: "Action" },
@@ -39,6 +40,7 @@ export default function Home() {
   const firestore = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   
   const [trending, setTrending] = useState<Movie[]>([]);
   const [topRated, setTopRated] = useState<Movie[]>([]);
@@ -251,8 +253,8 @@ export default function Home() {
               ))}
 
               {/* Dynamic YouTube Trailer Embed (Desktop Only) */}
-              {trailerKey && (
-                <div className="hidden lg:block absolute inset-0 z-10 transition-opacity duration-1000">
+              {!isMobile && trailerKey && (
+                <div className="absolute inset-0 z-10 transition-opacity duration-1000">
                   <iframe
                     src={videoUrl}
                     frameBorder="0"
