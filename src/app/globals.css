@@ -105,6 +105,7 @@
     transition: 0.3s;
     background: #111;
     margin-bottom: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   }
 
   .poster-overlay {
@@ -112,8 +113,12 @@
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 20px 16px 32px 16px;
-    background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0.5) 70%, transparent 100%);
+    padding: 24px 16px 40px 16px;
+    background: linear-gradient(to top, 
+      rgba(0,0,0,1) 0%, 
+      rgba(0,0,0,0.9) 30%, 
+      rgba(0,0,0,0.5) 60%, 
+      transparent 100%);
     z-index: 10;
   }
 
@@ -125,35 +130,36 @@
   .action-buttons {
     position: absolute;
     right: 12px;
-    bottom: 90px;
+    top: 50%;
+    transform: translateY(-50%);
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
     z-index: 30;
   }
 
   .play-btn {
-    width: 54px;
-    height: 54px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     background: #FFC107;
     display: flex;
     align-items: center;
     justify-content: center;
     color: black;
-    box-shadow: 0 0 30px rgba(255, 193, 7, 0.5);
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 0 20px rgba(255, 193, 7, 0.4);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
   .play-btn:active {
-    transform: scale(0.9);
+    transform: scale(0.92);
   }
 
   .list-btn {
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.15);
     display: flex;
@@ -161,10 +167,12 @@
     justify-content: center;
     color: white;
     transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   }
 
   .list-btn:active {
-    background: rgba(255, 255, 255, 0.1);
+    transform: scale(0.92);
+    background: rgba(255, 255, 255, 0.2);
   }
 
   /* Swiper Scaling Logic */
@@ -172,7 +180,7 @@
     transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
     transform: scale(0.85);
     opacity: 0.5;
-    filter: blur(2px);
+    filter: blur(4px);
   }
 
   .hero-swiper-container .swiper-slide-active {

@@ -27,6 +27,15 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 import "swiper/css";
 
+const GENRE_MAP: Record<number, string> = {
+  28: "Action", 12: "Adventure", 16: "Animation", 35: "Comedy", 80: "Crime",
+  99: "Documentary", 18: "Drama", 10751: "Family", 14: "Fantasy", 36: "History",
+  27: "Horror", 10402: "Music", 9648: "Mystery", 10749: "Romance", 878: "Sci-Fi",
+  10770: "TV Movie", 53: "Thriller", 10752: "War", 37: "Western",
+  10759: "Action & Adventure", 10762: "Kids", 10763: "News", 10764: "Reality",
+  10765: "Sci-Fi & Fantasy", 10766: "Soap", 10767: "Talk", 10768: "War & Politics"
+};
+
 export default function Home() {
   const { user } = useUser();
   const firestore = useFirestore();
@@ -118,6 +127,15 @@ export default function Home() {
     }
   };
 
+  const getGenreString = (genreIds?: number[]) => {
+    if (!genreIds || genreIds.length === 0) return "";
+    return genreIds
+      .map(id => GENRE_MAP[id])
+      .filter(Boolean)
+      .slice(0, 3)
+      .join(" • ");
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0B0B0B] pb-32">
@@ -175,31 +193,36 @@ export default function Home() {
                       />
                       
                       <div className="poster-overlay">
-                        <div className={`space-y-1.5 transition-all duration-700 delay-100 ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+                        <div className={`space-y-2 transition-all duration-700 delay-100 ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
                           <div className="flex items-center gap-2">
                             <Star className="h-3 w-3 text-primary fill-primary" />
                             <span className="text-[10px] font-black text-white">{movie.vote_average?.toFixed(1)}</span>
                           </div>
-                          <h1 className="poster-title text-xl md:text-3xl font-black text-white uppercase italic tracking-tighter leading-[1.1] line-clamp-2">
-                            {movie.title || movie.name}
-                          </h1>
-                          <p className="text-[8px] md:text-[10px] font-black text-white/50 uppercase tracking-[0.15em] italic">
+                          <div className="space-y-1">
+                            <h1 className="poster-title text-xl md:text-4xl font-black text-white uppercase italic tracking-tighter leading-[1.1] line-clamp-2">
+                              {movie.title || movie.name}
+                            </h1>
+                            <p className="text-[9px] md:text-[11px] font-black text-primary/80 uppercase tracking-widest italic opacity-80">
+                              {getGenreString((movie as any).genre_ids)}
+                            </p>
+                          </div>
+                          <p className="text-[8px] md:text-[10px] font-black text-white/40 uppercase tracking-[0.2em] italic">
                             {(movie.release_date || movie.first_air_date || "").split("-")[0]} • PREMIUM • HD
                           </p>
                         </div>
                       </div>
 
-                      {/* Floating Action Matrix (Right Side) */}
+                      {/* Floating Action Matrix (Vertically Centered Right) */}
                       <div className={`action-buttons transition-all duration-700 delay-300 ${isActive ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
                         <button 
                           onClick={() => handleWatchlistToggle(movie)}
-                          className="list-btn hover:scale-110 active:scale-90 transition-all"
+                          className="list-btn hover:scale-110 active:scale-95 transition-all"
                         >
                           {isInWatchlist(movie.id) ? <Check className="h-5 w-5 text-primary" /> : <Plus className="h-5 w-5" />}
                         </button>
                         <button 
                           onClick={() => handleWatchNow(movie)}
-                          className="play-btn flex items-center justify-center"
+                          className="play-btn hover:scale-110 active:scale-95 transition-all"
                         >
                           <Play className="h-6 w-6 fill-current" />
                         </button>
