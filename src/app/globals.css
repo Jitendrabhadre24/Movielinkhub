@@ -67,10 +67,11 @@
   }
 
   .mid-ad {
-    margin: 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
     border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 20px rgba(255, 193, 7, 0.05);
   }
 
   .header {
@@ -116,14 +117,14 @@
     padding: 24px 16px 40px 16px;
     background: linear-gradient(to top, 
       rgba(0,0,0,1) 0%, 
-      rgba(0,0,0,0.9) 30%, 
-      rgba(0,0,0,0.5) 60%, 
+      rgba(0,0,0,0.95) 40%, 
+      rgba(0,0,0,0.5) 70%, 
       transparent 100%);
     z-index: 10;
   }
 
   .poster-title {
-    text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+    text-shadow: 0 2px 12px rgba(0,0,0,1);
     line-height: 1.1;
   }
 

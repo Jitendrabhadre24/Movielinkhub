@@ -241,7 +241,7 @@ export default function Home() {
 
             <MovieRow title="📺 POPULAR SERIES" items={popularTV} type="tv" />
             
-            <div className="px-6">
+            <div className="px-6 md:px-12 lg:px-16">
               <div className="h-32 w-full bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-2xl border border-primary/10 flex items-center justify-center group cursor-pointer hover:border-primary/30 transition-all">
                 <div className="text-center space-y-1">
                   <p className="text-[9px] font-black text-primary/40 uppercase tracking-[0.4em] italic">PREMIUM SPONSOR</p>
