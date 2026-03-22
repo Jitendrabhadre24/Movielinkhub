@@ -26,7 +26,7 @@ export function MovieCard({ item, className, type }: MovieCardProps) {
     <Link
       href={`/movie/${item.id}?type=${itemType}`}
       className={cn(
-        "group block w-full transition-all duration-500 animate-fade-in",
+        "group block transition-all duration-500 animate-fade-in",
         className
       )}
     >
