@@ -20,7 +20,7 @@ import { collection, query, orderBy, limit, doc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { triggerAdsterraPopunder } from "@/lib/ad-service";
-import { BannerAd } from "@/components/ads/banner-ad";
+import { AdsterraBanner } from "@/components/ads/adsterra-banner";
 
 // Swiper imports
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -152,7 +152,8 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#0B0B0B] pb-32 animate-fade-in overflow-x-hidden">
-      <BannerAd id="top-banner" isStickyTop />
+      {/* Top Banner Adsterra */}
+      <AdsterraBanner id="top-ad-320x50" className="pt-24 sm:pt-28" />
 
       {error ? (
         <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-6 space-y-8 pt-32">
@@ -166,7 +167,7 @@ export default function Home() {
         </div>
       ) : trending.length > 0 ? (
         <>
-          <section className="relative w-full pt-20 md:pt-24 px-0">
+          <section className="relative w-full pt-4 md:pt-8 px-0">
             <Swiper
               modules={[Autoplay]}
               grabCursor={true}
@@ -183,12 +184,12 @@ export default function Home() {
               {trending.slice(0, 10).map((movie) => (
                 <SwiperSlide key={movie.id}>
                   {({ isActive }) => (
-                    <div className="poster-card shadow-2xl">
+                    <div className="poster-card shadow-2xl mb-5">
                       <Image
                         src={getImageUrl(movie.poster_path, "original") || ""}
                         alt={movie.title || movie.name || "Poster"}
                         fill
-                        className="object-cover transition-transform duration-1000"
+                        className={`object-cover transition-all duration-1000 ${isActive ? 'scale-100' : 'scale-90 blur-sm opacity-60'}`}
                         priority
                       />
                       
@@ -199,7 +200,7 @@ export default function Home() {
                             <span className="text-[10px] font-black text-white">{movie.vote_average?.toFixed(1)}</span>
                           </div>
                           <div className="space-y-1">
-                            <h1 className="poster-title text-xl md:text-4xl font-black text-white uppercase italic tracking-tighter leading-[1.1] line-clamp-2">
+                            <h1 className="poster-title text-xl md:text-4xl font-black text-white uppercase italic tracking-tighter leading-[1.1] line-clamp-2 drop-shadow-lg">
                               {movie.title || movie.name}
                             </h1>
                             <p className="text-[9px] md:text-[11px] font-black text-primary/80 uppercase tracking-widest italic opacity-80">
@@ -212,17 +213,16 @@ export default function Home() {
                         </div>
                       </div>
 
-                      {/* Floating Action Matrix (Vertically Centered Right) */}
                       <div className={`action-buttons transition-all duration-700 delay-300 ${isActive ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
                         <button 
                           onClick={() => handleWatchlistToggle(movie)}
-                          className="list-btn hover:scale-110 active:scale-95 transition-all"
+                          className="list-btn hover:scale-110 active:scale-95 transition-all bg-white/10 backdrop-blur-xl border border-white/20"
                         >
                           {isInWatchlist(movie.id) ? <Check className="h-5 w-5 text-primary" /> : <Plus className="h-5 w-5" />}
                         </button>
                         <button 
                           onClick={() => handleWatchNow(movie)}
-                          className="play-btn hover:scale-110 active:scale-95 transition-all"
+                          className="play-btn hover:scale-110 active:scale-95 transition-all glow-primary"
                         >
                           <Play className="h-6 w-6 fill-current" />
                         </button>
@@ -234,10 +234,11 @@ export default function Home() {
             </Swiper>
           </section>
 
-          <div className="relative z-50 mt-4 space-y-12">
+          <div className="relative z-50 mt-8 space-y-12">
             <MovieRow title="🔥 TRENDING NOW" items={trending} viewAllHref="/genres" />
             
-            <BannerAd id="mid-banner" className="mid-ad" />
+            {/* Mid Banner Adsterra */}
+            <AdsterraBanner id="mid-ad-320x50" className="my-6" />
 
             <MovieRow title="📺 POPULAR SERIES" items={popularTV} type="tv" />
             
