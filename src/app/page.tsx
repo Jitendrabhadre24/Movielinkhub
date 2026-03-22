@@ -131,6 +131,7 @@ export default function Home() {
       setTrailerKey(null);
       try {
         const videos = await getVideos(heroMovie.id.toString(), heroMovie.media_type || 'movie');
+        // Dynamic Trailer Fetch: Find official YouTube trailer
         const trailer = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube');
         if (trailer) {
           setTrailerKey(trailer.key);
@@ -228,7 +229,7 @@ export default function Home() {
           <section className="relative h-screen w-full overflow-hidden bg-black">
             {/* Background Layers */}
             <div className="hero-video">
-              {/* Cinematic Background Transitions */}
+              {/* Cinematic Background Transitions (Posters) */}
               <div className="absolute inset-0 z-0">
                 {trending.slice(0, 5).map((movie, idx) => (
                   <div 
@@ -251,18 +252,7 @@ export default function Home() {
                 ))}
               </div>
 
-              {/* Video Background Layer (Desktop Only) */}
-              <video 
-                autoPlay 
-                muted 
-                loop 
-                playsInline 
-                className="absolute inset-0 w-full h-full object-cover opacity-40 z-10 hidden lg:block pointer-events-none"
-              >
-                <source src="https://assets.mixkit.co/videos/preview/mixkit-stars-in-the-night-sky-slowly-moving-98-large.mp4" type="video/mp4" />
-              </video>
-
-              {/* Trailer Background (Desktop Only - Dynamic Fetch) */}
+              {/* Dynamic YouTube Trailer Embed (Desktop Only) */}
               {trailerKey && (
                 <div className="absolute inset-0 z-20 hidden lg:block overflow-hidden pointer-events-none transition-opacity duration-1000">
                   <iframe
