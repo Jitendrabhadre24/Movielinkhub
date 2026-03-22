@@ -62,6 +62,7 @@ export default function Home() {
   const [error, setError] = useState<{ message: string; type: string } | null>(null);
   const [recommendations, setRecommendations] = useState<Movie[]>([]);
   const [recSourceTitle, setRecSourceTitle] = useState<string | null>(null);
+  const [trailerKeys, setTrailerKeys] = useState<Record<number, string>>({});
 
   const continueWatchingQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -103,6 +104,20 @@ export default function Home() {
       setKidsContent(kRes || []);
       setAnimation(aRes || []);
       setAnime(aniRes || []);
+      
+      // Fetch trailers for the top 5 trending movies
+      const topMovies = tRes?.slice(0, 5) || [];
+      const keys: Record<number, string> = {};
+      await Promise.all(topMovies.map(async (movie) => {
+        try {
+          const videos = await getVideos(movie.id.toString(), movie.media_type || 'movie');
+          const trailer = videos.find(v => v.type === "Trailer" && v.site === "YouTube");
+          if (trailer) keys[movie.id] = trailer.key;
+        } catch (e) {
+          console.error("Trailer fetch failed", e);
+        }
+      }));
+      setTrailerKeys(keys);
       
     } catch (err: any) {
       if (err instanceof TMDBError) {
@@ -201,7 +216,7 @@ export default function Home() {
         </div>
       ) : trending.length > 0 ? (
         <>
-          <section className="relative w-full pt-16 md:pt-0">
+          <section className="relative w-full px-4 md:px-0 pt-20 md:pt-4">
             <Swiper
               modules={[Autoplay, Pagination, EffectFade]}
               spaceBetween={0}
@@ -210,26 +225,35 @@ export default function Home() {
               loop={true}
               autoplay={{ delay: 4000, disableOnInteraction: false }}
               pagination={{ clickable: true, dynamicBullets: true }}
-              className="w-full h-[75vh] md:h-screen"
+              className="w-full h-[80vh] rounded-[20px] overflow-hidden"
             >
               {trending.slice(0, 8).map((movie, idx) => (
-                <SwiperSlide key={movie.id}>
+                <SwiperSlide key={movie.id} className="hero-card">
                   <div className="relative w-full h-full group">
                     <div className="absolute inset-0 z-0">
-                      {movie.backdrop_path && (
-                        <Image
-                          src={getImageUrl(movie.backdrop_path, "original") || ""}
-                          alt={movie.title || movie.name || "Hero"}
-                          fill
-                          className="object-cover brightness-[0.6] transition-transform duration-[10s] group-hover:scale-110"
-                          priority={idx === 0}
-                          loading={idx === 0 ? "eager" : "lazy"}
+                      {!isMobile && trailerKeys[movie.id] ? (
+                        <iframe
+                          src={`https://www.youtube.com/embed/${trailerKeys[movie.id]}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailerKeys[movie.id]}`}
+                          frameBorder="0"
+                          allow="autoplay; encrypted-media"
+                          className="hero-video"
                         />
+                      ) : (
+                        movie.backdrop_path && (
+                          <Image
+                            src={getImageUrl(movie.backdrop_path, "original") || ""}
+                            alt={movie.title || movie.name || "Hero"}
+                            fill
+                            className="object-cover brightness-[0.6] transition-transform duration-[10s] group-hover:scale-110"
+                            priority={idx === 0}
+                            loading={idx === 0 ? "eager" : "lazy"}
+                          />
+                        )
                       )}
-                      <div className="absolute inset-0 hero-gradient-overlay" />
+                      <div className="hero-overlay" />
                     </div>
                     
-                    <div className="absolute bottom-0 left-0 w-full max-w-6xl space-y-4 md:space-y-8 px-6 md:px-16 pb-24 md:pb-32 z-20">
+                    <div className="hero-content absolute bottom-0 left-0 w-full max-w-6xl space-y-4 md:space-y-8 px-6 md:px-16 pb-24 md:pb-32 z-20">
                       <div className="flex items-center gap-3">
                         <div className="bg-primary/20 backdrop-blur-xl px-3 py-1.5 rounded-full border border-primary/30">
                           <span className="text-[10px] font-black text-primary tracking-widest uppercase italic">⚡ FEATURED PREMIERE</span>
