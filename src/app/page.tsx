@@ -131,7 +131,6 @@ export default function Home() {
       setTrailerKey(null);
       try {
         const videos = await getVideos(heroMovie.id.toString(), heroMovie.media_type || 'movie');
-        // Dynamic Trailer Fetch: Find official YouTube trailer
         const trailer = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube');
         if (trailer) {
           setTrailerKey(trailer.key);
@@ -209,6 +208,8 @@ export default function Home() {
     );
   }
 
+  const videoUrl = trailerKey ? `https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailerKey}&rel=0&modestbranding=1&iv_load_policy=3&enablejsapi=1` : "";
+
   return (
     <div className="flex flex-col min-h-screen bg-[#0B0B0B] pb-32 animate-fade-in overflow-x-hidden">
       {error ? (
@@ -227,41 +228,37 @@ export default function Home() {
       ) : heroMovie ? (
         <>
           <section className="relative h-screen w-full overflow-hidden bg-black">
-            {/* Background Layers */}
-            <div className="hero-video">
+            <div className="absolute inset-0 z-0">
               {/* Cinematic Background Transitions (Posters) */}
-              <div className="absolute inset-0 z-0">
-                {trending.slice(0, 5).map((movie, idx) => (
-                  <div 
-                    key={movie.id}
-                    className={cn(
-                      "absolute inset-0 transition-opacity duration-1000 ease-in-out",
-                      heroIndex === idx ? "opacity-100" : "opacity-0"
-                    )}
-                  >
-                    {movie.backdrop_path && (
-                      <Image
-                        src={getImageUrl(movie.backdrop_path, "original") || ""}
-                        alt={movie.title || movie.name || "Hero"}
-                        fill
-                        className="object-cover animate-slow-zoom brightness-[0.7]"
-                        priority={idx === 0}
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
+              {trending.slice(0, 5).map((movie, idx) => (
+                <div 
+                  key={movie.id}
+                  className={cn(
+                    "absolute inset-0 transition-opacity duration-1000 ease-in-out",
+                    heroIndex === idx ? "opacity-100" : "opacity-0"
+                  )}
+                >
+                  {movie.backdrop_path && (
+                    <Image
+                      src={getImageUrl(movie.backdrop_path, "original") || ""}
+                      alt={movie.title || movie.name || "Hero"}
+                      fill
+                      className="object-cover animate-slow-zoom brightness-[0.7]"
+                      priority={idx === 0}
+                    />
+                  )}
+                </div>
+              ))}
 
               {/* Dynamic YouTube Trailer Embed (Desktop Only) */}
               {trailerKey && (
-                <div className="absolute inset-0 z-20 hidden lg:block overflow-hidden pointer-events-none transition-opacity duration-1000">
+                <div className="hidden lg:block absolute inset-0 z-10 transition-opacity duration-1000">
                   <iframe
-                    className="absolute top-1/2 left-1/2 w-[110vw] h-[110vh] -translate-x-1/2 -translate-y-1/2 scale-[1.3] opacity-0 transition-opacity duration-1000"
-                    src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailerKey}&rel=0&modestbranding=1&iv_load_policy=3&enablejsapi=1`}
+                    src={videoUrl}
+                    frameBorder="0"
                     allow="autoplay; encrypted-media"
-                    style={{ opacity: 0.6 }}
-                    onLoad={(e) => (e.currentTarget.style.opacity = "0.6")}
-                  />
+                    className="hero-video scale-[1.3] opacity-60 pointer-events-none"
+                  ></iframe>
                 </div>
               )}
             </div>
