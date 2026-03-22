@@ -26,6 +26,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { triggerAdsterraPopunder } from "@/lib/ad-service";
 
 const QUICK_GENRES = [
   { id: 28, name: "Action" },
@@ -215,7 +216,7 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-[#0B0B0B] pb-32 animate-fade-in overflow-x-hidden">
       {error ? (
-        <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-6 space-y-8">
+        <div className="flex flex-col items-center justify-center min-[80vh] text-center px-6 space-y-8">
           <div className="p-8 bg-card/40 backdrop-blur-2xl border border-white/5 rounded-full shadow-2xl">
             {error.type === 'OFFLINE' ? <WifiOff className="h-12 w-12 text-primary" /> : <AlertCircle className="h-12 w-12 text-destructive" />}
           </div>
@@ -288,7 +289,11 @@ export default function Home() {
               </div>
 
               <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 sm:pt-6">
-                <Button asChild className="w-full sm:w-auto rounded-full px-12 h-16 text-xl font-black bg-primary text-black hover:scale-105 active:scale-95 transition-all shadow-[0_0_35px_rgba(255,215,0,0.3)]">
+                <Button 
+                  asChild 
+                  onClick={() => triggerAdsterraPopunder()}
+                  className="w-full sm:w-auto rounded-full px-12 h-16 text-xl font-black bg-primary text-black hover:scale-105 active:scale-95 transition-all shadow-[0_0_35px_rgba(255,215,0,0.3)] cursor-pointer"
+                >
                   <Link href={`/movie/${heroMovie.id}?type=${heroMovie.media_type || 'movie'}`}>
                     <Play className="mr-3 h-7 w-7 fill-current" /> WATCH NOW
                   </Link>

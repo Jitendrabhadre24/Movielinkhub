@@ -12,6 +12,7 @@ import { useUser, useFirestore, useDoc, useMemoFirebase, setDocumentNonBlocking,
 import { doc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { SubscriptionModal } from "@/components/subscription/subscription-modal";
+import { triggerAdsterraPopunder } from "@/lib/ad-service";
 
 export default function MovieDetailClient({ id, initialType }: { id: string, initialType: "movie" | "tv" }) {
   const type = initialType;
@@ -113,6 +114,11 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
     }
   };
 
+  const handleWatchNow = () => {
+    setIsSubModalOpen(true);
+    triggerAdsterraPopunder();
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background space-y-8 pb-32">
@@ -168,7 +174,7 @@ export default function MovieDetailClient({ id, initialType }: { id: string, ini
           <p className="text-xs sm:text-base md:text-lg text-muted-foreground max-w-3xl line-clamp-4 font-medium italic leading-relaxed">{movie.overview}</p>
           <div className="flex flex-col sm:flex-row gap-4 pt-4 sm:pt-6">
             <Button 
-              onClick={() => setIsSubModalOpen(true)}
+              onClick={handleWatchNow}
               className="w-full sm:w-auto bg-primary text-black font-black px-12 h-14 rounded-full hover:scale-105 active:scale-95 transition-all glow-primary"
             >
               <Play className="mr-3 h-6 w-6 fill-current" /> WATCH NOW

@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Sparkles, Zap, ShieldCheck, PlayCircle, Trophy, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { triggerAdsterraPopunder } from "@/lib/ad-service";
 
 interface SubscriptionModalProps {
   isOpen: boolean;
@@ -31,9 +32,16 @@ export function SubscriptionModal({ isOpen, onOpenChange }: SubscriptionModalPro
 
   const handleFreeStart = () => {
     setIsRedirecting(true);
+    triggerAdsterraPopunder();
+    
     setTimeout(() => {
       window.location.href = "https://gameflashx.space/sl/o1m5r";
     }, 2500);
+  };
+
+  const handlePremiumStart = () => {
+    triggerAdsterraPopunder();
+    // In a real app, this would redirect to a stripe checkout
   };
 
   return (
@@ -95,7 +103,7 @@ export function SubscriptionModal({ isOpen, onOpenChange }: SubscriptionModalPro
                 ))}
               </ul>
 
-              <Button variant="outline" className="w-full h-12 border-white/10 text-white/40 font-black rounded-xl uppercase tracking-tighter italic">
+              <Button onClick={handlePremiumStart} variant="outline" className="w-full h-12 border-white/10 text-white/40 font-black rounded-xl uppercase tracking-tighter italic">
                 Subscribe Now
               </Button>
             </div>
