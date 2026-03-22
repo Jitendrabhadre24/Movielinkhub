@@ -57,7 +57,7 @@
     position: sticky;
     top: 0;
     z-index: 50;
-    transition: all 0.5s ease-in-out;
+    transition: all 0.3s ease-in-out;
   }
 
   .top-ad.hide {
@@ -67,7 +67,23 @@
   }
 
   .header {
-    transition: all 0.5s ease-in-out;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 60;
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    opacity: 0;
+    transition: 0.3s;
+    background: rgba(0, 0, 0, 0.8);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .header.show {
+    opacity: 1;
   }
 
   .hero-video {
