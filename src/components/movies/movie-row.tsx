@@ -16,8 +16,8 @@ export function MovieRow({ title, items, type, viewAllHref }: MovieRowProps) {
   if (!items || items.length === 0) return null;
 
   return (
-    <section className="space-y-4 sm:space-y-6 py-4 sm:py-6 overflow-hidden">
-      <div className="px-4 md:px-12 lg:px-16 flex items-center justify-between">
+    <section className="space-y-4 sm:space-y-6 py-6 overflow-hidden">
+      <div className="px-6 md:px-12 lg:px-16 flex items-center justify-between">
         <div className="border-l-4 border-primary pl-4">
           <h2 className="text-lg sm:text-xl md:text-2xl font-black text-white uppercase italic tracking-tighter">
             {title}
@@ -26,21 +26,27 @@ export function MovieRow({ title, items, type, viewAllHref }: MovieRowProps) {
         {viewAllHref && (
           <Link 
             href={viewAllHref}
-            className="flex items-center gap-1 text-[9px] sm:text-[10px] font-black text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest"
+            className="flex items-center gap-1 text-[10px] font-black text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest italic"
           >
             VIEW ALL <ChevronRight className="h-3 w-3" />
           </Link>
         )}
       </div>
-      {/* Scroll Container with Flex, Overflow-X, 12px Gap (gap-3), and mandatory snap */}
-      <div className="no-scrollbar flex gap-3 sm:gap-6 overflow-x-auto px-4 md:px-12 lg:px-16 snap-x snap-mandatory scroll-smooth pb-4">
+
+      <div 
+        className="no-scrollbar flex overflow-x-auto snap-x snap-mandatory scroll-smooth gap-4 md:gap-6 px-6 md:px-12 lg:px-16 pb-6"
+        style={{ WebkitOverflowScrolling: 'touch' }}
+      >
         {items.map((item) => (
-          <div key={item.id} className="snap-start shrink-0 w-[180px] md:w-[220px]">
-            <MovieCard item={item} type={type} />
+          <div 
+            key={item.id} 
+            className="snap-start shrink-0 w-[140px] sm:w-[180px] md:w-[220px] transition-transform duration-300"
+          >
+            <MovieCard item={item} type={type} className="w-full" />
           </div>
         ))}
-        {/* Spacer to allow scrolling past the last item */}
-        <div className="min-w-[20px] sm:min-w-[40px] h-1 shrink-0" />
+        {/* End-of-row spacer for consistent padding */}
+        <div className="shrink-0 w-6 md:w-16" />
       </div>
     </section>
   );
